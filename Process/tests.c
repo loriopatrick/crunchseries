@@ -30,26 +30,19 @@ void test_calc(MYSQL* conn) {
 	char* query = getQuoteQuery("eom", "ORDER BY epoch DESC");
 	mysql_query(conn, query);
 	free(query);
-
 	MYSQL_RES* results = mysql_store_result(conn);
 	int items = mysql_num_rows(results);
 
-	int number_of_stats = 1;
 
-	double** calc_results = malloc(sizeof(double*) * number_of_stats);
-	int i;
-	for (i = 0; i < number_of_stats; ++i) {
-		calc_results[i] = malloc(sizeof(double) * items);
-	}
 
-	void** states = malloc(sizeof(void*) * number_of_stats);
-	states[0] = malloc(sizeof(struct aroon));
-	struct aroon aroon;
-	memset(&aroon, 0, sizeof(struct aroon));
-	aroon.tail.tail_size = 20;
-	states[0] = (void*)&aroon;
 
-	calc(results, items, number_of_stats, calc_results, &aroonUp, states);
+	struct calc calc;
+	initCalc(&calc);
+	
+	double mem = 0;
+	addCalcStat(&calc, accumulationDistribution, &mem);
+
+	executeCalc(results, items, &calc);
 }
 
 void server_handler(int sockfd) {

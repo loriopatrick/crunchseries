@@ -4,6 +4,17 @@
 #include <mysql.h>
 #include "quote.h"
 
-void calc(MYSQL_RES* mysql_res, int quotes, int stats, double** result, void (*calc_stats)(double* result, struct Quote* quote, void* state), void** states);
+struct calc {
+	int len;
+	int buffer;
+	void (**stats)(double* result, struct Quote* quote, void* memory);
+	void** memories;
+	double** results;
+};
+
+
+void initCalc(struct calc* calc);
+void addCalcStat(struct calc* calc, void (*stat)(double* result, struct Quote* quote, void* memory), void* memory);
+void executeCalc(MYSQL_RES* mysql_res, int quotes, struct calc* calc);
 
 #endif
