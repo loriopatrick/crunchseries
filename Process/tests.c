@@ -43,11 +43,13 @@ void test_calc(MYSQL* conn) {
 	}
 
 	void** states = malloc(sizeof(void*) * number_of_stats);
-	states[0] = malloc(sizeof(double));
-	double start = 0;
-	states[0] = (void*)&start;
+	states[0] = malloc(sizeof(struct aroon));
+	struct aroon aroon;
+	memset(&aroon, 0, sizeof(struct aroon));
+	aroon.tail.tail_size = 20;
+	states[0] = (void*)&aroon;
 
-	calc(results, items, number_of_stats, calc_results, &accumulationDistribution, states);
+	calc(results, items, number_of_stats, calc_results, &aroonUp, states);
 }
 
 void server_handler(int sockfd) {

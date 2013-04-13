@@ -15,21 +15,25 @@ void accumulationDistribution(double* result, struct Quote* quote, void* state);
 
 
 // Arron up/down
+struct tail {
+	int tail_size;
+	double *values;
+	int pos;
+};
+
 struct aroon {
-	int quote_in_period;
+	struct tail tail;
 
 	double high;
-	int quotes_since_high;
+	int days_since_high;
 	
 	double low;
-	int quotes_since_low;
-	
-	int day_counter;
+	int days_since_low;
 };
+
+
 void aroonUp(double* result, struct Quote* quote, void* state);
 void aroonDown(double* result, struct Quote* quote, void* state);
-
-
 
 
 struct movingAverage {
