@@ -1,0 +1,5 @@
+
+
+Internal Commuication Protocol between Process and Serve:
+
+char[10] stat_name

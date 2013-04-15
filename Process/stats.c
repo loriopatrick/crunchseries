@@ -33,6 +33,7 @@ void accumulationDistribution(double* result, struct Quote* quote, void* state) 
 	double* last = (double*)state;
 	*result = *last + money_flow_volume(quote);
 	(*last) = (*result);
+	printf("%f\n", *result);
 }
 
 

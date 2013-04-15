@@ -39,3 +39,18 @@ char* getQuoteQuery(char* series, char* query) {
 	memcpy(res + 66 + series_len, query, query_len);
 	return res;
 }
+
+static MYSQL* conn = 0;
+
+MYSQL_RES* requestQuotes(char* query) {
+	if (!conn) {
+		conn = mysql_init(0);
+		mysql_real_connect(conn, "localhost", "root", "root", "crunchseries", 0, 0, 0);
+	}
+	mysql_query(conn, query);
+	return mysql_store_result(conn);
+}
+
+void closeConnections() {
+	mysql_close(conn);
+}

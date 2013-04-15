@@ -15,7 +15,7 @@ struct tail {
 
 
 // Accumulation Distribution Line
-// [(Close  -  Low) - (High - Close)] /(High - Low) 
+// state = double
 double money_flow_multiplier(struct Quote* quote);
 double money_flow_volume(struct Quote* quote);
 void accumulationDistribution(double* result, struct Quote* quote, void* state);

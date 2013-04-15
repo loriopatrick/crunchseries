@@ -43,6 +43,10 @@ void addCalcStat(struct calc* calc, void (*stat)(double* result, struct Quote* q
 }
 
 void executeCalc(MYSQL_RES* mysql_res, int quotes, struct calc* calc) {
+	if (quotes == -1) {
+		quotes = mysql_num_rows(mysql_res);
+	}
+
 	struct Quote quote;
 	int i, j;
 
