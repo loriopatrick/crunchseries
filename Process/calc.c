@@ -16,7 +16,7 @@ void initCalc(struct calc* calc) {
 	calc->results = malloc(sizeof(void*) * calc->buffer);
 }
 
-void addCalcStat(struct calc* calc, void (*stat)(double* result, struct Quote* quote, void* memory), void* memory) {
+void addCalcStat(struct calc* calc, void (*stat)(struct TimePair* result, struct Quote* quote, void* memory), void* memory) {
 	
 	if (calc->len == calc->buffer) {
 		calc->buffer += 10;
@@ -51,7 +51,7 @@ void executeCalc(MYSQL_RES* mysql_res, int quotes, struct calc* calc) {
 	int i, j;
 
 	for (j = 0; j < calc->len; ++j) {
-		calc->results[j] = malloc(sizeof(double) * quotes);
+		calc->results[j] = malloc(sizeof(struct TimePair) * quotes);
 	}
 
 	for (i = 0; i < quotes; ++i) {

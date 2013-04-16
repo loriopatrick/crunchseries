@@ -29,11 +29,12 @@ double money_flow_volume(struct Quote* quote) {
 	return money_flow_multiplier(quote) * quote->volume;
 }
 
-void accumulationDistribution(double* result, struct Quote* quote, void* state) {
+void accumulationDistribution(struct TimePair* result, struct Quote* quote, void* state) {
 	double* last = (double*)state;
-	*result = *last + money_flow_volume(quote);
-	(*last) = (*result);
-	printf("%f\n", *result);
+	result->epoch = quote->epoch;
+	result->value = *last + money_flow_volume(quote);
+	(*last) = (result->value);
+	printf("%u :: %f\n", result->epoch, result->value);
 }
 
 
@@ -43,7 +44,7 @@ void accumulationDistribution(double* result, struct Quote* quote, void* state) 
 	Aroon-Up = ((25 - Days Since 25-day High)/25) x 100
 	Aroon-Down = ((25 - Days Since 25-day Low)/25) x 100
 */
-void aroonUp(double* result, struct Quote* quote, void* state) {
+void aroonUp(struct TimePair* result, struct Quote* quote, void* state) {
 	struct aroon* aroon = (struct aroon*) state;
 
 	updateTail(quote, &(aroon->tail));
@@ -74,11 +75,12 @@ void aroonUp(double* result, struct Quote* quote, void* state) {
 		++aroon->days_since_high;
 	}
 
-	*result = ((double)(aroon->tail.tail_size - aroon->days_since_high) / (double)aroon->tail.tail_size) * 100.0;
-	printf("%f\n", *result);
+	result->epoch = quote->epoch;
+	result->value = ((double)(aroon->tail.tail_size - aroon->days_since_high) / (double)aroon->tail.tail_size) * 100.0;
+	printf("%f\n", result->value);
 }
 
-void aroonDown(double* result, struct Quote* quote, void* state) {
+void aroonDown(struct TimePair* result, struct Quote* quote, void* state) {
 	struct aroon* aroon = (struct aroon*) state;
 
 	updateTail(quote, &(aroon->tail));
@@ -109,5 +111,6 @@ void aroonDown(double* result, struct Quote* quote, void* state) {
 		++aroon->days_since_low;
 	}
 
-	*result = ((double)(aroon->tail.tail_size - aroon->days_since_high) / (double)aroon->tail.tail_size) * 100;
+	result->epoch = quote->epoch;
+	result->value = ((double)(aroon->tail.tail_size - aroon->days_since_high) / (double)aroon->tail.tail_size) * 100;
 }

@@ -13,6 +13,11 @@ struct Quote {
 	unsigned int volume;
 };
 
+struct TimePair {
+	unsigned int epoch;
+	double value;
+};
+
 int getQuote(MYSQL_RES* mysql_res, struct Quote* quote);
 void printQuote(struct Quote* quote);
 char* getQuoteQuery(char* series, char* query);

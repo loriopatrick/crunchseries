@@ -2,13 +2,14 @@ import socket
 
 class Calc:
 
+	def __init__(self, symbol, series):
+		self.symbol = symbol
+		self.series = series
+
 	def addStat(self):
 		pass
 
-	def calc():
-		pass
-
-	def serialize():
+	def request(self):
 		pass
 
 	def write(self, msg):
