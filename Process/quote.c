@@ -44,9 +44,11 @@ static MYSQL* conn = 0;
 
 MYSQL_RES* requestQuotes(char* query) {
 	if (!conn) {
+		printf("Connect\n");
 		conn = mysql_init(0);
 		mysql_real_connect(conn, "localhost", "root", "root", "crunchseries", 0, 0, 0);
 	}
+
 	mysql_query(conn, query);
 	return mysql_store_result(conn);
 }

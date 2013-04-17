@@ -43,10 +43,6 @@ void addCalcStat(struct calc* calc, void (*stat)(struct TimePair* result, struct
 }
 
 void executeCalc(MYSQL_RES* mysql_res, int quotes, struct calc* calc) {
-	if (quotes == -1) {
-		quotes = mysql_num_rows(mysql_res);
-	}
-
 	struct Quote quote;
 	int i, j;
 
@@ -60,4 +56,31 @@ void executeCalc(MYSQL_RES* mysql_res, int quotes, struct calc* calc) {
 			(calc->stats[j])(calc->results[j] + i, &quote, calc->memories[j]);
 		}
 	}
+}
+
+void doCalc(char* series, char* query, struct calc* calc) {
+	char* sql = getQuoteQuery(series, query);
+
+	MYSQL_RES* results = requestQuotes(sql);
+	free(sql);
+
+	if (!results) {
+		printf("Didn't get results: %s\n", sql);
+		perror("doCalc");
+	}
+
+	executeCalc(results, mysql_num_rows(results), calc);
+	mysql_free_result(results);
+}
+
+void freeCalc(struct calc* calc) {
+	printf("free calc:: %i\n", calc->len);
+	int i;
+	for (i = 0; i < calc->len; ++i) {
+		free(calc->results[i]);
+		free(calc->memories[i]);
+	}
+	free(calc->stats);
+	free(calc->memories);
+	free(calc->results);
 }

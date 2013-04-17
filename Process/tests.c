@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include <mysql.h>
 
@@ -28,17 +29,14 @@ void get_open(double* result, struct Quote* quote, void* state) {
 }
 
 void test_calc() {
-	char* query = getQuoteQuery("eom", "ORDER BY epoch DESC");
-	MYSQL_RES* results = requestQuotes(query);
-	free(query);
-
 	struct calc calc;
 	initCalc(&calc);
-	
+
 	double mem = 0;
 	addCalcStat(&calc, accumulationDistribution, &mem);
-
-	executeCalc(results, -1, &calc);
+	
+	doCalc("eom", "ORDER BY epoch DESC", &calc);
+	freeCalc(&calc);
 }
 
 void test_server() {
@@ -46,7 +44,18 @@ void test_server() {
 }
 
 int main (int args, char** argv) {
-	// test_calc();
+	int i;
+	// for (i = 0; i < 10000; ++i) {
+	// 	struct timeval start, end;
+	// 	gettimeofday(&start, 0);
+
+	// 	test_calc();
+
+	// 	gettimeofday(&end, 0);
+	// 	printf("%.5g seconds\n", end.tv_sec - start.tv_sec + 1E-6 * (end.tv_usec - start.tv_usec));
+	// }
+
 	test_server();
+
 	closeConnections();
 }

@@ -53,8 +53,9 @@ void calcHandle(int sockfd) {
 
 	printf("CALC TYPE: %i\n", calc_type);
 
-	if (calc_type == 1) { // list of stats to calc
+	if (calc_type == 1) {
 		struct calc calc;
+
 		struct calcStatRequest request;
 		int r = 0;
 		while(r < sizeof(struct calcStatRequest)) {
@@ -65,30 +66,30 @@ void calcHandle(int sockfd) {
 			}
 			r += size;
 		}
-
 		request.symbol[8] = '\0';
 		request.series[3] = '\0';
 
 		printf("symbol: %s\nseries: %s\nstart: %i\nend: %i\nstats: %i\n", request.symbol, request.series, request.start_epoch, request.end_epoch, request.number_of_stats);
-		
-		char* format = " WHERE symbol=\"%s\" AND epoch >= %u AND epoch <= %u ORDER BY epoch ASC";
-		char* query = malloc(snprintf(0, 0, format, request.symbol, request.start_epoch, request.end_epoch));
-		sprintf(query, format, request.symbol, request.start_epoch, request.end_epoch);
-		char* quote_query = getQuoteQuery(request.series, query);
-		free(query);
 
-		MYSQL_RES* results = requestQuotes(quote_query);
+		
 
 		int i;
 		for (i = 0; i < request.number_of_stats; ++i) {
 			handleAddCalcStat(sockfd, &calc);
 		}
 
-		printf("quotes: %i\n", mysql_num_rows(results));
+		
+		char* format = " WHERE symbol=\"%s\" AND epoch >= %u AND epoch <= %u ORDER BY epoch ASC";
+		int query_size = snprintf(0, 0, format, request.symbol, request.start_epoch, request.end_epoch);
+		char* query = malloc(query_size);
+		memset(query, '\0', query_size);
+		sprintf(query, format, request.symbol, request.start_epoch, request.end_epoch);
 
-		executeCalc(results, -1, &calc);
-		printf("%s\n", "EXECUTED!!");
+		
+		doCalc(request.series, query, &calc);
 
-		// todo: return data to request and clean up
+		
+		free(query);
+		freeCalc(&calc);
 	}
 }

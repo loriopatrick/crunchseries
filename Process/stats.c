@@ -34,7 +34,7 @@ void accumulationDistribution(struct TimePair* result, struct Quote* quote, void
 	result->epoch = quote->epoch;
 	result->value = *last + money_flow_volume(quote);
 	(*last) = (result->value);
-	printf("%u :: %f\n", result->epoch, result->value);
+	// printf("%u :: %f\n", result->epoch, result->value);
 }
 
 

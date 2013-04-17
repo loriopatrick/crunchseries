@@ -24,6 +24,8 @@ void* handleRequest(void* arg) {
 	*(info->active_sockets) += 1;
 	(info->handler)(info->sockfd);
 	*(info->active_sockets) -= 1;
+	shutdown(info->sockfd, 2);
+	free(arg);
 	return 0;
 }
 
@@ -39,17 +41,22 @@ void startServer(int port, int max_threads, void (*handler)(int sockfd)) {
 
 	bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 	listen(listenfd, 10);
-	printf("Started!!\n");
+
 	for (;;) {
 		int connfd = accept(listenfd, 0, 0);
-		printf("GOT!!\n");
 		pthread_t thread;
-		struct ServerThreadInfo info = {connfd, handler, &acitve_threads};
+
+		struct ServerThreadInfo* info = malloc(sizeof(struct ServerThreadInfo));
+		info->sockfd = connfd;
+		info->handler = handler;
+		info->active_sockets = &acitve_threads;
+
 		while (acitve_threads >= max_threads) sleep(1);
-		if (pthread_create(&thread, NULL, handleRequest, (void*) &info)) {
+		if (pthread_create(&thread, NULL, handleRequest, (void*)info)) {
 			printf("ERROR pthread_create!!\n");
 			exit(1);
 		}
+
 		pthread_detach(thread);
 	}
 }
