@@ -1,5 +1,2 @@
-
-
-Internal Commuication Protocol between Process and Serve:
-
-char[10] stat_name
+TODO: abstract MYSQL in quotes
+MYSQL connection should not be shared between threads!!

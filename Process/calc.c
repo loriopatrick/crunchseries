@@ -60,21 +60,22 @@ void executeCalc(MYSQL_RES* mysql_res, int quotes, struct calc* calc) {
 
 void doCalc(char* series, char* query, struct calc* calc) {
 	char* sql = getQuoteQuery(series, query);
-
 	MYSQL_RES* results = requestQuotes(sql);
-	free(sql);
+	
 
-	if (!results) {
-		printf("Didn't get results: %s\n", sql);
-		perror("doCalc");
+	if (results == NULL) {
+		printf("Didn't get results: %p :: %s\n", results, sql);
+		printMYSQLError();
+		exit(1);
 	}
+
+	free(sql);
 
 	executeCalc(results, mysql_num_rows(results), calc);
 	mysql_free_result(results);
 }
 
 void freeCalc(struct calc* calc) {
-	printf("free calc:: %i\n", calc->len);
 	int i;
 	for (i = 0; i < calc->len; ++i) {
 		free(calc->results[i]);

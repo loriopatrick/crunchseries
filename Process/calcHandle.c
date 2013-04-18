@@ -55,6 +55,7 @@ void calcHandle(int sockfd) {
 
 	if (calc_type == 1) {
 		struct calc calc;
+		initCalc(&calc);
 
 		struct calcStatRequest request;
 		int r = 0;
@@ -71,16 +72,14 @@ void calcHandle(int sockfd) {
 
 		printf("symbol: %s\nseries: %s\nstart: %i\nend: %i\nstats: %i\n", request.symbol, request.series, request.start_epoch, request.end_epoch, request.number_of_stats);
 
-		
-
 		int i;
 		for (i = 0; i < request.number_of_stats; ++i) {
 			handleAddCalcStat(sockfd, &calc);
 		}
 
 		
-		char* format = " WHERE symbol=\"%s\" AND epoch >= %u AND epoch <= %u ORDER BY epoch ASC";
-		int query_size = snprintf(0, 0, format, request.symbol, request.start_epoch, request.end_epoch);
+		char* format = " WHERE symbol=\"%s\" AND epoch >= %u AND epoch <= %u ORDER BY epoch ASC\0";
+		int query_size = 1 + snprintf(0, 0, format, request.symbol, request.start_epoch, request.end_epoch);
 		char* query = malloc(query_size);
 		memset(query, '\0', query_size);
 		sprintf(query, format, request.symbol, request.start_epoch, request.end_epoch);
@@ -91,5 +90,6 @@ void calcHandle(int sockfd) {
 		
 		free(query);
 		freeCalc(&calc);
+		printf("%s\n", "Served...");
 	}
 }

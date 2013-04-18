@@ -5,12 +5,12 @@ import requests
 import database
 
 class Periods:
-	EOM='EOM', 60
-	EOD='EOD', 321
+	EOM='eom', 60
+	EOD='eod', 321
 
 class Series:
 	def __init__(self, period):
-		periods = ['EOM', 'EOD'] # end of minute, end of day respectively
+		periods = ['eom', 'eod'] # end of minute, end of day respectively
 
 		if period[0] not in periods:
 			raise Exception('Unkown period: %s, options: %s' % (period, periods))
@@ -121,11 +121,10 @@ class GoogleFinace():
 
 if __name__ == '__main__':
 	series = Series(Periods.EOM)
-	print series.first_epoch('GOOG', database.cursor())
 
-	# test = GoogleFinace('GOOG')
-	# test.request(datetime.datetime.now() - datetime.timedelta(days=12))
+	test = GoogleFinace('GOOG')
+	test.request(datetime.datetime.now() - datetime.timedelta(days=12))
 
-	# cursor = database.cursor()
-	# test.save(series, cursor)
-	# database.commit()
+	cursor = database.cursor()
+	test.save(series, cursor)
+	database.commit()

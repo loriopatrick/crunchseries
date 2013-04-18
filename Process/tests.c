@@ -32,19 +32,20 @@ void test_calc() {
 	struct calc calc;
 	initCalc(&calc);
 
-	double mem = 0;
-	addCalcStat(&calc, accumulationDistribution, &mem);
+	double* mem = malloc(sizeof(double));
+	*mem = 0;
+	addCalcStat(&calc, accumulationDistribution, mem);
 	
 	doCalc("eom", "ORDER BY epoch DESC", &calc);
 	freeCalc(&calc);
 }
 
 void test_server() {
-	startServer(5432, 20, calcHandle);
+	startServer(4213, 20, calcHandle);
 }
 
 int main (int args, char** argv) {
-	int i;
+	// int i;
 	// for (i = 0; i < 10000; ++i) {
 	// 	struct timeval start, end;
 	// 	gettimeofday(&start, 0);
@@ -57,5 +58,7 @@ int main (int args, char** argv) {
 
 	test_server();
 
+	printf("CLOSE MYSQL!!\n");
 	closeConnections();
+	return 0;
 }

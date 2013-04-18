@@ -10,32 +10,35 @@ import time
 # 	int number_of_stats;
 # };
 
-data = struct.pack('i9s4sIIi', 1, 'GOOG', 'eom', 0, 2**32-2, 1)
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(('127.0.0.1', 5432))
+def test():
 
-sent = 0
-while sent < len(data):
-	r = sock.send(data[sent:])
-	if not r:
-		print "ERROR"
-	sent += r
+	data = struct.pack('i9s4sIIi', 1, 'GOOG', 'eom', 0, 2**32-2, 1)
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.connect(('127.0.0.1', 4213))
 
-print 'SENT HEADER'
+	sent = 0
+	while sent < len(data):
+		r = sock.send(data[sent:])
+		if not r:
+			print "ERROR"
+		sent += r
 
-data = struct.pack('10sd', 'ACD', 0)
+	data = struct.pack('10sd', 'ACD', 0)
 
-sent = 0
-while sent < len(data):
-	r = sock.send(data[sent:])
-	if not r:
-		print "ERROR"
-	sent += r
+	sent = 0
+	while sent < len(data):
+		r = sock.send(data[sent:])
+		if not r:
+			print "ERROR"
+		sent += r
 
-print 'SENT HEADER'
 
-sock.close()
+	sock.close()
 
+
+for x in range(0, 100):
+	test()
+	print 'REQUEST: %s completed' % x
 
 # class Calc:
 

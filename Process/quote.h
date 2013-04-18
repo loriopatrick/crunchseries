@@ -24,5 +24,6 @@ char* getQuoteQuery(char* series, char* query);
 char* getQuoteQueryBySymbol(char* series, char* symbol, char* foo);
 MYSQL_RES* requestQuotes(char* query);
 void closeConnections();
+void printMYSQLError();
 
 #endif
