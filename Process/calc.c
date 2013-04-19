@@ -8,7 +8,7 @@
 
 #include "calc.h"
 
-void initCalc(struct calc* calc) {
+void initCalc(struct Calc* calc) {
 	calc->len = 0;
 	calc->buffer = 10;
 	calc->stats = malloc(sizeof(void*) * calc->buffer);
@@ -16,7 +16,7 @@ void initCalc(struct calc* calc) {
 	calc->results = malloc(sizeof(void*) * calc->buffer);
 }
 
-void addCalcStat(struct calc* calc, void (*stat)(struct TimePair* result, struct Quote* quote, void* memory), void* memory) {
+void addCalcStat(struct Calc* calc, void (*stat)(struct TimePair* result, struct Quote* quote, void* memory), void* memory) {
 	
 	if (calc->len == calc->buffer) {
 		calc->buffer += 10;
@@ -42,7 +42,7 @@ void addCalcStat(struct calc* calc, void (*stat)(struct TimePair* result, struct
 	++calc->len;
 }
 
-void executeCalc(MYSQL_RES* mysql_res, int quotes, struct calc* calc) {
+void executeCalc(MYSQL_RES* mysql_res, int quotes, struct Calc* calc, MYSQL* conn) {
 	struct Quote quote;
 	int i, j;
 
@@ -58,9 +58,9 @@ void executeCalc(MYSQL_RES* mysql_res, int quotes, struct calc* calc) {
 	}
 }
 
-void doCalc(char* series, char* query, struct calc* calc) {
+void doCalc(char* series, char* query, struct Calc* calc, MYSQL* conn) {
 	char* sql = getQuoteQuery(series, query);
-	MYSQL_RES* results = requestQuotes(sql);
+	MYSQL_RES* results = requestQuotes(sql, conn);
 	
 
 	if (results == NULL) {
@@ -71,11 +71,11 @@ void doCalc(char* series, char* query, struct calc* calc) {
 
 	free(sql);
 
-	executeCalc(results, mysql_num_rows(results), calc);
+	executeCalc(results, mysql_num_rows(results), calc, conn);
 	mysql_free_result(results);
 }
 
-void freeCalc(struct calc* calc) {
+void freeCalc(struct Calc* calc) {
 	int i;
 	for (i = 0; i < calc->len; ++i) {
 		free(calc->results[i]);

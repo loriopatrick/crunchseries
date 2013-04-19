@@ -28,15 +28,15 @@ void get_open(double* result, struct Quote* quote, void* state) {
 	(*result) = quote->close;
 }
 
-void test_calc() {
-	struct calc calc;
+void test_calc(MYSQL* conn) {
+	struct Calc calc;
 	initCalc(&calc);
 
 	double* mem = malloc(sizeof(double));
 	*mem = 0;
 	addCalcStat(&calc, accumulationDistribution, mem);
 	
-	doCalc("eom", "ORDER BY epoch DESC", &calc);
+	doCalc("eom", "ORDER BY epoch DESC", &calc, conn);
 	freeCalc(&calc);
 }
 
@@ -45,12 +45,13 @@ void test_server() {
 }
 
 int main (int args, char** argv) {
+	MYSQL* conn = getConn();
 	// int i;
-	// for (i = 0; i < 10000; ++i) {
+	// for (i = 0; i < 100; ++i) {
 	// 	struct timeval start, end;
 	// 	gettimeofday(&start, 0);
 
-	// 	test_calc();
+	// 	test_calc(conn);
 
 	// 	gettimeofday(&end, 0);
 	// 	printf("%.5g seconds\n", end.tv_sec - start.tv_sec + 1E-6 * (end.tv_usec - start.tv_usec));
@@ -58,7 +59,7 @@ int main (int args, char** argv) {
 
 	test_server();
 
-	printf("CLOSE MYSQL!!\n");
-	closeConnections();
+	// printf("CLOSE MYSQL!!\n");
+	mysql_close(conn);
 	return 0;
 }

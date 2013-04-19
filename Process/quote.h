@@ -22,8 +22,10 @@ int getQuote(MYSQL_RES* mysql_res, struct Quote* quote);
 void printQuote(struct Quote* quote);
 char* getQuoteQuery(char* series, char* query);
 char* getQuoteQueryBySymbol(char* series, char* symbol, char* foo);
-MYSQL_RES* requestQuotes(char* query);
+MYSQL* getConn();
+MYSQL_RES* requestQuotes(char* query, MYSQL* conn);
 void closeConnections();
 void printMYSQLError();
+
 
 #endif

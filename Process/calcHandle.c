@@ -10,7 +10,7 @@
 #include "calc.h"
 #include "stats.h"
 
-void handleAddCalcStat(int sockfd, struct calc* calc) {
+void handleAddCalcStat(int sockfd, struct Calc* calc) {
 	int size;
 	char stat_name[10];
 	size = recv(sockfd, stat_name, 10, MSG_WAITALL);
@@ -32,7 +32,7 @@ void handleAddCalcStat(int sockfd, struct calc* calc) {
 	}
 }
 
-struct calcStatRequest {
+struct CalcStatRequest {
 	char symbol[9];
 	char series[4];
 	unsigned int start_epoch;
@@ -54,13 +54,13 @@ void calcHandle(int sockfd) {
 	printf("CALC TYPE: %i\n", calc_type);
 
 	if (calc_type == 1) {
-		struct calc calc;
+		struct Calc calc;
 		initCalc(&calc);
 
-		struct calcStatRequest request;
+		struct CalcStatRequest request;
 		int r = 0;
-		while(r < sizeof(struct calcStatRequest)) {
-			size = recv(sockfd, &request + r, sizeof(struct calcStatRequest) - r, 0);
+		while(r < sizeof(struct CalcStatRequest)) {
+			size = recv(sockfd, &request + r, sizeof(struct CalcStatRequest) - r, 0);
 			if (!size) {
 				perror("calcHandle calcStatRequest");
 				exit(1);
@@ -84,9 +84,11 @@ void calcHandle(int sockfd) {
 		memset(query, '\0', query_size);
 		sprintf(query, format, request.symbol, request.start_epoch, request.end_epoch);
 
+		MYSQL* conn = getConn();
 		
-		doCalc(request.series, query, &calc);
+		doCalc(request.series, query, &calc, conn);
 
+		mysql_close(conn);
 		
 		free(query);
 		freeCalc(&calc);

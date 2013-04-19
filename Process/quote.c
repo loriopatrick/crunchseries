@@ -43,22 +43,18 @@ char* getQuoteQuery(char* series, char* query) {
 	return res;
 }
 
-static MYSQL* conn = 0;
+MYSQL* getConn() {
+	mysql_library_init(0, NULL, NULL);
+	MYSQL* conn = mysql_init(0);
+	mysql_real_connect(conn, "localhost", "root", "root", "crunchseries", 0, 0, 0);
+	return conn;
+}
 
-MYSQL_RES* requestQuotes(char* query) {
-	if (!conn) {
-		conn = mysql_init(0);
-		mysql_real_connect(conn, "localhost", "root", "root", "crunchseries", 0, 0, 0);
-	}
-
+MYSQL_RES* requestQuotes(char* query, MYSQL* conn) {
 	mysql_query(conn, query);
 	return mysql_store_result(conn);
 }
 
-void closeConnections() {
-	mysql_close(conn);
-}
-
-void printMYSQLError() {
+void printMYSQLError(MYSQL* conn) {
 	printf("MYSQL ERROR: %s\n", mysql_error(conn));
 }
