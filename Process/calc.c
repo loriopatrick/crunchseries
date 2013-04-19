@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <mysql.h>
-
+#include "database.h"
 #include "quote.h"
 
 #include "calc.h"
@@ -42,7 +41,7 @@ void addCalcStat(struct Calc* calc, void (*stat)(struct TimePair* result, struct
 	++calc->len;
 }
 
-void executeCalc(MYSQL_RES* mysql_res, int quotes, struct Calc* calc, MYSQL* conn) {
+void executeCalc(struct DataConn* conn, int quotes, struct Calc* calc) {
 	struct Quote quote;
 	int i, j;
 
@@ -51,28 +50,26 @@ void executeCalc(MYSQL_RES* mysql_res, int quotes, struct Calc* calc, MYSQL* con
 	}
 
 	for (i = 0; i < quotes; ++i) {
-		if (!getQuote(mysql_res, &quote)) break;
+		if (retreiveDataConnQuote(conn, &quote)) break;
 		for (j = 0; j < calc->len; ++j) {
 			(calc->stats[j])(calc->results[j] + i, &quote, calc->memories[j]);
 		}
 	}
 }
 
-void doCalc(char* series, char* query, struct Calc* calc, MYSQL* conn) {
+void doCalc(struct DataConn* conn, char* series, char* query, struct Calc* calc) {
 	char* sql = getQuoteQuery(series, query);
-	MYSQL_RES* results = requestQuotes(sql, conn);
-	
 
-	if (results == NULL) {
-		printf("Didn't get results: %p :: %s\n", results, sql);
-		printMYSQLError();
+	if (queryDataConn(conn, sql)) {
+		printf("Didn't get results: %s\n", sql);
+		printDataConnError(conn);
 		exit(1);
 	}
 
 	free(sql);
 
-	executeCalc(results, mysql_num_rows(results), calc, conn);
-	mysql_free_result(results);
+	executeCalc(conn, mysql_num_rows(results), calc);
+	freeDataConnQuery(conn);
 }
 
 void freeCalc(struct Calc* calc) {

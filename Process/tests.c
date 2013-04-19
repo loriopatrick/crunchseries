@@ -3,49 +3,51 @@
 #include <string.h>
 #include <sys/time.h>
 
-#include <mysql.h>
-
 #include "quote.h"
 #include "calc.h"
 #include "server.h"
 #include "stats.h"
 #include "calcHandle.h"
+#include "database.h"
 
-void test_getQuote(MYSQL* conn) {
+void test_getQuote(struct DataConn* conn) {
 	char* query = getQuoteQuery("eom", "ORDER BY epoch DESC");
-	mysql_query(conn, query);
+	queryDataConn(conn, query);
 	free(query);
 
-	MYSQL_RES* results = mysql_store_result(conn);
 	struct Quote quote;
 
-	while(getQuote(results, &quote)) {
+	while(!retreiveDataConnQuote(conn, &quote)) {
 		printQuote(&quote);
 	}
 }
 
-void get_open(double* result, struct Quote* quote, void* state) {
-	(*result) = quote->close;
-}
+// void get_open(double* result, struct Quote* quote, void* state) {
+// 	(*result) = quote->close;
+// }
 
-void test_calc(MYSQL* conn) {
-	struct Calc calc;
-	initCalc(&calc);
+// void test_calc(MYSQL* conn) {
+// 	struct Calc calc;
+// 	initCalc(&calc);
 
-	double* mem = malloc(sizeof(double));
-	*mem = 0;
-	addCalcStat(&calc, accumulationDistribution, mem);
+// 	double* mem = malloc(sizeof(double));
+// 	*mem = 0;
+// 	addCalcStat(&calc, accumulationDistribution, mem);
 	
-	doCalc("eom", "ORDER BY epoch DESC", &calc, conn);
-	freeCalc(&calc);
-}
+// 	doCalc("eom", "ORDER BY epoch DESC", &calc, conn);
+// 	freeCalc(&calc);
+// }
 
-void test_server() {
-	startServer(4213, 20, calcHandle);
-}
+// void test_server() {
+// 	startServer(4213, 20, calcHandle);
+// }
 
 int main (int args, char** argv) {
-	MYSQL* conn = getConn();
+	struct DataConn conn;
+	initDataConn(&conn);
+
+	test_getQuote(&conn);
+	// MYSQL* conn = getConn();
 	// int i;
 	// for (i = 0; i < 100; ++i) {
 	// 	struct timeval start, end;
@@ -57,9 +59,9 @@ int main (int args, char** argv) {
 	// 	printf("%.5g seconds\n", end.tv_sec - start.tv_sec + 1E-6 * (end.tv_usec - start.tv_usec));
 	// }
 
-	test_server();
+	// // test_server();
 
-	// printf("CLOSE MYSQL!!\n");
-	mysql_close(conn);
+	// // printf("CLOSE MYSQL!!\n");
+	// mysql_close(conn);
 	return 0;
 }
