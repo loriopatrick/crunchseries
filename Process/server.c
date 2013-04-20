@@ -35,12 +35,25 @@ int readNetLen(int sockfd, void* object, int len) {
 	while (read < len) {
 		int size = recv(sockfd, object + read, len - read, 0);
 		if (!size) {
-			printf("readNetStruct failed\n");
+			printf("readNetLen failed\n");
 			exit(1);
 		}
 		read += size;
 	}
 	return read;
+}
+
+int sendNetLen(int sockfd, void* object, int len) {
+	int sent = 0;
+	while(sent < len) {
+		int size = send(sockfd, object + sent, len - sent, 0);
+		if (size == -1) {
+			printf("sendNetLen failed\n");
+			exit(1);
+		}
+		sent += size;
+	}
+	return sent;
 }
 
 void startServer(int port, int max_threads, void (*handler)(int sockfd)) {
@@ -57,7 +70,6 @@ void startServer(int port, int max_threads, void (*handler)(int sockfd)) {
 	listen(listenfd, 10);
 
 	for (;;) {
-		printf("socket: %i\n", listenfd);
 		int connfd = accept(listenfd, 0, 0);
 		if (connfd == listenfd) {
 			printf("WTF!!\n");
@@ -78,4 +90,6 @@ void startServer(int port, int max_threads, void (*handler)(int sockfd)) {
 
 		pthread_detach(thread);
 	}
+
+	close(listenfd);
 }

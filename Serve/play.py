@@ -10,33 +10,97 @@ import time
 # 	int number_of_stats;
 # };
 
+class ACD:
+	def serialize(self):
+		return struct.pack('10sd', 'ACD', 0)
+
+class CalcStatRequest:
+	def __init__(self, series, symbol, start, end):
+		self.series = series
+		self.symbol = symbol
+		self.start = start
+		self.end = end
+		self.stats = []
+		
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+	def connect(self):
+		self.sock.connect(('127.0.0.1', 4213))
+
+	def request(self):
+		data = struct.pack('i9s4sIIi', 1, self.symbol[:8], self.series[:4], self.start, self.end, len(self.stats))
+		print 'data len:', len(data)
+		self.send(data)
+
+		for stat in self.stats:
+			self.send(stat.serialize())
+
+		n_stat, n_quotes = struct.unpack('ii', self.recv(8))
+
+		print n_stat, n_quotes
+
+		for stat_res in range(0, n_stat):
+			for q in range(0, n_quotes):
+				struct.unpack('Id', self.recv(16))
+
+	def send(self, msg):
+		msg_len = len(msg)
+		msg_sent = 0
+		
+		while msg_sent < msg_len:
+			sent = self.sock.send(msg[msg_sent:])
+			if sent == 0:
+				raise RuntimeError("socket broke")
+			msg_sent += sent
+
+	def recv(self, recv):
+		chunks = []
+		msg_recv = 0
+		
+		while (msg_recv < recv):
+			chunk = self.sock.recv(recv - msg_recv)
+			if len(chunk) == 0:
+				raise RuntimeError("socket broke")
+			chunks.append(chunk)
+			msg_recv += len(chunk)
+
+		return ''.join(chunks)
+
+	def addStat(self, stat):
+		self.stats.append(stat)
+
 def test():
 
-	data = struct.pack('i9s4sIIi', 1, 'GOOG', 'eom', 0, 2**32-2, 1)
-	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	sock.connect(('127.0.0.1', 4213))
+	req = CalcStatRequest('eom', 'GOOG', 0, 2**32-2)
+	req.addStat(ACD())
+	req.connect()
+	req.request()
 
-	sent = 0
-	while sent < len(data):
-		r = sock.send(data[sent:])
-		if not r:
-			print "ERROR"
-		sent += r
+	# data = struct.pack('i9s4sIIi', 1, 'GOOG', 'eom', 0, 2**32-2, 1)
+	# sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	# sock.connect(('127.0.0.1', 4213))
 
-	data = struct.pack('10sd', 'ACD', 0)
+	# sent = 0
+	# while sent < len(data):
+	# 	r = sock.send(data[sent:])
+	# 	if not r:
+	# 		print "ERROR"
+	# 	sent += r
 
-	sent = 0
-	while sent < len(data):
-		r = sock.send(data[sent:])
-		if not r:
-			print "ERROR"
-		sent += r
+	# data = struct.pack('10sd', 'ACD', 0)
+
+	# sent = 0
+	# while sent < len(data):
+	# 	r = sock.send(data[sent:])
+	# 	if not r:
+	# 		print "ERROR"
+	# 	sent += r
 
 
-	sock.close()
+	# sock.close()
 
 
-for x in range(0, 5000):
+for x in range(0, 1000):
 	test()
 	print 'REQUEST: %s completed' % x
 

@@ -15,6 +15,6 @@ struct Calc {
 void initCalc(struct Calc* calc);
 void addCalcStat(struct Calc* calc, void (*stat)(struct TimePair* result, struct Quote* quote, void* memory), void* memory);
 void executeCalc(DBRes* res, int quotes, struct Calc* calc);
-void doCalc(char* series, char* query, struct Calc* calc);
+int doCalc(char* series, char* query, struct Calc* calc);
 void freeCalc(struct Calc* calc);
 #endif

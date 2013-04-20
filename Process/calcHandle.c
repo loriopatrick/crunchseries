@@ -11,6 +11,8 @@
 #include "stats.h"
 #include "server.h"
 
+#include "calcHandle.h"
+
 struct CalcStatRequest {
 	char symbol[9];
 	char series[4];
@@ -35,40 +37,46 @@ void addCalcByNetwork(struct Calc* calc, int sockfd) {
 }
 
 void statCalcHandle(int sockfd) {
-	printf("Stat Calc handler\n");
+	int i;
 
 	struct CalcStatRequest request;
 	readNetLen(sockfd, &request, sizeof(struct CalcStatRequest));
 	request.symbol[8] = '\0';
 	request.series[3] = '\0';
 
-	printf("symbol: %s\nseries: %s\nstart: %u\nend: %u\nstats: %i\n", request.symbol, request.series, request.start_epoch, request.end_epoch, request.number_of_stats);
+	printf("symbol: %s\nseries: %s\nstart: %u\nend: %u\nstats: %i\n\n", request.symbol, request.series, request.start_epoch, request.end_epoch, request.number_of_stats);
 
 	struct Calc calc;
 	initCalc(&calc);
 
-	int i;
 	for (i = 0; i < request.number_of_stats; ++i) {
 		addCalcByNetwork(&calc, sockfd);
 	}
 
 	char* query = getQuoteSymbolRangeQuery(request.symbol, request.start_epoch, request.end_epoch);
-
-	doCalc(request.series, query, &calc);
-	freeCalc(&calc);
-
+	int items = doCalc(request.series, query, &calc);
 	free(query);
+
+	sendNetLen(sockfd, &request.number_of_stats, sizeof(int));
+	sendNetLen(sockfd, &items, sizeof(int));
+
+	for (i = 0; i < request.number_of_stats; ++i) {
+		int j;
+		for (j = 0; j < items; ++j) {
+			printf("SEND: %u :: %f\n", calc.results[i][j].epoch, calc.results[i][j].value);
+			sendNetLen(sockfd, calc.results[i] + j, sizeof(struct TimePair));
+			// printf("Sent\n");
+		}
+	}
+	
+	freeCalc(&calc);
 }
 
 
 void calcHandle(int sockfd) {
-	int calc_type, size;
+	int calc_type;
 	
-	size = recv(sockfd, &calc_type, sizeof(int), MSG_WAITALL);
-	if (size != sizeof(int)) {
-		perror("calcHandle calc_type");
-		exit(1);
-	}
+	readNetLen(sockfd, &calc_type, sizeof(int));
 
 	if (calc_type == 1) {
 		statCalcHandle(sockfd);

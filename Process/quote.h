@@ -22,6 +22,4 @@ void printQuote(struct Quote* quote);
 char* getQuoteQuery(char* series, char* query);
 char* getQuoteSymbolRangeQuery(char* symbol, unsigned int start, unsigned int end);
 
-
-
 #endif

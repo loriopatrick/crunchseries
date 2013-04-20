@@ -3,5 +3,6 @@
 
 void startServer(int port, int max_threads, void (*handler)(int sockfd));
 int readNetLen(int sockfd, void* object, int len);
+int sendNetLen(int sockfd, void* object, int len);
 
 #endif

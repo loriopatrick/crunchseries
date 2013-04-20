@@ -52,17 +52,15 @@ void executeCalc(DBRes* res, int quotes, struct Calc* calc) {
 		size += sizeof(struct TimePair) * quotes;
 	}
 
-	printf("results size: %i\n", size);
-
 	for (i = 0; i < quotes; ++i) {
-		if (getQuote(res, &quote)) break;
+		if (!getQuote(res, &quote)) break;
 		for (j = 0; j < calc->len; ++j) {
 			(calc->stats[j])(calc->results[j] + i, &quote, calc->memories[j]);
 		}
 	}
 }
 
-void doCalc(char* series, char* query, struct Calc* calc) {
+int doCalc(char* series, char* query, struct Calc* calc) {
 	char* sql = getQuoteQuery(series, query);
 	DBRes* res = queryDB(sql);
 	if (!res) {
@@ -73,8 +71,11 @@ void doCalc(char* series, char* query, struct Calc* calc) {
 
 	free(sql);
 
-	executeCalc(res, getDBResRows(res), calc);
+	int items = getDBResRows(res);
+	executeCalc(res, items, calc);
 	freeDBRes(res);
+
+	return items;
 }
 
 void freeCalc(struct Calc* calc) {
