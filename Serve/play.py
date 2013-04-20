@@ -40,6 +40,11 @@ class AROON_UP(Stat):
 		super(AROON_UP, self).__init__('AROON_UP')
 		self.tail_size = 25
 
+	def settings(self):
+		return {
+			'tail_size':25
+		}
+
 	def applySetting(self, name, value):
 		settings = ['tail']
 		if name not in settings:
@@ -79,7 +84,7 @@ class CalcStatRequest:
 			stat = self.stats[name.rstrip(' \t\r\n\0')]
 			stat.results = []
 			for q in range(0, n_quotes):
-				data = struct.unpack('Id', self.recv(16))
+				data = struct.unpack('Id', self.recv(12))
 				stat.results.append((data[0], round(data[1], 5)))
 
 	def send(self, msg):
@@ -107,6 +112,10 @@ class CalcStatRequest:
 
 	def addStat(self, stat):
 		self.stats[stat.name] = stat
+
+	def close(self):
+		self.sock.shutdown()
+		self.sock.close()
 
 def test():
 
@@ -164,6 +173,8 @@ def calc():
 		stats_data.append(stats[stat].dict())
 
 	return Response(json.dumps(stats_data), mimetype='application/json')
+
+	calc.close()
 
 
 if __name__ == '__main__':

@@ -24,7 +24,8 @@ void* handleRequest(void* arg) {
 	*(info->active_sockets) += 1;
 	(info->handler)(info->sockfd);
 	*(info->active_sockets) -= 1;
-	close(info->sockfd);
+	shutdown(info->sockfd, 2);
+	// close(info->sockfd);
 	// printf("close sock: %i\n", info->sockfd);
 	free(arg);
 	return 0;
