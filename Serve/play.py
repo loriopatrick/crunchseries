@@ -3,13 +3,6 @@ import struct
 import datetime
 import time
 import json
-# struct calcStatRequest {
-# 	char symbol[9];
-# 	char series[4];
-# 	long start_epoch;
-# 	long end_epoch;
-# 	int number_of_stats;
-# };
 
 class Stat(object):
 	def __init__(self, name):
@@ -47,6 +40,13 @@ class AROON_UP(Stat):
 		super(AROON_UP, self).__init__('AROON_UP')
 		self.tail_size = 25
 
+	def applySetting(self, name, value):
+		settings = ['tail']
+		if name not in settings:
+			return
+		if name == 'tail':
+			self.tail_size == int(value)
+
 	def serialize(self):
 		return struct.pack('=10si', self.name, self.tail_size)
 
@@ -63,7 +63,8 @@ class CalcStatRequest:
 		self.sock.connect(('127.0.0.1', 4213))
 
 	def request(self):
-		data = struct.pack('i9s4sIIi', 1, self.symbol[:8], self.series[:4], self.start, self.end, len(self.stats))
+		print str(self.symbol[:8])
+		data = struct.pack('i9s4sIIi', 1, str(self.symbol[:8]), str(self.series[:4]), self.start, self.end, len(self.stats))
 		self.send(data)
 
 		for stat in self.stats:
@@ -120,6 +121,54 @@ def test():
 	print a.json()
 	print b.json()
 
-for x in range(0, 1000):
-	test()
-	print 'REQUEST: %s completed' % x
+
+
+from flask import Flask, request, Response
+
+app = Flask(__name__)
+app.debug = True
+
+stat_dict = {
+	'ACD':ACD,
+	'AROON_UP':AROON_UP
+}
+
+@app.route('/api/calc')
+def calc():
+	stats = {}
+	series = request.args.get('series', 'eom')
+	symbol = request.args['symbol']
+	begin = int(request.args['begin'])
+	end = int(request.args['end'])
+
+	for req in request.args:
+		if '_' not in req:
+			continue
+		val = request.args[req]
+
+		parts = req.split('_')
+		if parts[1] == 'stat':
+			stats[parts[0]] = stat_dict[val]()
+		else:
+			stats[parts[0]].applySetting(parts[1], val)
+
+	calc = CalcStatRequest(series.lower(), symbol.upper(), begin, end)
+	for stat in stats:
+		calc.addStat(stats[stat])
+
+	calc.connect()
+	calc.request()
+
+	stats_data = []
+	for stat in stats:
+		stats_data.append(stats[stat].dict())
+
+	return Response(json.dumps(stats_data), mimetype='application/json')
+
+
+if __name__ == '__main__':
+	app.run(port=8080)
+
+# for x in range(0, 1000):
+# 	test()
+# 	print 'REQUEST: %s completed' % x
