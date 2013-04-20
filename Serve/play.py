@@ -36,7 +36,7 @@ def test():
 	sock.close()
 
 
-for x in range(0, 100):
+for x in range(0, 5000):
 	test()
 	print 'REQUEST: %s completed' % x
 

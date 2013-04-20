@@ -24,7 +24,8 @@ void* handleRequest(void* arg) {
 	*(info->active_sockets) += 1;
 	(info->handler)(info->sockfd);
 	*(info->active_sockets) -= 1;
-	shutdown(info->sockfd, 2);
+	close(info->sockfd);
+	// printf("close sock: %i\n", info->sockfd);
 	free(arg);
 	return 0;
 }
@@ -56,7 +57,12 @@ void startServer(int port, int max_threads, void (*handler)(int sockfd)) {
 	listen(listenfd, 10);
 
 	for (;;) {
+		printf("socket: %i\n", listenfd);
 		int connfd = accept(listenfd, 0, 0);
+		if (connfd == listenfd) {
+			printf("WTF!!\n");
+			exit(1);
+		}
 		pthread_t thread;
 
 		struct ServerThreadInfo* info = malloc(sizeof(struct ServerThreadInfo));

@@ -41,7 +41,7 @@ void addCalcStat(struct Calc* calc, void (*stat)(struct TimePair* result, struct
 	++calc->len;
 }
 
-void executeCalc(struct DataConn* conn, int quotes, struct Calc* calc) {
+void executeCalc(DBRes* res, int quotes, struct Calc* calc) {
 	struct Quote quote;
 	int i, j;
 
@@ -55,26 +55,26 @@ void executeCalc(struct DataConn* conn, int quotes, struct Calc* calc) {
 	printf("results size: %i\n", size);
 
 	for (i = 0; i < quotes; ++i) {
-		if (retreiveDataConnQuote(conn, &quote)) break;
+		if (getQuote(res, &quote)) break;
 		for (j = 0; j < calc->len; ++j) {
 			(calc->stats[j])(calc->results[j] + i, &quote, calc->memories[j]);
 		}
 	}
 }
 
-void doCalc(struct DataConn* conn, char* series, char* query, struct Calc* calc) {
+void doCalc(char* series, char* query, struct Calc* calc) {
 	char* sql = getQuoteQuery(series, query);
-	int query_res = queryDataConn(conn, sql);
-	if (query_res == -1) {
+	DBRes* res = queryDB(sql);
+	if (!res) {
 		printf("Didn't get results: %s\n", sql);
-		printDataConnError(conn);
+		printDBErrors();
 		exit(1);
 	}
 
 	free(sql);
 
-	executeCalc(conn, query_res, calc);
-	freeDataConnQuery(conn);
+	executeCalc(res, getDBResRows(res), calc);
+	freeDBRes(res);
 }
 
 void freeCalc(struct Calc* calc) {

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
 
 #include <mysql.h>
 
@@ -8,25 +9,28 @@
 
 #include "database.h"
 
-void initDataConn(struct DataConn* conn) {
-	mysql_library_init(0, 0, 0);
-	conn->conn = mysql_init(0);
-	mysql_real_connect(conn->conn, "localhost", "root", "root", "crunchseries", 0, 0, 0);
-	conn->res = 0;
+MYSQL* conn = 0;
+
+pthread_mutex_t queryDBLock;
+DBRes* queryDB(char* query) {
+	if (!conn) return 0;
+	pthread_mutex_lock(&queryDBLock);
+	printf("lock\n");
+		mysql_query(conn, query);
+		DBRes* res = mysql_store_result(conn);
+	printf("unlock\n");
+	pthread_mutex_unlock(&queryDBLock);
+	return res;
 }
 
-int queryDataConn(struct DataConn* conn, char* query) {
-	if (conn->res) mysql_free_result(conn->res);
-	mysql_query(conn->conn, query);
-	conn->res = mysql_store_result(conn->conn);
-	if (!conn->res) return -1;
-	return mysql_num_rows(conn->res);
+void initDBSync() {
+	pthread_mutex_init(&queryDBLock, 0);
 }
 
-int retreiveDataConnQuote(struct DataConn* conn, struct Quote* quote) {
+int getQuote(DBRes* res, struct Quote* quote) {
 	MYSQL_ROW row;
-	row = mysql_fetch_row(conn->res);
-	if (!row) return 1;
+	row = mysql_fetch_row(res);
+	if (!row) return 0;
 	memcpy(quote->symbol, row[0], 8);
 	quote->epoch = atol(row[1]);
 	quote->high = atof(row[2]);
@@ -34,20 +38,30 @@ int retreiveDataConnQuote(struct DataConn* conn, struct Quote* quote) {
 	quote->open = atof(row[4]);
 	quote->close = atof(row[5]);
 	quote->volume = atoi(row[6]);
-	return 0;
+	return 1;
 }
 
-void freeDataConnQuery(struct DataConn* conn) {
-	if(!conn->res) return;
-	mysql_free_result(conn->res);
-	conn->res = 0;
+int getDBResRows(DBRes* res) {
+	return mysql_num_rows(res);
 }
 
-void freeDataConn(struct DataConn* conn) {
-	freeDataConnQuery(conn);
-	mysql_close(conn->conn);
+void printDBErrors() {
+	printf("MYSQL ERROR: %s\n", mysql_error(conn));
 }
 
-void printDataConnError(struct DataConn* conn) {
-	printf("MYSQL ERROR: %s\n", mysql_error(conn->conn));
+void connectDB() {
+	if (conn) return;
+	mysql_library_init(0, 0, 0);
+	conn = mysql_init(0);
+	mysql_real_connect(conn, "localhost", "root", "root", "crunchseries", 0, 0, 0);
+}
+
+void closeDB() {
+	if (!conn) return;
+	mysql_close(conn);
+	conn = 0;
+}
+
+void freeDBRes(DBRes* res) {
+	mysql_free_result(res);
 }

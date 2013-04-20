@@ -4,17 +4,15 @@
 #include <mysql.h>
 #include "quote.h"
 
-struct DataConn {
-	MYSQL* conn;
-	MYSQL_RES* res;
-	MYSQL_ROW last_row;
-};
+typedef MYSQL_RES DBRes;
 
-void initDataConn(struct DataConn* conn);
-int queryDataConn(struct DataConn* conn, char* query);
-int retreiveDataConnQuote(struct DataConn* conn, struct Quote* quote);
-void printDataConnError(struct DataConn* conn);
-void freeDataConnQuery(struct DataConn* conn);
-void freeDataConn(struct DataConn* conn);
+DBRes* queryDB(char* query);
+void initDBSync();
+int getQuote(DBRes* res, struct Quote* quote);
+int getDBResRows(DBRes* res);
+void printDBErrors();
+void connectDB();
+void closeDB();
+void freeDBRes(DBRes* res);
 
 #endif

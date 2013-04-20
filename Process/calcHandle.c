@@ -52,16 +52,12 @@ void statCalcHandle(int sockfd) {
 		addCalcByNetwork(&calc, sockfd);
 	}
 
-	struct DataConn conn;
-	initDataConn(&conn);
-
 	char* query = getQuoteSymbolRangeQuery(request.symbol, request.start_epoch, request.end_epoch);
 
-	doCalc(&conn, request.series, query, &calc);
+	doCalc(request.series, query, &calc);
 	freeCalc(&calc);
 
 	free(query);
-	freeDataConn(&conn);
 }
 
 
