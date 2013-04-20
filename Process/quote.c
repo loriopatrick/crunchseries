@@ -28,3 +28,13 @@ char* getQuoteQuery(char* series, char* query) {
 	res[66 + series_len + query_len] = '\0';
 	return res;
 }
+
+char* getQuoteSymbolRangeQuery(char* symbol, unsigned int start, unsigned int end) {
+	char* format = " WHERE symbol=\"%s\" AND epoch >= %u AND epoch <= %u ORDER BY epoch ASC\0";
+	int query_size = 1 + snprintf(0, 0, format, symbol, start, end);
+	char* query = malloc(query_size);
+	memset(query, '\0', query_size);
+	sprintf(query, format, symbol, start, end);
+
+	return query;
+}

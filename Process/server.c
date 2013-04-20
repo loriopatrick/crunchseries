@@ -29,6 +29,19 @@ void* handleRequest(void* arg) {
 	return 0;
 }
 
+int readNetLen(int sockfd, void* object, int len) {
+	int read = 0;
+	while (read < len) {
+		int size = recv(sockfd, object + read, len - read, 0);
+		if (!size) {
+			printf("readNetStruct failed\n");
+			exit(1);
+		}
+		read += size;
+	}
+	return read;
+}
+
 void startServer(int port, int max_threads, void (*handler)(int sockfd)) {
 	struct sockaddr_in serv_addr;
 

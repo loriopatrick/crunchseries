@@ -9,28 +9,7 @@
 
 #include "calc.h"
 #include "stats.h"
-
-void handleAddCalcStat(int sockfd, struct Calc* calc) {
-	int size;
-	char stat_name[10];
-	size = recv(sockfd, stat_name, 10, MSG_WAITALL);
-	
-	if (size != 10) {
-		perror("handleAddCalc stat_name recv");
-		exit(1);
-	}
-
-	if (!strncmp(stat_name, "ACD", 3)) {
-		printf("adding ACD!\n");
-		double* data = malloc(sizeof(double));
-		size = recv(sockfd, data, sizeof(double), MSG_WAITALL);
-		if (size != sizeof(double)) {
-			perror("handleAddCalc ACD");
-			exit(1);
-		}
-		addCalcStat(calc, accumulationDistribution, data);
-	}
-}
+#include "server.h"
 
 struct CalcStatRequest {
 	char symbol[9];
@@ -40,9 +19,53 @@ struct CalcStatRequest {
 	int number_of_stats;
 };
 
+void addCalcByNetwork(struct Calc* calc, int sockfd) {
+	char* id = malloc(10);
+	readNetLen(sockfd, id, 10);
+
+	if (!strncmp(id, "ACD", 3)) {
+		double* data = malloc(sizeof(double));
+		readNetLen(sockfd, data, sizeof(double));
+		addCalcStat(calc, accumulationDistribution, data);
+	} else {
+		printf("Unknown statistic: %s\n", id);
+	}
+
+	free(id);
+}
+
+void statCalcHandle(int sockfd) {
+	printf("Stat Calc handler\n");
+
+	struct CalcStatRequest request;
+	readNetLen(sockfd, &request, sizeof(struct CalcStatRequest));
+	request.symbol[8] = '\0';
+	request.series[3] = '\0';
+
+	printf("symbol: %s\nseries: %s\nstart: %u\nend: %u\nstats: %i\n", request.symbol, request.series, request.start_epoch, request.end_epoch, request.number_of_stats);
+
+	struct Calc calc;
+	initCalc(&calc);
+
+	int i;
+	for (i = 0; i < request.number_of_stats; ++i) {
+		addCalcByNetwork(&calc, sockfd);
+	}
+
+	struct DataConn conn;
+	initDataConn(&conn);
+
+	char* query = getQuoteSymbolRangeQuery(request.symbol, request.start_epoch, request.end_epoch);
+
+	doCalc(&conn, request.series, query, &calc);
+	freeCalc(&calc);
+
+	free(query);
+	freeDataConn(&conn);
+}
+
 
 void calcHandle(int sockfd) {
-	printf("%s\n", "CALC HANDLER!!");
 	int calc_type, size;
 	
 	size = recv(sockfd, &calc_type, sizeof(int), MSG_WAITALL);
@@ -51,47 +74,8 @@ void calcHandle(int sockfd) {
 		exit(1);
 	}
 
-	printf("CALC TYPE: %i\n", calc_type);
-
 	if (calc_type == 1) {
-		struct Calc calc;
-		initCalc(&calc);
-
-		struct CalcStatRequest request;
-		int r = 0;
-		while(r < sizeof(struct CalcStatRequest)) {
-			size = recv(sockfd, &request + r, sizeof(struct CalcStatRequest) - r, 0);
-			if (!size) {
-				perror("calcHandle calcStatRequest");
-				exit(1);
-			}
-			r += size;
-		}
-		request.symbol[8] = '\0';
-		request.series[3] = '\0';
-
-		printf("symbol: %s\nseries: %s\nstart: %i\nend: %i\nstats: %i\n", request.symbol, request.series, request.start_epoch, request.end_epoch, request.number_of_stats);
-
-		int i;
-		for (i = 0; i < request.number_of_stats; ++i) {
-			handleAddCalcStat(sockfd, &calc);
-		}
-
-		
-		char* format = " WHERE symbol=\"%s\" AND epoch >= %u AND epoch <= %u ORDER BY epoch ASC\0";
-		int query_size = 1 + snprintf(0, 0, format, request.symbol, request.start_epoch, request.end_epoch);
-		char* query = malloc(query_size);
-		memset(query, '\0', query_size);
-		sprintf(query, format, request.symbol, request.start_epoch, request.end_epoch);
-
-		MYSQL* conn = getConn();
-		
-		doCalc(request.series, query, &calc, conn);
-
-		mysql_close(conn);
-		
-		free(query);
-		freeCalc(&calc);
-		printf("%s\n", "Served...");
+		statCalcHandle(sockfd);
+		return;
 	}
 }

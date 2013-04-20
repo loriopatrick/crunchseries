@@ -13,7 +13,6 @@ struct tail {
 	int pos;
 };
 
-
 // Accumulation Distribution Line
 // state = double
 double money_flow_multiplier(struct Quote* quote);

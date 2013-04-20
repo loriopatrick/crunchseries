@@ -45,9 +45,14 @@ void executeCalc(struct DataConn* conn, int quotes, struct Calc* calc) {
 	struct Quote quote;
 	int i, j;
 
+	int size = 0;
+
 	for (j = 0; j < calc->len; ++j) {
 		calc->results[j] = malloc(sizeof(struct TimePair) * quotes);
+		size += sizeof(struct TimePair) * quotes;
 	}
+
+	printf("results size: %i\n", size);
 
 	for (i = 0; i < quotes; ++i) {
 		if (retreiveDataConnQuote(conn, &quote)) break;
@@ -59,8 +64,8 @@ void executeCalc(struct DataConn* conn, int quotes, struct Calc* calc) {
 
 void doCalc(struct DataConn* conn, char* series, char* query, struct Calc* calc) {
 	char* sql = getQuoteQuery(series, query);
-
-	if (queryDataConn(conn, sql)) {
+	int query_res = queryDataConn(conn, sql);
+	if (query_res == -1) {
 		printf("Didn't get results: %s\n", sql);
 		printDataConnError(conn);
 		exit(1);
@@ -68,7 +73,7 @@ void doCalc(struct DataConn* conn, char* series, char* query, struct Calc* calc)
 
 	free(sql);
 
-	executeCalc(conn, mysql_num_rows(results), calc);
+	executeCalc(conn, query_res, calc);
 	freeDataConnQuery(conn);
 }
 
