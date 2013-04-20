@@ -77,7 +77,7 @@ void aroonUp(struct TimePair* result, struct Quote* quote, void* state) {
 
 	result->epoch = quote->epoch;
 	result->value = ((double)(aroon->tail.tail_size - aroon->days_since_high) / (double)aroon->tail.tail_size) * 100.0;
-	printf("%f\n", result->value);
+	// printf("AroonUp: %f\n", result->value);
 }
 
 void aroonDown(struct TimePair* result, struct Quote* quote, void* state) {

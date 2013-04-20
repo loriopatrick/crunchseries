@@ -47,6 +47,8 @@ void executeCalc(DBRes* res, int quotes, struct Calc* calc) {
 
 	int size = 0;
 
+	printf("Execute\n");
+
 	for (j = 0; j < calc->len; ++j) {
 		calc->results[j] = malloc(sizeof(struct TimePair) * quotes);
 		size += sizeof(struct TimePair) * quotes;
@@ -65,7 +67,6 @@ int doCalc(char* series, char* query, struct Calc* calc) {
 	DBRes* res = queryDB(sql);
 	if (!res) {
 		printf("Didn't get results: %s\n", sql);
-		printDBErrors();
 		exit(1);
 	}
 

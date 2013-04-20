@@ -2,6 +2,7 @@ import socket
 import struct
 import datetime
 import time
+import json
 # struct calcStatRequest {
 # 	char symbol[9];
 # 	char series[4];
@@ -10,9 +11,44 @@ import time
 # 	int number_of_stats;
 # };
 
-class ACD:
+class Stat(object):
+	def __init__(self, name):
+		self.name = name
+
 	def serialize(self):
-		return struct.pack('10sd', 'ACD', 0)
+		return struct.pack('10s', self.name)
+
+	def settings(self):
+		return None
+
+	def dict(self):
+		if not hasattr(self, 'results'):
+			return None
+
+		return {
+			'name':self.name,
+			'settings':self.settings(),
+			'results':self.results
+		}
+
+	def json(self):
+		return json.dumps(self.dict())
+
+
+class ACD(Stat):
+	def __init__(self):
+		super(ACD, self).__init__('ACD')
+
+	def serialize(self):
+		return struct.pack('10sd', self.name, 0)
+
+class AROON_UP(Stat):
+	def __init__(self):
+		super(AROON_UP, self).__init__('AROON_UP')
+		self.tail_size = 25
+
+	def serialize(self):
+		return struct.pack('=10si', self.name, self.tail_size)
 
 class CalcStatRequest:
 	def __init__(self, series, symbol, start, end):
@@ -20,8 +56,7 @@ class CalcStatRequest:
 		self.symbol = symbol
 		self.start = start
 		self.end = end
-		self.stats = []
-		
+		self.stats = {}
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 	def connect(self):
@@ -29,19 +64,22 @@ class CalcStatRequest:
 
 	def request(self):
 		data = struct.pack('i9s4sIIi', 1, self.symbol[:8], self.series[:4], self.start, self.end, len(self.stats))
-		print 'data len:', len(data)
 		self.send(data)
 
 		for stat in self.stats:
-			self.send(stat.serialize())
+			self.send(self.stats[stat].serialize())
 
 		n_stat, n_quotes = struct.unpack('ii', self.recv(8))
 
 		print n_stat, n_quotes
 
 		for stat_res in range(0, n_stat):
+			name = self.recv(10)
+			stat = self.stats[name.rstrip(' \t\r\n\0')]
+			stat.results = []
 			for q in range(0, n_quotes):
-				struct.unpack('Id', self.recv(16))
+				data = struct.unpack('Id', self.recv(16))
+				stat.results.append((data[0], round(data[1], 5)))
 
 	def send(self, msg):
 		msg_len = len(msg)
@@ -67,89 +105,21 @@ class CalcStatRequest:
 		return ''.join(chunks)
 
 	def addStat(self, stat):
-		self.stats.append(stat)
+		self.stats[stat.name] = stat
 
 def test():
 
 	req = CalcStatRequest('eom', 'GOOG', 0, 2**32-2)
-	req.addStat(ACD())
+	a = ACD()
+	b = AROON_UP()
+	req.addStat(a)
+	req.addStat(b)
 	req.connect()
 	req.request()
 
-	# data = struct.pack('i9s4sIIi', 1, 'GOOG', 'eom', 0, 2**32-2, 1)
-	# sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	# sock.connect(('127.0.0.1', 4213))
-
-	# sent = 0
-	# while sent < len(data):
-	# 	r = sock.send(data[sent:])
-	# 	if not r:
-	# 		print "ERROR"
-	# 	sent += r
-
-	# data = struct.pack('10sd', 'ACD', 0)
-
-	# sent = 0
-	# while sent < len(data):
-	# 	r = sock.send(data[sent:])
-	# 	if not r:
-	# 		print "ERROR"
-	# 	sent += r
-
-
-	# sock.close()
-
+	print a.json()
+	print b.json()
 
 for x in range(0, 1000):
 	test()
 	print 'REQUEST: %s completed' % x
-
-# class Calc:
-
-# 	def addStat(self):
-# 		pass
-
-# 	def calc():
-# 		pass
-
-# 	def serialize():
-# 		pass
-
-# 	def write(self, msg):
-# 		msg_len = len(msg)
-# 		msg_sent = 0
-		
-# 		while msg_sent < msg_len:
-# 			sent = self.socket.send(msg[msg_sent:])
-# 			if send == 0:
-# 				raise RuntimeError("socket broke")
-# 			msg_sent += sent
-
-# 	def recv(self, recv):
-# 		chunks = []
-# 		msg_recv = 0
-		
-# 		while (msg_recv < recv):
-# 			chunk = self.socket.recv(recv - msg_recv)
-# 			if len(chunk) == 0:
-# 				raise RuntimeError("socket broke")
-# 			chunks.append(chunk)
-
-# 		return ''.join(chunks)
-
-# 	@property
-# 	def socket(self):
-# 		if not hasattr(self, '_socket') or self._socket is None:
-# 			self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# 			self._socket.connect(('127.0.0.1', 6530))
-# 		return self._socket
-
-# 	def close():
-# 		if not hasattr(self, '_socket') or self._socket is None:
-# 			return
-
-# 		self._socket.close()
-# 		self._socket = None
-
-# 	def __exit__(self):
-# 		self.close()

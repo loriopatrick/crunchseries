@@ -21,19 +21,31 @@ struct CalcStatRequest {
 	int number_of_stats;
 };
 
-void addCalcByNetwork(struct Calc* calc, int sockfd) {
+char* addCalcByNetwork(struct Calc* calc, int sockfd) {
 	char* id = malloc(10);
 	readNetLen(sockfd, id, 10);
+
+	printf("Add: %s\n", id);
 
 	if (!strncmp(id, "ACD", 3)) {
 		double* data = malloc(sizeof(double));
 		readNetLen(sockfd, data, sizeof(double));
 		addCalcStat(calc, accumulationDistribution, data);
+	} else if (!strncmp(id, "AROON_UP", 8)) {
+		struct aroon* aroon = malloc(sizeof(struct aroon));
+		memset(aroon, 0, sizeof(struct aroon));
+		readNetLen(sockfd, &aroon->tail.tail_size, sizeof(int));
+		addCalcStat(calc, aroonUp, aroon);
+	} else if (!strncmp(id, "AROON_DOWN", 10)) {
+		struct aroon* aroon = malloc(sizeof(struct aroon));
+		addCalcStat(calc, aroonDown, aroon);
 	} else {
 		printf("Unknown statistic: %s\n", id);
+		free(id);
+		return 0;
 	}
 
-	free(id);
+	return id;
 }
 
 void statCalcHandle(int sockfd) {
@@ -49,26 +61,35 @@ void statCalcHandle(int sockfd) {
 	struct Calc calc;
 	initCalc(&calc);
 
+	char** stat_names = malloc(sizeof(char*) * request.number_of_stats);
+
 	for (i = 0; i < request.number_of_stats; ++i) {
-		addCalcByNetwork(&calc, sockfd);
+		stat_names[i] = addCalcByNetwork(&calc, sockfd);
 	}
 
 	char* query = getQuoteSymbolRangeQuery(request.symbol, request.start_epoch, request.end_epoch);
 	int items = doCalc(request.series, query, &calc);
 	free(query);
 
+	printf("Done with calc\n");
+
 	sendNetLen(sockfd, &request.number_of_stats, sizeof(int));
 	sendNetLen(sockfd, &items, sizeof(int));
 
 	for (i = 0; i < request.number_of_stats; ++i) {
+		char* name = stat_names[i];
+		if (!name) continue;
+		sendNetLen(sockfd, name, 10);
 		int j;
 		for (j = 0; j < items; ++j) {
-			printf("SEND: %u :: %f\n", calc.results[i][j].epoch, calc.results[i][j].value);
+			// printf("SEND: %u :: %f\n", calc.results[i][j].epoch, calc.results[i][j].value);
 			sendNetLen(sockfd, calc.results[i] + j, sizeof(struct TimePair));
 			// printf("Sent\n");
 		}
+		free(name);
 	}
-	
+
+	free(stat_names);
 	freeCalc(&calc);
 }
 

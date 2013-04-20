@@ -35,7 +35,6 @@ void test_calc() {
 }
 
 void test_server() {
-	initDBSync();
 	startServer(4213, 20, calcHandle);
 }
 
