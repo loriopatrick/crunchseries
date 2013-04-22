@@ -14,10 +14,10 @@ struct tail {
 };
 
 // Accumulation Distribution Line
-// state = double
+// mem = double
 double money_flow_multiplier(struct Quote* quote);
 double money_flow_volume(struct Quote* quote);
-void accumulationDistribution(struct TimePair* result, struct Quote* quote, void* state);
+void accumulationDistribution(struct TimePair* result, struct Quote* quote, void* mem);
 
 
 // Arron up/down
@@ -30,22 +30,22 @@ struct aroon {
 	double low;
 	int days_since_low; // todo: refactor to quotes_since_low
 };
-void aroonUp(struct TimePair* result, struct Quote* quote, void* state);
-void aroonDown(struct TimePair* result, struct Quote* quote, void* state);
+void aroonUp(struct TimePair* result, struct Quote* quote, void* mem);
+void aroonDown(struct TimePair* result, struct Quote* quote, void* mem);
 
 
+struct movingAverage {
+	double average;
+	struct tail tail;
+};
 
+void simpleMovingAverage(struct TimePair* result, struct Quote* quote, void* mem);
 
+struct standardDeviation {
+	double s1;
+	double s2;
+	struct tail tail;
+};
 
-
-
-
-
-// struct movingAverage {
-// 	int coverage;
-// 	int exponential;
-// };
-
-// void movingAverage(double* result, struct Quote* quote, void* state);
-
+void standardDeviation(struct TimePair* result, struct Quote* quote, void* mem);
 #endif

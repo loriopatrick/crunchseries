@@ -38,7 +38,19 @@ char* addCalcByNetwork(struct Calc* calc, int sockfd) {
 		addCalcStat(calc, aroonUp, aroon);
 	} else if (!strncmp(id, "AROON_DOWN", 10)) {
 		struct aroon* aroon = malloc(sizeof(struct aroon));
+		memset(aroon, 0, sizeof(struct aroon));
+		readNetLen(sockfd, &aroon->tail.tail_size, sizeof(int));
 		addCalcStat(calc, aroonDown, aroon);
+	} else if (!strncmp(id, "SMA", 3)) {
+		struct movingAverage* ma = malloc(sizeof(struct movingAverage));
+		memset(ma, 0, sizeof(struct movingAverage));
+		readNetLen(sockfd, &ma->tail.tail_size, sizeof(int));
+		addCalcStat(calc, simpleMovingAverage, ma);
+	} else if (!strncmp(id, "STDV", 4)) {
+		struct standardDeviation* stdv = malloc(sizeof(struct standardDeviation));
+		memset(stdv, 0, sizeof(struct standardDeviation));
+		readNetLen(sockfd, &stdv->tail.tail_size, sizeof(int));
+		addCalcStat(calc, standardDeviation, stdv);
 	} else {
 		printf("Unknown statistic: %s\n", id);
 		free(id);

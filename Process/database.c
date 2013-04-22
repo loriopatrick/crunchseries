@@ -15,10 +15,8 @@ pthread_mutex_t queryDBLock;
 DBRes* queryDB(char* query) {
 	if (!conn) return 0;
 	pthread_mutex_lock(&queryDBLock);
-	printf("lock\n");
 		mysql_query(conn, query);
 		DBRes* res = mysql_store_result(conn);
-	printf("unlock\n");
 	pthread_mutex_unlock(&queryDBLock);
 	return res;
 }

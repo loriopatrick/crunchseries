@@ -84,7 +84,7 @@ class CalcStatRequest:
 			stat = self.stats[name.rstrip(' \t\r\n\0')]
 			stat.results = []
 			for q in range(0, n_quotes):
-				data = struct.unpack('Id', self.recv(12))
+				data = struct.unpack('Id', self.recv(struct.calcsize('Id')))
 				stat.results.append((data[0], round(data[1], 5)))
 
 	def send(self, msg):
@@ -132,7 +132,7 @@ def test():
 
 
 
-from flask import Flask, request, Response
+from flask import Flask, request, Response, render_template, url_for
 
 app = Flask(__name__)
 app.debug = True
@@ -141,6 +141,10 @@ stat_dict = {
 	'ACD':ACD,
 	'AROON_UP':AROON_UP
 }
+
+@app.route('/')
+def index():
+	return render_template('play.html')
 
 @app.route('/api/calc')
 def calc():

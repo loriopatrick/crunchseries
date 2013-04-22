@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/flot/0.7/jquery.flot.min.js"></script>
+
+		<style>
+		.chart {
+			margin-top: 10px;
+			float: left;
+			width: 800px;
+			height: 200px;
+		}
+		</style>
+	</head>
+	<body>
+		<!-- <div id="chart1"></div> -->
+		<script>
+		$(function () {
+			$.ajax({
+				url: 'http://localhost:8080/api/calc?symbol=GOOG&begin=0&end=1373979800&1_stat=ACD&2_stat=AROON_UP',
+				success: function (data) {
+					console.log(data);
+					var series = [];
+
+					for (var i = 0; i < data.length; ++i) {
+						var doc = document.createElement('div');
+						doc.className = 'chart';
+						document.body.appendChild(doc);
+
+						var series = data[i].results;
+						for (var j = 0; j < series.length; ++j) {
+							series[j][0] *= 1000;
+						}
+						$.plot(doc, [series], {xaxis:{mode:'time', minTimeSize:[1, 'second']}});
+					}
+				}
+			})
+		});
+		</script>
+	</body>
+</html>

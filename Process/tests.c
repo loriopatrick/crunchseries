@@ -26,10 +26,15 @@ void test_calc() {
 	struct Calc calc;
 	initCalc(&calc);
 
-	double* mem = malloc(sizeof(double));
-	*mem = 0;
-	addCalcStat(&calc, accumulationDistribution, mem);
-	
+	struct standardDeviation* mem = malloc(sizeof(struct standardDeviation));
+	memset(mem, 0, sizeof(struct standardDeviation));
+	addCalcStat(&calc, standardDeviation, mem);
+
+	mem->s1 = 0;
+	mem->s2 = 0;
+	mem->tail.tail_size = 23;
+	// mem->tail.values = malloc(sizeof(double) * mem->tail.tail_size);
+
 	doCalc("eom", "ORDER BY epoch ASC", &calc);
 	freeCalc(&calc);
 }
@@ -43,18 +48,18 @@ int main (int args, char** argv) {
 
 	// test_getQuote();
 
-	// int i;
-	// for (i = 0; i < 100; ++i) {
-	// 	struct timeval start, end;
-	// 	gettimeofday(&start, 0);
+	int i;
+	for (i = 0; i < 100; ++i) {
+		struct timeval start, end;
+		gettimeofday(&start, 0);
 
-	// 	test_calc();
+		test_calc();
 
-	// 	gettimeofday(&end, 0);
-	// 	printf("%.5g seconds\n", end.tv_sec - start.tv_sec + 1E-6 * (end.tv_usec - start.tv_usec));
-	// }
+		gettimeofday(&end, 0);
+		printf("%.5g seconds\n", end.tv_sec - start.tv_sec + 1E-6 * (end.tv_usec - start.tv_usec));
+	}
 
-	test_server();
+	// test_server();
 
 	closeDB();
 	return 0;
