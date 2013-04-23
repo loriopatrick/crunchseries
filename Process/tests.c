@@ -48,18 +48,18 @@ int main (int args, char** argv) {
 
 	// test_getQuote();
 
-	int i;
-	for (i = 0; i < 100; ++i) {
-		struct timeval start, end;
-		gettimeofday(&start, 0);
+	// int i;
+	// for (i = 0; i < 100; ++i) {
+	// 	struct timeval start, end;
+	// 	gettimeofday(&start, 0);
 
-		test_calc();
+	// 	test_calc();
 
-		gettimeofday(&end, 0);
-		printf("%.5g seconds\n", end.tv_sec - start.tv_sec + 1E-6 * (end.tv_usec - start.tv_usec));
-	}
+	// 	gettimeofday(&end, 0);
+	// 	printf("%.5g seconds\n", end.tv_sec - start.tv_sec + 1E-6 * (end.tv_usec - start.tv_usec));
+	// }
 
-	// test_server();
+	test_server();
 
 	closeDB();
 	return 0;

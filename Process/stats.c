@@ -144,5 +144,5 @@ void standardDeviation(struct TimePair* result, struct Quote* quote, void* mem) 
 	int n = std->tail.tail_size;
 	result->value = sqrt((double)n * std->s2 - pow(std->s1, 2)) / n;
 
-	printf("%f\n", result->value);
+	// printf("%f\n", result->value);
 }

@@ -116,7 +116,10 @@ class GoogleFinace():
 				if self.interval != series.period[1]:
 					raise Exception('intervals don\'t match')
 
-			series.save(item, cursor)
+			try:
+				series.save(item, cursor)
+			except:
+				pass
 
 
 if __name__ == '__main__':
