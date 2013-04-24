@@ -6,7 +6,6 @@
 #include <mysql.h>
 
 #include "quote.h"
-
 #include "database.h"
 
 MYSQL* conn = 0;

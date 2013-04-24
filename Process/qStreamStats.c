@@ -4,8 +4,7 @@
 #include <math.h>
 
 #include "quote.h"
-#include "streamStats.h"
-
+#include "qStreamStats.h"
 
 struct tail {
 	int size;
@@ -37,7 +36,13 @@ double moneyFlowVolume(Quote* quote) {
 	return moneyFlowMultiplier(quote) * quote->volume;
 }
 
-void STREAMSTAT_accumulationDistribution(TimeValue* result, Quote* quote, void* mem) {
+void* QSTREAMSTAT_accumulationDistribution_mem(double start) {
+	double* mem = malloc(sizeof(double));
+	*mem = start;
+	return mem;
+}
+
+void QSTREAMSTAT_accumulationDistribution(TimeValue* result, Quote* quote, void* mem) {
 	double* last = (double*)mem;
 	result->time = quote->time;
 	result->value = *last + moneyFlowVolume(quote);
@@ -54,7 +59,14 @@ struct aroon {
 	int quotes_since_low;
 };
 
-void STREAMSTAT_aroonUp(TimeValue* result, Quote* quote, void* mem) {
+void* QSTREAMSTAT_aroon_mem(int tail_size) {
+	struct aroon* mem = malloc(sizeof(struct aroon));
+	memset(mem, 0, sizeof(struct aroon));
+	mem->tail.size = tail_size;
+	return mem;
+}
+
+void QSTREAMSTAT_aroonUp(TimeValue* result, Quote* quote, void* mem) {
 	struct aroon* aroon = (struct aroon*) mem;
 
 	updateTail(quote, &(aroon->tail));
@@ -89,7 +101,7 @@ void STREAMSTAT_aroonUp(TimeValue* result, Quote* quote, void* mem) {
 	result->value = ((double)(aroon->tail.tail_size - aroon->days_since_high) / (double)aroon->tail.tail_size) * 100.0;
 }
 
-void STREAMSTAT_aroonDown(TimeValue* result, Quote* quote, void* mem) {
+void QSTREAMSTAT_aroonDown(TimeValue* result, Quote* quote, void* mem) {
 	struct aroon* aroon = (struct aroon*) mem;
 
 	updateTail(quote, &(aroon->tail));
@@ -129,7 +141,14 @@ struct movingAverage {
 	struct tail tail;
 };
 
-void STREAMSTAT_simpleMovingAverage(TimeValue* result, Quote* quote, void* mem) {
+void* QSTREAMSTAT_movingAverage_mem(int tail_size) {
+	struct movingAverage* mem = malloc(sizeof(struct movingAverage));
+	memset(mem, 0, sizeof(struct movingAverage));
+	mem->tail.size = tail_size;
+	return mem;
+}
+
+void QSTREAMSTAT_simpleMovingAverage(TimeValue* result, Quote* quote, void* mem) {
 	struct movingAverage* ma = (struct movingAverage*) mem;
 	double pop = ma->tail.values? ma->tail.values[ma->tail.pos] : 0;
 	updateTail(quote, &ma->tail);
@@ -144,7 +163,14 @@ struct standardDeviation {
 	struct tail tail;
 };
 
-void STREAMSTAT_standardDeviation(TimeValue* result, Quote* quote, void* mem) {
+void* QSTREAMSTAT_standardDeviation_mem(int tail_size) {
+	struct standardDeviation* mem = malloc(sizeof(struct standardDeviation));
+	memset(mem, 0, sizeof(struct standardDeviation));
+	mem->tail.size = tail_size;
+	return mem;
+}
+
+void QSTREAMSTAT_standardDeviation(TimeValue* result, Quote* quote, void* mem) {
 	struct standardDeviation* std = (struct standardDeviation*) mem;
 	double pop = std->tail.values? std->tail.values[std->tail.pos] : 0;
 

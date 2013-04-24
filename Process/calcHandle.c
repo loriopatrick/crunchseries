@@ -21,36 +21,37 @@ struct CalcStatRequest {
 	int number_of_stats;
 };
 
-char* addCalcByNetwork(struct Calc* calc, int sockfd) {
+char* addCalcByNetwork(CalcStream* calc, int sockfd) {
 	char* id = malloc(10);
 	readNetLen(sockfd, id, 10);
 
 	printf("Add: %s\n", id);
 
 	if (!strncmp(id, "ACD", 3)) {
-		double* data = malloc(sizeof(double));
-		readNetLen(sockfd, data, sizeof(double));
-		addCalcStat(calc, accumulationDistribution, data);
+		double start;
+		readNetLen(sockfd, &start, sizeof(double));
+		void* mem = STREAMSTAT_accumulationDistribution_mem(start);
+		addCalcStat(calc, STREAMSTAT_accumulationDistribution, mem);
 	} else if (!strncmp(id, "AROON_UP", 8)) {
-		struct aroon* aroon = malloc(sizeof(struct aroon));
-		memset(aroon, 0, sizeof(struct aroon));
-		readNetLen(sockfd, &aroon->tail.tail_size, sizeof(int));
-		addCalcStat(calc, aroonUp, aroon);
+		double tail_size;
+		readNetLen(sockfd, &tail_size, sizeof(int));
+		void* mem = STREAMSTAT_aroon_mem(tail_size);
+		addCalcStat(calc, STREAMSTAT_aroonUp, mem);
 	} else if (!strncmp(id, "AROON_DOWN", 10)) {
-		struct aroon* aroon = malloc(sizeof(struct aroon));
-		memset(aroon, 0, sizeof(struct aroon));
-		readNetLen(sockfd, &aroon->tail.tail_size, sizeof(int));
-		addCalcStat(calc, aroonDown, aroon);
+		double tail_size;
+		readNetLen(sockfd, &tail_size, sizeof(int));
+		void* mem = STREAMSTAT_aroon_mem(tail_size);
+		addCalcStat(calc, STREAMSTAT_aroonDown, mem);
 	} else if (!strncmp(id, "SMA", 3)) {
-		struct movingAverage* ma = malloc(sizeof(struct movingAverage));
-		memset(ma, 0, sizeof(struct movingAverage));
-		readNetLen(sockfd, &ma->tail.tail_size, sizeof(int));
-		addCalcStat(calc, simpleMovingAverage, ma);
+		double tail_size;
+		readNetLen(sockfd, &tail_size, sizeof(int));
+		void* mem = STREAMSTAT_movingAverage_mem(tail_size);
+		addCalcStat(calc, STREAMSTAT_movingAverageSimple, mem);
 	} else if (!strncmp(id, "STDV", 4)) {
-		struct standardDeviation* stdv = malloc(sizeof(struct standardDeviation));
-		memset(stdv, 0, sizeof(struct standardDeviation));
-		readNetLen(sockfd, &stdv->tail.tail_size, sizeof(int));
-		addCalcStat(calc, standardDeviation, stdv);
+		double tail_size;
+		readNetLen(sockfd, &tail_size, sizeof(int));
+		void* mem = STREAMSTAT_standardDeviation_mem(tail_size);
+		addCalcStat(calc, STREAMSTAT_standardDeviation, mem);
 	} else {
 		printf("Unknown statistic: %s\n", id);
 		free(id);

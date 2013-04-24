@@ -6,7 +6,7 @@
 
 #include "quote.h"
 
-void printQuote(struct Quote* quote) {
+void printQuote(Quote* quote) {
 	printf("%s | %i | %f | %f | %f | %f | %i\n",
 		quote->symbol,
 		quote->epoch,

@@ -15,7 +15,7 @@ void initCalcStream(CalcStream* calc) {
 	calc->results = malloc(sizeof(void*) * calc->buffer);
 }
 
-void addCalcStreamStat(CalcStream* calc, void (*stat)(struct TimePair* result, struct Quote* quote, void* memory), void* memory) {
+void addCalcStreamStat(CalcStream* calc, void (*stat)(TimeValue*, Quote*, void*), void* mem) {
 	
 	if (calc->len == calc->buffer) {
 		calc->buffer += 10;
@@ -37,19 +37,16 @@ void addCalcStreamStat(CalcStream* calc, void (*stat)(struct TimePair* result, s
 	}
 
 	calc->stats[calc->len] = stat;
-	calc->memories[calc->len] = memory;
+	calc->memories[calc->len] = mem;
 	++calc->len;
 }
 
 void executeCalcStream(CalcStream* calc, DBRes* res, int quotes) {
-	struct Quote quote;
+	Quote quote;
 	int i, j;
-
-	int size = 0;
 
 	for (j = 0; j < calc->len; ++j) {
 		calc->results[j] = malloc(sizeof(struct TimePair) * quotes);
-		size += sizeof(struct TimePair) * quotes;
 	}
 
 	for (i = 0; i < quotes; ++i) {

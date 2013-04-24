@@ -1,1 +1,1 @@
-TODO: refactor quotes, make it incorporate MySQL a little better. Maybe even abstract MYSQL so it can be changed later if needed. Don't let MYSQL get tangled too deep in the application!
+Got headers how I want them, fix the source to match new refactor

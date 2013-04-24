@@ -1,9 +1,9 @@
-#ifndef __QUOTE_H__
-#define __QUOTE_H__
+#ifndef __CRUNCHSERIES_PROCESS_QUOTE_H__
+#define __CRUNCHSERIES_PROCESS_QUOTE_H__
 
 #include <mysql.h>
 
-struct _Quote {
+struct _QUOTE {
 	char symbol[8];
 	unsigned int time;
 	double high;
@@ -11,15 +11,16 @@ struct _Quote {
 	double open;
 	double close;
 	unsigned int volume;
-} typedef Quote;
+} typedef QUOTE;
 
-struct _TimeValue {
+struct _TIMEVALUE {
 	unsigned int time;
 	double value;
-};
+} typedef TIMEVALUE;
 
-void printQuote(Quote* quote);
-char* getQuoteQuery(char* series, char* query);
-char* getQuoteSymbolRangeQuery(char* symbol, unsigned int start, unsigned int end);
+int QUOTE_get(DB_RES* res, QUOTE* quote);
+void QUOTE_print(QUOTE* quote);
+char* QUOTE_getQS(char* series, char* query);
+char* QUOTE_getQSRange(char* symbol, unsigned int start, unsigned int end);
 
 #endif
