@@ -5,9 +5,9 @@
 #include "database.h"
 #include "quote.h"
 
-#include "calc.h"
+#include "calcStream.h"
 
-void initCalc(struct Calc* calc) {
+void initCalcStream(CalcStream* calc) {
 	calc->len = 0;
 	calc->buffer = 10;
 	calc->stats = malloc(sizeof(void*) * calc->buffer);
@@ -15,7 +15,7 @@ void initCalc(struct Calc* calc) {
 	calc->results = malloc(sizeof(void*) * calc->buffer);
 }
 
-void addCalcStat(struct Calc* calc, void (*stat)(struct TimePair* result, struct Quote* quote, void* memory), void* memory) {
+void addCalcStreamStat(CalcStream* calc, void (*stat)(struct TimePair* result, struct Quote* quote, void* memory), void* memory) {
 	
 	if (calc->len == calc->buffer) {
 		calc->buffer += 10;
@@ -41,7 +41,7 @@ void addCalcStat(struct Calc* calc, void (*stat)(struct TimePair* result, struct
 	++calc->len;
 }
 
-void executeCalc(DBRes* res, int quotes, struct Calc* calc) {
+void executeCalcStream(CalcStream* calc, DBRes* res, int quotes) {
 	struct Quote quote;
 	int i, j;
 
@@ -60,7 +60,7 @@ void executeCalc(DBRes* res, int quotes, struct Calc* calc) {
 	}
 }
 
-int doCalc(char* series, char* query, struct Calc* calc) {
+int doCalcStream(CalcStream* calc, char* series, char* query) {
 	char* sql = getQuoteQuery(series, query);
 	DBRes* res = queryDB(sql);
 	if (!res) {
@@ -77,7 +77,7 @@ int doCalc(char* series, char* query, struct Calc* calc) {
 	return items;
 }
 
-void freeCalc(struct Calc* calc) {
+void freeCalc(CalcStream* calc) {
 	int i;
 	for (i = 0; i < calc->len; ++i) {
 		free(calc->results[i]);

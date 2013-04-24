@@ -4,11 +4,16 @@
 #include <math.h>
 
 #include "quote.h"
+#include "streamStats.h"
 
-#include "stats.h"
 
+struct tail {
+	int size;
+	double *values;
+	int pos;
+};
 
-void updateTail(struct Quote* quote, struct tail* tail) {
+void updateTail(Quote* quote, struct tail* tail) {
 	if (!tail->values) {
 		int size = sizeof(double) * tail->tail_size;
 		tail->values = malloc(size);
@@ -20,10 +25,7 @@ void updateTail(struct Quote* quote, struct tail* tail) {
 	}
 }
 
-/*
-	Accumulation Distribution Line
-*/
-double money_flow_multiplier(struct Quote* quote) {
+double moneyFlowMultiplier(Quote* quote) {
 	double denom = quote->high - quote->low;
 	if (denom == 0) {
 		return 0.0;
@@ -31,26 +33,28 @@ double money_flow_multiplier(struct Quote* quote) {
 	return ((quote->close - quote->low) - (quote->high - quote->close)) / denom;
 }
 
-double money_flow_volume(struct Quote* quote) {
-	return money_flow_multiplier(quote) * quote->volume;
+double moneyFlowVolume(Quote* quote) {
+	return moneyFlowMultiplier(quote) * quote->volume;
 }
 
-void accumulationDistribution(struct TimePair* result, struct Quote* quote, void* mem) {
+void STREAMSTAT_accumulationDistribution(TimeValue* result, Quote* quote, void* mem) {
 	double* last = (double*)mem;
-	result->epoch = quote->epoch;
-	result->value = *last + money_flow_volume(quote);
+	result->time = quote->time;
+	result->value = *last + moneyFlowVolume(quote);
 	(*last) = (result->value);
-	// printf("%u :: %f\n", result->epoch, result->value);
 }
 
+struct aroon {
+	struct tail tail;
 
-/*
-	Aroon up/down
+	double high;
+	int quotes_since_high;
+	
+	double low;
+	int quotes_since_low;
+};
 
-	Aroon-Up = ((25 - Days Since 25-day High)/25) x 100
-	Aroon-Down = ((25 - Days Since 25-day Low)/25) x 100
-*/
-void aroonUp(struct TimePair* result, struct Quote* quote, void* mem) {
+void STREAMSTAT_aroonUp(TimeValue* result, Quote* quote, void* mem) {
 	struct aroon* aroon = (struct aroon*) mem;
 
 	updateTail(quote, &(aroon->tail));
@@ -81,12 +85,11 @@ void aroonUp(struct TimePair* result, struct Quote* quote, void* mem) {
 		++aroon->days_since_high;
 	}
 
-	result->epoch = quote->epoch;
+	result->time = quote->time;
 	result->value = ((double)(aroon->tail.tail_size - aroon->days_since_high) / (double)aroon->tail.tail_size) * 100.0;
-	// printf("AroonUp: %f\n", result->value);
 }
 
-void aroonDown(struct TimePair* result, struct Quote* quote, void* mem) {
+void STREAMSTAT_aroonDown(TimeValue* result, Quote* quote, void* mem) {
 	struct aroon* aroon = (struct aroon*) mem;
 
 	updateTail(quote, &(aroon->tail));
@@ -117,21 +120,31 @@ void aroonDown(struct TimePair* result, struct Quote* quote, void* mem) {
 		++aroon->days_since_low;
 	}
 
-	result->epoch = quote->epoch;
+	result->time = quote->time;
 	result->value = ((double)(aroon->tail.tail_size - aroon->days_since_high) / (double)aroon->tail.tail_size) * 100;
 }
 
-void simpleMovingAverage(struct TimePair* result, struct Quote* quote, void* mem) {
+struct movingAverage {
+	double average;
+	struct tail tail;
+};
+
+void STREAMSTAT_simpleMovingAverage(TimeValue* result, Quote* quote, void* mem) {
 	struct movingAverage* ma = (struct movingAverage*) mem;
 	double pop = ma->tail.values? ma->tail.values[ma->tail.pos] : 0;
 	updateTail(quote, &ma->tail);
 	ma->average += (quote->close - pop) / ma->tail.tail_size;
-	result->epoch = quote->epoch;
+	result->time = quote->time;
 	result->value = ma->average;
-	// printf("%f\n\n", result->value);
 }
 
-void standardDeviation(struct TimePair* result, struct Quote* quote, void* mem) {
+struct standardDeviation {
+	double s1;
+	double s2;
+	struct tail tail;
+};
+
+void STREAMSTAT_standardDeviation(TimeValue* result, Quote* quote, void* mem) {
 	struct standardDeviation* std = (struct standardDeviation*) mem;
 	double pop = std->tail.values? std->tail.values[std->tail.pos] : 0;
 
@@ -140,9 +153,7 @@ void standardDeviation(struct TimePair* result, struct Quote* quote, void* mem) 
 
 	updateTail(quote, &std->tail);
 
-	result->epoch = quote->epoch;
+	result->time = quote->time;
 	int n = std->tail.tail_size;
 	result->value = sqrt((double)n * std->s2 - pow(std->s1, 2)) / n;
-
-	// printf("%f\n", result->value);
 }

@@ -3,22 +3,22 @@
 
 #include <mysql.h>
 
-struct Quote {
+struct _Quote {
 	char symbol[8];
-	unsigned int epoch;
+	unsigned int time;
 	double high;
 	double low;
 	double open;
 	double close;
 	unsigned int volume;
-};
+} typedef Quote;
 
-struct TimePair {
-	unsigned int epoch;
+struct _TimeValue {
+	unsigned int time;
 	double value;
 };
 
-void printQuote(struct Quote* quote);
+void printQuote(Quote* quote);
 char* getQuoteQuery(char* series, char* query);
 char* getQuoteSymbolRangeQuery(char* symbol, unsigned int start, unsigned int end);
 
