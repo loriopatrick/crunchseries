@@ -11,11 +11,11 @@
 MYSQL* conn = 0;
 
 pthread_mutex_t queryDBLock;
-DBRes* queryDB(char* query) {
+DB_RES* DB_query(char* query) {
 	if (!conn) return 0;
 	pthread_mutex_lock(&queryDBLock);
 		mysql_query(conn, query);
-		DBRes* res = mysql_store_result(conn);
+		DB_RES* res = mysql_store_result(conn);
 	pthread_mutex_unlock(&queryDBLock);
 	return res;
 }
@@ -24,12 +24,12 @@ void initDBSync() {
 	pthread_mutex_init(&queryDBLock, 0);
 }
 
-int getQuote(DBRes* res, struct Quote* quote) {
+int getQuote(DB_RES* res, QUOTE* quote) {
 	MYSQL_ROW row;
 	row = mysql_fetch_row(res);
 	if (!row) return 0;
 	memcpy(quote->symbol, row[0], 8);
-	quote->epoch = atol(row[1]);
+	quote->utime = atol(row[1]);
 	quote->high = atof(row[2]);
 	quote->low = atof(row[3]);
 	quote->open = atof(row[4]);
@@ -38,7 +38,7 @@ int getQuote(DBRes* res, struct Quote* quote) {
 	return 1;
 }
 
-int getDBResRows(DBRes* res) {
+int DB_numRows(DB_RES* res) {
 	return mysql_num_rows(res);
 }
 
@@ -46,7 +46,7 @@ void printDBErrors() {
 	printf("MYSQL ERROR: %s\n", mysql_error(conn));
 }
 
-void connectDB() {
+void DB_connect() {
 	if (conn) return;
 	initDBSync();
 	mysql_library_init(0, 0, 0);
@@ -54,12 +54,12 @@ void connectDB() {
 	mysql_real_connect(conn, "localhost", "root", "root", "crunchseries", 0, 0, 0);
 }
 
-void closeDB() {
+void DB_close() {
 	if (!conn) return;
 	mysql_close(conn);
 	conn = 0;
 }
 
-void freeDBRes(DBRes* res) {
+void DB_freeRes(DB_RES* res) {
 	mysql_free_result(res);
 }

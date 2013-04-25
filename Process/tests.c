@@ -3,48 +3,45 @@
 #include <string.h>
 #include <sys/time.h>
 
-#include "quote.h"
-#include "calc.h"
-#include "server.h"
-#include "stats.h"
-#include "calcHandle.h"
+#include "network.h"
 #include "database.h"
+#include "qStreamCalcNetHandler.h"
 
-void test_getQuote() {
-	char* query = getQuoteQuery("eom", "ORDER BY epoch DESC");
-	DBRes* res = queryDB(query);
-	free(query);
+// void test_getQuote() {
+// 	char* query = getQuoteQuery("eom", "ORDER BY epoch DESC");
+// 	DBRes* res = queryDB(query);
+// 	free(query);
 
-	struct Quote quote;
+// 	struct Quote quote;
 
-	while(getQuote(res, &quote)) {
-		printQuote(&quote);
-	}
-}
+// 	while(getQuote(res, &quote)) {
+// 		printQuote(&quote);
+// 	}
+// }
 
-void test_calc() {
-	struct Calc calc;
-	initCalc(&calc);
+// void test_calc() {
+// 	struct Calc calc;
+// 	initCalc(&calc);
 
-	struct standardDeviation* mem = malloc(sizeof(struct standardDeviation));
-	memset(mem, 0, sizeof(struct standardDeviation));
-	addCalcStat(&calc, standardDeviation, mem);
+// 	struct standardDeviation* mem = malloc(sizeof(struct standardDeviation));
+// 	memset(mem, 0, sizeof(struct standardDeviation));
+// 	addCalcStat(&calc, standardDeviation, mem);
 
-	mem->s1 = 0;
-	mem->s2 = 0;
-	mem->tail.tail_size = 23;
-	// mem->tail.values = malloc(sizeof(double) * mem->tail.tail_size);
+// 	mem->s1 = 0;
+// 	mem->s2 = 0;
+// 	mem->tail.tail_size = 23;
+// 	// mem->tail.values = malloc(sizeof(double) * mem->tail.tail_size);
 
-	doCalc("eom", "ORDER BY epoch ASC", &calc);
-	freeCalc(&calc);
-}
+// 	doCalc("eom", "ORDER BY epoch ASC", &calc);
+// 	freeCalc(&calc);
+// }
 
 void test_server() {
-	startServer(4213, 20, calcHandle);
+	NET_startServer(4213, 20, QSTREAM_CALC_netHandler);
 }
 
 int main (int args, char** argv) {
-	connectDB();
+	DB_connect();
 
 	// test_getQuote();
 
@@ -61,6 +58,6 @@ int main (int args, char** argv) {
 
 	test_server();
 
-	closeDB();
+	DB_close();
 	return 0;
 }

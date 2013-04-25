@@ -9,7 +9,7 @@
 #include "quote.h"
 
 void* QSTREAM_STAT_accumulationDistribution_mem(double start);
-void QSTREAM_STAT_accumulationDistribution(TIMEVALUE* result, struct QUOTE* quote, void* mem);
+void QSTREAM_STAT_accumulationDistribution(TIMEVALUE* result, QUOTE* quote, void* mem);
 
 void* QSTREAM_STAT_aroon_mem(int tail_size);
 void QSTREAM_STAT_aroonUp(TIMEVALUE* result, QUOTE* quote, void* mem);

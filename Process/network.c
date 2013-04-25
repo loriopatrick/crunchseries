@@ -11,27 +11,25 @@
 #include <sys/types.h>
 #include <time.h> 
 
-#include "server.h"
+#include "network.h"
 
-struct ServerThreadInfo {
+struct serverThreadInfo {
 	int sockfd;
 	void (*handler)(int sockfd);
 	int* active_sockets;
 };
 
 void* handleRequest(void* arg) {
-	struct ServerThreadInfo* info = (struct ServerThreadInfo*)arg;
+	struct serverThreadInfo* info = (struct serverThreadInfo*)arg;
 	*(info->active_sockets) += 1;
 	(info->handler)(info->sockfd);
 	*(info->active_sockets) -= 1;
 	shutdown(info->sockfd, 2);
-	// close(info->sockfd);
-	// printf("close sock: %i\n", info->sockfd);
 	free(arg);
 	return 0;
 }
 
-int readNetLen(int sockfd, void* object, int len) {
+int NET_recv(int sockfd, void* object, int len) {
 	int read = 0;
 	while (read < len) {
 		int size = recv(sockfd, object + read, len - read, 0);
@@ -44,7 +42,7 @@ int readNetLen(int sockfd, void* object, int len) {
 	return read;
 }
 
-int sendNetLen(int sockfd, void* object, int len) {
+int NET_send(int sockfd, void* object, int len) {
 	int sent = 0;
 	while(sent < len) {
 		int size = send(sockfd, object + sent, len - sent, 0);
@@ -57,7 +55,7 @@ int sendNetLen(int sockfd, void* object, int len) {
 	return sent;
 }
 
-void startServer(int port, int max_threads, void (*handler)(int sockfd)) {
+void NET_startServer(int port, int max_threads, void (*handler)(int sockfd)) {
 	struct sockaddr_in serv_addr;
 
 	int acitve_threads = 0, listenfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -78,7 +76,7 @@ void startServer(int port, int max_threads, void (*handler)(int sockfd)) {
 		}
 		pthread_t thread;
 
-		struct ServerThreadInfo* info = malloc(sizeof(struct ServerThreadInfo));
+		struct serverThreadInfo* info = malloc(sizeof(struct serverThreadInfo));
 		info->sockfd = connfd;
 		info->handler = handler;
 		info->active_sockets = &acitve_threads;
