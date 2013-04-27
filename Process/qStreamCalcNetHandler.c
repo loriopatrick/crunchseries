@@ -24,7 +24,7 @@ char* addStatRequest(QSTREAM_CALC* calc, int sockfd) {
 	char* name = malloc(10);
 	char* id = malloc(3);
 
-	NET_recv(sockfd, id, 3);
+	NET_recv(sockfd, id, 3);	
 	NET_recv(sockfd, name, 10);
 
 	printf("Add: %s\n", name);
@@ -35,22 +35,22 @@ char* addStatRequest(QSTREAM_CALC* calc, int sockfd) {
 		void* mem = QSTREAM_STAT_accumulationDistribution_mem(start);
 		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_accumulationDistribution, mem);
 	} else if (!strncmp(name, "AROON_UP", 8)) {
-		double tail_size;
+		int tail_size;
 		NET_recv(sockfd, &tail_size, sizeof(int));
 		void* mem = QSTREAM_STAT_aroon_mem(tail_size);
 		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_aroonUp, mem);
 	} else if (!strncmp(name, "AROON_DOWN", 10)) {
-		double tail_size;
+		int tail_size;
 		NET_recv(sockfd, &tail_size, sizeof(int));
 		void* mem = QSTREAM_STAT_aroon_mem(tail_size);
 		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_aroonDown, mem);
 	} else if (!strncmp(name, "SMA", 3)) {
-		double tail_size;
+		int tail_size;
 		NET_recv(sockfd, &tail_size, sizeof(int));
 		void* mem = QSTREAM_STAT_movingAverage_mem(tail_size);
 		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_movingAverageSimple, mem);
 	} else if (!strncmp(name, "STDV", 4)) {
-		double tail_size;
+		int tail_size;
 		NET_recv(sockfd, &tail_size, sizeof(int));
 		void* mem = QSTREAM_STAT_standardDeviation_mem(tail_size);
 		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_standardDeviation, mem);
@@ -95,7 +95,7 @@ void QSTREAM_CALC_netHandler(int sockfd) {
 	for (i = 0; i < request.number_of_stats; ++i) {
 		char* id = stat_ids[i];
 		if (!id) continue;
-		NET_recv(sockfd, id, 3);
+		NET_send(sockfd, id, 3);
 		int j;
 		for (j = 0; j < items; ++j) {
 			// printf("SEND: %u :: %f\n", calc.results[i][j].epoch, calc.results[i][j].value);

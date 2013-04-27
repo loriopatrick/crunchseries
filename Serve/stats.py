@@ -33,7 +33,7 @@ class ACD(Stat):
 		super(ACD, self).__init__('ACD', 1)
 
 	def serialize(self):
-		return struct.pack('=3s10sd', self.id, self.name, 0)
+		return struct.pack('=3s10sd', str(self.id), self.name, 0)
 
 class AROON_UP(Stat):
 	def __init__(self):
@@ -53,7 +53,7 @@ class AROON_UP(Stat):
 			self.tail_size == int(value)
 
 	def serialize(self):
-		return struct.pack('=3s10si', self.id, self.name, self.tail_size)
+		return struct.pack('=3s10si', str(self.id), self.name, self.tail_size)
 
 class SMA(Stat):
 	def __init__(self):
@@ -76,7 +76,7 @@ class SMA(Stat):
 			self.tail_size == int(value)
 
 	def serialize(self):
-		return struct.pack('=3s10si', self.id, self.name, self.tail_size)
+		return struct.pack('=3s10si', str(self.id), self.name, self.tail_size)
 
 class STDV(Stat):
 	def __init__(self):
@@ -99,7 +99,7 @@ class STDV(Stat):
 			self.tail_size == int(value)
 
 	def serialize(self):
-		return struct.pack('=3s10si', self.id, self.name, self.tail_size)
+		return struct.pack('=3s10si', str(self.id), self.name, self.tail_size)
 
 
 stat_key = {
