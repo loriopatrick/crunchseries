@@ -20,7 +20,7 @@ class CalcStatRequest:
 
 	def request(self):
 		print str(self.symbol[:8])
-		data = struct.pack('i9s4sIIi', 1, str(self.symbol[:8]), str(self.series[:4]), self.start, self.end, len(self.stats))
+		data = struct.pack('9s4sIIi', str(self.symbol[:8]), str(self.series[:4]), self.start, self.end, len(self.stats))
 		self.send(data)
 
 		for stat in self.stats:
@@ -31,8 +31,8 @@ class CalcStatRequest:
 		print n_stat, n_quotes
 
 		for stat_res in range(0, n_stat):
-			name = self.recv(10)
-			stat = self.stats[name.rstrip(' \t\r\n\0')]
+			id = self.recv(3)
+			stat = self.stats[id.rstrip(' \t\r\n\0')]
 			stat.results = []
 			for q in range(0, n_quotes):
 				data = struct.unpack('Id', self.recv(struct.calcsize('Id')))
@@ -62,7 +62,7 @@ class CalcStatRequest:
 		return ''.join(chunks)
 
 	def addStat(self, stat):
-		self.stats[stat.name] = stat
+		self.stats[str(stat.id)] = stat
 
 	def close(self):
 		self.sock.shutdown()
@@ -72,14 +72,14 @@ def test():
 
 	req = CalcStatRequest('eom', 'GOOG', 0, 2**32-2)
 	a = ACD()
-	b = AROON_UP()
+	# b = AROON_UP()
 	req.addStat(a)
-	req.addStat(b)
+	# req.addStat(b)
 	req.connect()
 	req.request()
 
 	print a.json()
-	print b.json()
+	# print b.json()
 
 
 

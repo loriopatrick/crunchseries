@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "database.h"
 #include "quote.h"
+#include "database.h"
 
-#include "calc.h"
+#include "qStreamCalc.h"
 
-void initCalc(struct Calc* calc) {
+void QSTREAM_CALC_init(QSTREAM_CALC* calc) {
 	calc->len = 0;
 	calc->buffer = 10;
 	calc->stats = malloc(sizeof(void*) * calc->buffer);
@@ -15,8 +15,7 @@ void initCalc(struct Calc* calc) {
 	calc->results = malloc(sizeof(void*) * calc->buffer);
 }
 
-void addCalcStat(struct Calc* calc, void (*stat)(struct TimePair* result, struct Quote* quote, void* memory), void* memory) {
-	
+void QSTREAM_CALC_addStat(QSTREAM_CALC* calc, void (*stat)(TIMEVALUE*, QUOTE*, void*), void* mem) {
 	if (calc->len == calc->buffer) {
 		calc->buffer += 10;
 		void* oldStats = (void*)calc->stats;
@@ -37,32 +36,29 @@ void addCalcStat(struct Calc* calc, void (*stat)(struct TimePair* result, struct
 	}
 
 	calc->stats[calc->len] = stat;
-	calc->memories[calc->len] = memory;
+	calc->memories[calc->len] = mem;
 	++calc->len;
 }
 
-void executeCalc(DBRes* res, int quotes, struct Calc* calc) {
-	struct Quote quote;
+void QSTREAM_CALC_execute(QSTREAM_CALC* calc, DB_RES* res, int quotes) {
+	QUOTE quote;
 	int i, j;
 
-	int size = 0;
-
 	for (j = 0; j < calc->len; ++j) {
-		calc->results[j] = malloc(sizeof(struct TimePair) * quotes);
-		size += sizeof(struct TimePair) * quotes;
+		calc->results[j] = malloc(sizeof(TIMEVALUE) * quotes);
 	}
 
 	for (i = 0; i < quotes; ++i) {
-		if (!getQuote(res, &quote)) break;
+		if (!QUOTE_get(res, &quote)) break;
 		for (j = 0; j < calc->len; ++j) {
 			(calc->stats[j])(calc->results[j] + i, &quote, calc->memories[j]);
 		}
 	}
 }
 
-int doCalc(char* series, char* query, struct Calc* calc) {
-	char* sql = getQuoteQuery(series, query);
-	DBRes* res = queryDB(sql);
+int QSTREAM_CALC_do(QSTREAM_CALC* calc, char* series, char* query) {
+	char* sql = QUOTE_getQS(series, query);
+	DB_RES* res = DB_query(sql);
 	if (!res) {
 		printf("Didn't get results: %s\n", sql);
 		exit(1);
@@ -70,14 +66,14 @@ int doCalc(char* series, char* query, struct Calc* calc) {
 
 	free(sql);
 
-	int items = getDBResRows(res);
-	executeCalc(res, items, calc);
-	freeDBRes(res);
+	int items = DB_numRows(res);
+	QSTREAM_CALC_execute(calc, res, items);
+	DB_freeRes(res);
 
 	return items;
 }
 
-void freeCalc(struct Calc* calc) {
+void QSTREAM_CALC_free(QSTREAM_CALC* calc) {
 	int i;
 	for (i = 0; i < calc->len; ++i) {
 		free(calc->results[i]);

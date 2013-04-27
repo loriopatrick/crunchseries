@@ -1,25 +1,28 @@
-#ifndef __QUOTE_H__
-#define __QUOTE_H__
+#ifndef __CRUNCHSERIES_PROCESS_QUOTE_H__
+#define __CRUNCHSERIES_PROCESS_QUOTE_H__
 
 #include <mysql.h>
 
-struct Quote {
+typedef MYSQL_RES DB_RES;
+
+struct _QUOTE {
 	char symbol[8];
-	unsigned int epoch;
+	unsigned int utime;
 	double high;
 	double low;
 	double open;
 	double close;
 	unsigned int volume;
-};
+} typedef QUOTE;
 
-struct TimePair {
-	unsigned int epoch;
+struct _TIMEVALUE {
+	unsigned int utime;
 	double value;
-};
+} typedef TIMEVALUE;
 
-void printQuote(struct Quote* quote);
-char* getQuoteQuery(char* series, char* query);
-char* getQuoteSymbolRangeQuery(char* symbol, unsigned int start, unsigned int end);
+int QUOTE_get(DB_RES* res, QUOTE* quote);
+void QUOTE_print(QUOTE* quote);
+char* QUOTE_getQS(char* series, char* query);
+char* QUOTE_getQSRange(char* symbol, unsigned int begin, unsigned int end);
 
 #endif
