@@ -57,9 +57,9 @@ void QSTREAM_STAT_aroon_mem_free(void* mem) {
 void QSTREAM_STAT_aroonUp(TIMEVALUE* result, QUOTE* quote, void* mem) {
 	struct aroon* aroon = (struct aroon*) mem;
 
-	STREAM_TAIL_update(&(aroon->tail), &quote->close);
+	STREAM_TAIL_update(&(aroon->tail), &quote->high);
 
-	if (quote->close > aroon->high) {
+	if (quote->high > aroon->high) {
 		aroon->high = quote->high;
 		aroon->quotes_since_high = 0;
 	} else if(aroon->quotes_since_high == aroon->tail.size) {
@@ -92,9 +92,9 @@ void QSTREAM_STAT_aroonUp(TIMEVALUE* result, QUOTE* quote, void* mem) {
 void QSTREAM_STAT_aroonDown(TIMEVALUE* result, QUOTE* quote, void* mem) {
 	struct aroon* aroon = (struct aroon*) mem;
 
-	STREAM_TAIL_update(&(aroon->tail), &quote->close);
+	STREAM_TAIL_update(&(aroon->tail), &quote->low);
 
-	if (quote->close < aroon->low) {
+	if (quote->low < aroon->low) {
 		aroon->low = quote->low;
 		aroon->quotes_since_low = 0;
 	} else if(aroon->quotes_since_low == aroon->tail.size) {

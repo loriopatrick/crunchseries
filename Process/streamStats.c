@@ -131,10 +131,10 @@ struct macd {
 
 void* STREAM_STAT_macd_mem(int tail_size_small, int tail_size_big) {
 	struct macd* mem = malloc(sizeof(struct macd));
-	macd->small.last = 0;
-	macd->small.quotes = tail_size_small;
-	macd->big.last = 0;
-	macd->big.quotes = tail_size_big;
+	mem->small.last = 0;
+	mem->small.quotes = tail_size_small;
+	mem->big.last = 0;
+	mem->big.quotes = tail_size_big;
 	return mem;
 }
 
@@ -161,12 +161,13 @@ void* STREAM_STAT_macd_signal_mem(int small, int big, int ema) {
 	macds->macd.big.quotes = big;
 	macds->ema.quotes = ema;
 	macds->ema.last = 0;
+	return macds;
 }
 
 void STREAM_STAT_macd_signal(double* result, double* value, void* mem) {
 	struct macd_signal* macds = (struct macd_signal*)mem;
 	double macd;
 
-	STREAM_STAT_macd(&macd, value, macds->macd);
-	STREAM_STAT_movingAverageExponetial(result, &macd, mem->ema);
+	STREAM_STAT_macd(&macd, value, &macds->macd);
+	STREAM_STAT_movingAverageExponetial(result, &macd, &macds->ema);
 }

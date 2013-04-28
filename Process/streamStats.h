@@ -28,4 +28,7 @@ void STREAM_STAT_percentB(double* result, double* value, void* mem);
 void* STREAM_STAT_movingAverageExponetial_mem(int tail_size);
 void STREAM_STAT_movingAverageExponetial(double* result, double* value, void* mem);
 
+void STREAM_STAT_lastThreshold_mem(int tail_size);
+void STREAM_STAT_lastThresholdHigh();
+
 #endif
