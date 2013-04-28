@@ -101,10 +101,34 @@ class STDV(Stat):
 	def serialize(self):
 		return struct.pack('=3s10si', str(self.id), self.name, self.tail_size)
 
+class PB(Stat):
+	def __init__(self):
+		super(PB, self).__init__('PB', 5)
+		self.tail_size = 25
+
+	def settings(self):
+		return {
+			'tail_size':25
+		}
+
+	def beforedict(self):
+		self.results = self.results[self.tail_size:]
+
+	def applySetting(self, name, value):
+		settings = ['tail']
+		if name not in settings:
+			return
+		if name == 'tail':
+			self.tail_size == int(value)
+
+	def serialize(self):
+		return struct.pack('=3s10si', str(self.id), self.name, self.tail_size)
+
 
 stat_key = {
 	'ACD':ACD,
 	'AROON_UP':AROON_UP,
 	'SMA':SMA,
-	'STDV':STDV
+	'STDV':STDV,
+	'PB':PB
 }

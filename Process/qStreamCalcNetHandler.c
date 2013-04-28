@@ -33,27 +33,32 @@ char* addStatRequest(QSTREAM_CALC* calc, int sockfd) {
 		double start;
 		NET_recv(sockfd, &start, sizeof(double));
 		void* mem = QSTREAM_STAT_accumulationDistribution_mem(start);
-		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_accumulationDistribution, mem);
+		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_accumulationDistribution, mem, 0);
 	} else if (!strncmp(name, "AROON_UP", 8)) {
 		int tail_size;
 		NET_recv(sockfd, &tail_size, sizeof(int));
 		void* mem = QSTREAM_STAT_aroon_mem(tail_size);
-		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_aroonUp, mem);
+		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_aroonUp, mem, 0);
 	} else if (!strncmp(name, "AROON_DOWN", 10)) {
 		int tail_size;
 		NET_recv(sockfd, &tail_size, sizeof(int));
 		void* mem = QSTREAM_STAT_aroon_mem(tail_size);
-		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_aroonDown, mem);
+		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_aroonDown, mem, 0);
 	} else if (!strncmp(name, "SMA", 3)) {
 		int tail_size;
 		NET_recv(sockfd, &tail_size, sizeof(int));
 		void* mem = QSTREAM_STAT_movingAverage_mem(tail_size);
-		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_movingAverageSimple, mem);
+		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_movingAverageSimple, mem, 0);
 	} else if (!strncmp(name, "STDV", 4)) {
 		int tail_size;
 		NET_recv(sockfd, &tail_size, sizeof(int));
 		void* mem = QSTREAM_STAT_standardDeviation_mem(tail_size);
-		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_standardDeviation, mem);
+		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_standardDeviation, mem, 0);
+	} else if (!strncmp(name, "PB", 2)) {
+		int tail_size;
+		NET_recv(sockfd, &tail_size, sizeof(int));
+		void* mem = QSTREAM_STAT_percentB_mem(tail_size);
+		QSTREAM_CALC_addStat(calc, QSTREAM_STAT_percentB, mem, 0);
 	} else {
 		printf("Unknown statistic: %s\n", name);
 		free(id);

@@ -21,4 +21,7 @@ void QSTREAM_STAT_movingAverageSimple(TIMEVALUE* result, QUOTE* quote, void* mem
 void* QSTREAM_STAT_standardDeviation_mem(int tail_size);
 void QSTREAM_STAT_standardDeviation(TIMEVALUE* result, QUOTE* quote, void* mem);
 
+void* QSTREAM_STAT_percentB_mem(int tail_size);
+void QSTREAM_STAT_percentB(TIMEVALUE* result, QUOTE* quote, void* mem);
+
 #endif
