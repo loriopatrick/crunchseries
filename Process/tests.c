@@ -7,6 +7,7 @@
 #include "database.h"
 #include "qStreamCalcNetHandler.h"
 #include "qStreamStats.h"
+#include "streamStats.h"
 #include "qStreamCalc.h"
 
 void test_calc() {
@@ -14,17 +15,17 @@ void test_calc() {
 	QSTREAM_CALC_init(&calc);
 
 	void* mem;
-	mem = QSTREAM_STAT_percentB_mem(20);
-	QSTREAM_CALC_addStat(&calc, QSTREAM_STAT_percentB, mem, 0);
+	mem = STREAM_STAT_percentB_mem(20);
+	QSTREAM_CALC_addStat(&calc, QSTREAM_STAT_percentB, mem, STREAM_STAT_percentB_mem_free);
 
 	mem = QSTREAM_STAT_accumulationDistribution_mem(20);
 	QSTREAM_CALC_addStat(&calc, QSTREAM_STAT_accumulationDistribution, mem, 0);
 
 	mem = QSTREAM_STAT_aroon_mem(20);
-	QSTREAM_CALC_addStat(&calc, QSTREAM_STAT_aroonUp, mem, 0);
+	QSTREAM_CALC_addStat(&calc, QSTREAM_STAT_aroonUp, mem, QSTREAM_STAT_aroon_mem_free);
 
-	mem = QSTREAM_STAT_standardDeviation_mem(20);
-	QSTREAM_CALC_addStat(&calc, QSTREAM_STAT_standardDeviation, mem, 0);
+	mem = STREAM_STAT_standardDeviation_mem(20);
+	QSTREAM_CALC_addStat(&calc, QSTREAM_STAT_standardDeviation, mem, STREAM_STAT_standardDeviation_mem_free);
 
 	QSTREAM_CALC_do(&calc, "eom", "ORDER BY epoch ASC");
 	QSTREAM_CALC_free(&calc);

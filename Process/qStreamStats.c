@@ -49,6 +49,11 @@ void* QSTREAM_STAT_aroon_mem(int tail_size) {
 	return mem;
 }
 
+void QSTREAM_STAT_aroon_mem_free(void* mem) {
+	struct aroon* ar = (struct aroon*)mem;
+	STREAM_TAIL_free(&ar->tail);
+}
+
 void QSTREAM_STAT_aroonUp(TIMEVALUE* result, QUOTE* quote, void* mem) {
 	struct aroon* aroon = (struct aroon*) mem;
 
@@ -119,17 +124,9 @@ void QSTREAM_STAT_aroonDown(TIMEVALUE* result, QUOTE* quote, void* mem) {
 	result->value = ((double)(aroon->tail.size - aroon->quotes_since_high) / (double)aroon->tail.size) * 100;
 }
 
-void* QSTREAM_STAT_movingAverage_mem(int tail_size) {
-	return STREAM_STAT_movingAverage_mem(tail_size);
-}
-
 void QSTREAM_STAT_movingAverageSimple(TIMEVALUE* result, QUOTE* quote, void* mem) {
 	STREAM_STAT_movingAverageSimple(&result->value, &quote->close, mem);
 	result->utime = quote->utime;
-}
-
-void* QSTREAM_STAT_standardDeviation_mem(int tail_size) {
-	return STREAM_STAT_standardDeviation_mem(tail_size);
 }
 
 void QSTREAM_STAT_standardDeviation(TIMEVALUE* result, QUOTE* quote, void* mem) {
@@ -137,24 +134,7 @@ void QSTREAM_STAT_standardDeviation(TIMEVALUE* result, QUOTE* quote, void* mem) 
 	result->utime = quote->utime;
 }
 
-void* QSTREAM_STAT_percentB_mem(int tail_size) {
-	return STREAM_STAT_percentB_mem(tail_size);
-}
-
 void QSTREAM_STAT_percentB(TIMEVALUE* result, QUOTE* quote, void* mem) {
 	STREAM_STAT_percentB(&result->value, &quote->close, mem);
 	result->utime = quote->utime;
 }
-
-struct movingAverage {
-	double average;
-	STREAM_TAIL tail;
-};
-
-struct commodityChannelIndex {
-	struct movingAverage tpMa;
-};
-
-// void* QSTREAM_STAT_commodityChannelIndex_mem(int tail_size) {
-
-// }

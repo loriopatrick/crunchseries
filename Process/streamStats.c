@@ -16,6 +16,10 @@ void STREAM_TAIL_update(STREAM_TAIL* tail, double* value) {
 	}
 }
 
+void STREAM_TAIL_free(STREAM_TAIL* tail) {
+	free(tail->values);
+}
+
 struct movingAverage {
 	double average;
 	STREAM_TAIL tail;
@@ -26,6 +30,11 @@ void* STREAM_STAT_movingAverage_mem(int tail_size) {
 	memset(mem, 0, sizeof(struct movingAverage));
 	mem->tail.size = tail_size;
 	return mem;
+}
+
+void STREAM_STAT_movingAverage_mem_free(void* mem) {
+	struct movingAverage* ma = (struct movingAverage*)mem;
+	STREAM_TAIL_free(&ma->tail);
 }
 
 void STREAM_STAT_movingAverageSimple(double* result, double* value, void* mem) {
@@ -48,6 +57,11 @@ void* STREAM_STAT_standardDeviation_mem(int tail_size) {
 	memset(mem, 0, sizeof(struct standardDeviation));
 	mem->tail.size = tail_size;
 	return mem;
+}
+
+void STREAM_STAT_standardDeviation_mem_free(void* mem) {
+	struct standardDeviation* stdv = (struct standardDeviation*)mem;
+	STREAM_TAIL_free(&stdv->tail);
 }
 
 void STREAM_STAT_standardDeviation(double* result, double* value, void* mem) {
@@ -75,6 +89,12 @@ void* STREAM_STAT_percentB_mem(int tail_size) {
 	mem->ma.tail.size = tail_size;
 	mem->stdv.tail.size = tail_size;
 	return mem;
+}
+
+void STREAM_STAT_percentB_mem_free(void* mem) {
+	struct percentB* pb = (struct percentB*)mem;
+	STREAM_STAT_movingAverage_mem_free(&pb->ma);
+	STREAM_STAT_standardDeviation_mem_free(&pb->stdv);
 }
 
 void STREAM_STAT_percentB(double* result, double* value, void* mem) {

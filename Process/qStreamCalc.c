@@ -42,6 +42,7 @@ void QSTREAM_CALC_addStat(QSTREAM_CALC* calc, void (*stat)(TIMEVALUE*, QUOTE*, v
 
 	calc->stats[calc->len] = stat;
 	calc->memories[calc->len] = mem;
+	calc->free_mems[calc->len] = free_mem;
 	++calc->len;
 }
 
@@ -82,11 +83,8 @@ void QSTREAM_CALC_free(QSTREAM_CALC* calc) {
 	int i;
 	for (i = 0; i < calc->len; ++i) {
 		free(calc->results[i]);
-		if (calc->free_mems[i]) {
-			(calc->free_mems[i])(calc->memories[i]);
-		} else {
-			free(calc->memories[i]);
-		}
+		if (calc->free_mems[i]) (calc->free_mems[i])(calc->memories[i]);
+		free(calc->memories[i]);
 	}
 	free(calc->stats);
 	free(calc->memories);
