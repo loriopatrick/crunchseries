@@ -138,3 +138,8 @@ void QSTREAM_STAT_percentB(TIMEVALUE* result, QUOTE* quote, void* mem) {
 	STREAM_STAT_percentB(&result->value, &quote->close, mem);
 	result->utime = quote->utime;
 }
+
+void QSTREAM_STAT_movingAverageExponetial(TIMEVALUE* result, QUOTE* quote, void* mem) {
+	STREAM_STAT_movingAverageExponetial(&result->value, &quote->close, mem);
+	result->utime = quote->utime;
+}

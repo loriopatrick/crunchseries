@@ -21,6 +21,9 @@ void test_calc() {
 	mem = QSTREAM_STAT_accumulationDistribution_mem(20);
 	QSTREAM_CALC_addStat(&calc, QSTREAM_STAT_accumulationDistribution, mem, 0);
 
+	mem = STREAM_STAT_movingAverageExponetial_mem(20);
+	QSTREAM_CALC_addStat(&calc, QSTREAM_STAT_movingAverageExponetial, mem, 0);
+
 	mem = QSTREAM_STAT_aroon_mem(20);
 	QSTREAM_CALC_addStat(&calc, QSTREAM_STAT_aroonUp, mem, QSTREAM_STAT_aroon_mem_free);
 

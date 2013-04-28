@@ -21,5 +21,6 @@ void QSTREAM_STAT_aroonDown(TIMEVALUE* result, QUOTE* quote, void* mem);
 void QSTREAM_STAT_movingAverageSimple(TIMEVALUE* result, QUOTE* quote, void* mem);
 void QSTREAM_STAT_standardDeviation(TIMEVALUE* result, QUOTE* quote, void* mem);
 void QSTREAM_STAT_percentB(TIMEVALUE* result, QUOTE* quote, void* mem);
+void QSTREAM_STAT_movingAverageExponetial(TIMEVALUE* result, QUOTE* quote, void* mem);
 
 #endif

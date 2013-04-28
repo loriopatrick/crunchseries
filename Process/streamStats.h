@@ -15,6 +15,7 @@ void STREAM_TAIL_free(STREAM_TAIL* tail);
 void* STREAM_STAT_movingAverage_mem(int tail_size);
 void STREAM_STAT_movingAverage_mem_free(void* mem);
 void STREAM_STAT_movingAverageSimple(double* result, double* value, void* mem);
+void STREAM_STAT_movingAverageExponetial(double* result, double* value, void* mem);
 
 void* STREAM_STAT_standardDeviation_mem(int tail_size);
 void STREAM_STAT_standardDeviation_mem_free(void* mem);
@@ -23,5 +24,8 @@ void STREAM_STAT_standardDeviation(double* result, double* value, void* mem);
 void* STREAM_STAT_percentB_mem(int tail_size);
 void STREAM_STAT_percentB_mem_free(void* mem);
 void STREAM_STAT_percentB(double* result, double* value, void* mem);
+
+void* STREAM_STAT_movingAverageExponetial_mem(int tail_size);
+void STREAM_STAT_movingAverageExponetial(double* result, double* value, void* mem);
 
 #endif
