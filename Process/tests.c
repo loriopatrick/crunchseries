@@ -34,6 +34,34 @@ void test_calc() {
 	QSTREAM_CALC_free(&calc);
 }
 
+void test_stats() {
+	double data[] = {100, 43, 2, 2, 3, 3, 2, 434, 54, 3, 2, 4, 5};
+	// 100 : 0
+	// 100, 43 : 1
+	// 100, 43, 2 : 2
+	// 100, 43, 2, 2, : 3
+	// 100, 43, 2, 2, 3 : 4
+	// 43, 2, 2, 3, 3 : 4
+	// 2, 2, 3, 3, 2 : 1
+	// 2, 3, 3, 2, 434 : 0
+	// 3, 3, 2, 434, 54 : 1
+	// 3, 2, 434, 54, 3 : 2
+	// 2, 434, 54, 3, 2 : 3
+	// 434, 54, 3, 2, 4 : 4
+	// 54, 3, 2, 4, 5 : 4
+
+
+	// expected: 0, 1, 2, 3, 4, 4, 1, 0, 1, 2, 3, 4, 4
+	void* mem = STREAM_STAT_lastThres_mem(5, 1, 1);
+
+	double res;
+	int i = 0, len = 13;
+	for (; i < len; ++i) {
+		STREAM_STAT_lastThres(&res, data + i, mem);
+		printf("%f\n", res);
+	}
+}
+
 void test_server() {
 	NET_startServer(4213, 20, QSTREAM_CALC_netHandler);
 }
@@ -43,16 +71,18 @@ int main (int args, char** argv) {
 
 	// test_getQuote();
 
-	int i;
-	for (i = 0; i < 100; ++i) {
-		struct timeval start, end;
-		gettimeofday(&start, 0);
+	test_stats();
 
-		test_calc();
+	// int i;
+	// for (i = 0; i < 100; ++i) {
+	// 	struct timeval start, end;
+	// 	gettimeofday(&start, 0);
 
-		gettimeofday(&end, 0);
-		printf("%.5g seconds\n", end.tv_sec - start.tv_sec + 1E-6 * (end.tv_usec - start.tv_usec));
-	}
+	// 	test_calc();
+
+	// 	gettimeofday(&end, 0);
+	// 	printf("%.5g seconds\n", end.tv_sec - start.tv_sec + 1E-6 * (end.tv_usec - start.tv_usec));
+	// }
 
 	// test_server();
 

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -171,3 +172,49 @@ void STREAM_STAT_macd_signal(double* result, double* value, void* mem) {
 	STREAM_STAT_macd(&macd, value, &macds->macd);
 	STREAM_STAT_movingAverageExponetial(result, &macd, &macds->ema);
 }
+
+void* STREAM_STAT_lastThres_mem(int tail_size, int returnType, int high) {
+	struct lastThres* mem = malloc(sizeof(struct lastThres));
+	memset(mem, 0, sizeof(struct lastThres));
+	mem->tail.size = tail_size;
+	mem->since = -1;
+	mem->returnType = returnType;
+	mem->high = high;
+	return mem;
+}
+
+void STREAM_STAT_lastThres(double* result, double* value, void* mem) {
+	struct lastThres* thres = (struct lastThres*)mem;
+	++thres->since;
+
+	STREAM_TAIL_update(&thres->tail, value);
+
+	if ((thres->high && *value >= thres->thres) || (!thres->high && *value <= thres->thres) || thres->since == 0) {
+		thres->thres = *value;
+		thres->since = 0;
+	} else if (thres->since	== thres->tail.size) {
+
+		int i = 0, pos = thres->tail.pos, value_i = 0; // oldest value
+		double* value = thres->tail.values + pos;
+
+		while (i < thres->tail.size) {
+			if (pos >= thres->tail.size) pos = 0;
+
+			if ((thres->high && *value <= thres->tail.values[pos]) || (!thres->high && *value >= thres->tail.values[pos])) {
+				value_i = i;
+				value = thres->tail.values + pos;
+			}
+
+			++i;
+			++pos;
+		}
+
+		thres->since = thres->tail.size - 1 - value_i;
+		thres->thres = *value;
+	}
+
+	if (thres->returnType == 1) *result = (double)thres->since;
+	else *result = thres->thres;
+}
+
+void STREAM_STAT_lastLow(double* result, double* value, void* mem);
