@@ -5,12 +5,12 @@
 
 struct _QUOTES {
 	unsigned int count;
-	unsigned int* utime;
+	double* utime;
 	double* high;
 	double* low;
 	double* open;
 	double* close;
-	unsigned int* volume;
+	double* volume;
 } typedef QUOTES;
 
 QUOTES* getQuotes(MYSQL_RES* res);
