@@ -6,7 +6,7 @@ import database
 
 class Periods:
 	EOM='eom', 60
-	EOD='eod', 321
+	EOD='eod', 86400
 
 class Series:
 	def __init__(self, period):
@@ -54,13 +54,15 @@ class GoogleFinace():
 		else:
 			self.search_symbol = symbol
 
-	def request(self, fromDate, interval='60'):
+	def request(self, interval='60', span='100Y'):
 		url = ''.join([
 			'http://www.google.com/finance/getprices',
-			'?q=', self.symbol,
-			'&i=', interval,
-			'&ts=', str(time.mktime(fromDate.timetuple()))
+			'?p=', span,
+			'&q=', self.symbol,
+			'&i=', str(interval)
 		])
+
+		print url
 
 		self.data_lines = requests.get(url).text.split('\n')
 
@@ -89,6 +91,9 @@ class GoogleFinace():
 
 			parts = line.split(',')
 			date = last_date
+
+			if parts[0].startswith('T'):
+				continue
 
 			if parts[0].startswith('a'):
 				last_date = int(parts[0][1:])
@@ -123,10 +128,10 @@ class GoogleFinace():
 
 
 if __name__ == '__main__':
-	series = Series(Periods.EOM)
+	series = Series(Periods.EOD)
 
 	test = GoogleFinace('GOOG')
-	test.request(datetime.datetime.now() - datetime.timedelta(days=12))
+	test.request(series.period[1])
 
 	cursor = database.cursor()
 	test.save(series, cursor)
