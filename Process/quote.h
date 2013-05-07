@@ -17,6 +17,6 @@ QUOTES* getQuotes(MYSQL_RES* res);
 void printQuote(QUOTES* quotes, int place);
 
 char* getQuoteQS(char* series, char* query);
-char* getQuoteQSRange(char* symbol, unsigned int begin, unsigned int end);
+char* getQuoteQSRange(char* symbol, double begin, double end);
 
 #endif

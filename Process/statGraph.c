@@ -1,8 +1,10 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "statGraph.h"
 
+// #define DEBUG
 
 /*
 
@@ -19,8 +21,8 @@
 				- byte size
 				- value
 			- number of inputs for stat
-			- input map for stat
-
+			- {foreach input}
+				- input map corresponding to last output
 */
 
 struct graph* buildGraph(void** inputs, void* data, int len) {
@@ -30,46 +32,72 @@ struct graph* buildGraph(void** inputs, void* data, int len) {
 	int intSize = sizeof(int);
 
 	int pos = 0, i, j, k;
-	memcpy(&res->steps_len, data, intSize);
+	memcpy(&res->steps_len, data, intSize); pos += intSize;
+	#ifdef DEBUG
+	printf("# of steps: %i\n", res->steps_len);
+	#endif
+
 	res->steps = malloc(sizeof(struct step) * res->steps_len);
-	pos += intSize;
 
 	for (i = 0; i < res->steps_len; ++i) { // {foreach step}
 		struct step* step = res->steps + i;
 		
-		memcpy(&step->stats_len, data + pos, intSize);
+		memcpy(&step->stats_len, data + pos, intSize); pos += intSize; // number of stats for step
+		
+		#ifdef DEBUG
+		printf("\t# of stats: %i\n", step->stats_len);
+		#endif
+
 		step->stats = malloc(sizeof(int) * step->stats_len);
-		step->setting_sizes = malloc(sizeof(int) * step->stats_len);
 		step->settings = malloc(sizeof(void*) * step->stats_len);
+		step->setting_sizes = malloc(sizeof(int*) * step->stats_len);
+		step->settings_len = malloc(sizeof(int) * step->stats_len);
 		step->input_maps = malloc(sizeof(int*) * step->stats_len);
 		step->outputs = 0;
-		pos += intSize;
 		
 		for (j = 0; j < res->steps[i].stats_len; ++j) { // {foreach stat}
-			memcpy(step->stats + j, data + pos, intSize);
+			memcpy(step->stats + j, data + pos, intSize); pos += intSize; // stat id number
+			
+			#ifdef DEBUG
+			printf("\t\tstat id: %i\n", step->stats[j]);
+			#endif
+
+			memcpy(step->settings_len + j, data + pos, intSize); // number of settings for stat
+			
+			#ifdef DEBUG
+			printf("\t\t# of settings: %i\n", step->settings_len[j]);
+			#endif
+
+			step->setting_sizes[j] = malloc(intSize * step->settings_len[j]);
+			step->settings[j] = malloc(sizeof(void*) * step->settings_len[j]);
 			pos += intSize;
 
-			memcpy(&step->settings_len, data + pos, intSize);
-			step->setting_sizes = malloc(intSize * step->settings_len);
-			step->settings = malloc(sizeof(void*) * step->settings_len);
-			pos += intSize;
+			for (k = 0; k < step->settings_len[j]; ++k) { // {foreach setting}
+				memcpy(step->setting_sizes[j] + k, data + pos, intSize); pos += intSize;
+				
+				#ifdef DEBUG
+				printf("\t\t\tsetting size: %i\n", step->setting_sizes[j][k]);
+				#endif
 
-			for (k = 0; k < step->settings_len; ++k) {
-				memcpy(step->setting_sizes + k, data + pos, intSize);
-				step->settings = malloc(step->setting_sizes[k]);
-				pos += intSize;
-
-				memcpy(step->settings[k], data + pos, step->setting_sizes[k]);
-				pos += step->setting_sizes[k];
+				step->settings[j][k] = malloc(step->setting_sizes[j][k]);
+				memcpy(step->settings[j][k], data + pos, step->setting_sizes[j][k]); pos += step->setting_sizes[j][k];
+				
+				#ifdef DEBUG
+				printf("\t\t\tsetting value: %s\n", step->settings[j][k]);
+				#endif
 			}
 
 			int input_maps_len;
-			memcpy(&input_maps_len, data + pos, intSize);
-			pos += intSize;
-
-			step->input_maps[j] = malloc(intSize * input_maps_len);
-			memcpy(step->input_maps[j], data + pos, intSize * input_maps_len);
-			pos += intSize * input_maps_len;
+			memcpy(&input_maps_len, data + pos, intSize); pos += intSize;
+			
+			#ifdef DEBUG
+			printf("\t\t# of inptus: %i\n", input_maps_len);
+			#endif
+			
+			if (input_maps_len > 0) {
+				step->input_maps[j] = malloc(intSize * input_maps_len);
+				memcpy(step->input_maps + j, data + pos, intSize * input_maps_len); pos += intSize * input_maps_len;
+			}
 		}
 	}
 

@@ -3,9 +3,12 @@
 
 struct step {
 	int** input_maps;
-	int* setting_sizes;
-	void** settings;
-	int settings_len;
+	
+	// foreach stat
+	void*** settings; // void* [stat][setting index] // void pointer to setting
+	int** setting_sizes; // int [stat][setting index] // sizeof void pointer of setting
+	int* settings_len; // int [stat] : number of  settings per stat
+	
 	int* stats;
 	int stats_len;
 	double** outputs;

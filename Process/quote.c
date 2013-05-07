@@ -67,8 +67,8 @@ char* getQuoteQS(char* series, char* query) {
         return res;
 }
 
-char* getQuoteQSRange(char* symbol, unsigned int begin, unsigned int end) {
-        char* format = " WHERE symbol=\"%s\" AND epoch >= %u AND epoch <= %u ORDER BY epoch ASC\0";
+char* getQuoteQSRange(char* symbol, double begin, double end) {
+        char* format = " WHERE symbol=\"%s\" AND epoch >= %f AND epoch <= %f ORDER BY epoch ASC\0";
         int query_size = 1 + snprintf(0, 0, format, symbol, begin, end);
         char* query = malloc(query_size);
         memset(query, '\0', query_size);
