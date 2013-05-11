@@ -115,7 +115,16 @@ struct _statGraph_output* getInput(struct _statGraph_step* source, struct _statG
 }
 
 int executeStat(struct _statGraph_step* last_step, struct _statGraph_stat* stat) {
-	if (stat->stat == 1) { // sql query
+	if (stat->stat == 0) {
+		#ifdef DEBUG
+			printf("stat: 0: Copy Output\n");
+		#endif
+
+		printf("Not yet implemented\n");
+		exit(1);
+	}
+
+	if (stat->stat == 1) {
 		#ifdef DEBUG
 			printf("\tstat: 1: SQL Query\n");
 		#endif
