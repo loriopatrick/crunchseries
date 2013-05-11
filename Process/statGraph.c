@@ -146,6 +146,38 @@ int executeStat(struct _statGraph_step* last_step, struct _statGraph_stat* stat)
 		double* res = simpleMovingAverage(series->values, series->len, *period_size);
 		stat->outputs = malloc(sizeof(struct _statGraph_output) * stat->num_outputs);
 		stat->outputs[0].values = res; stat->outputs[0].len = series->len;
+
+		return 0;
+	}
+
+	if (stat->stat == 3) {
+		#ifdef DEBUG
+			printf("\tstat: 3: Exponential Moving Average\n");
+		#endif
+
+		int* period_size = stat->settings[0].data;
+		struct _statGraph_output* series = getInput(last_step, stat->inputs);
+
+		double* res = exponentialMovingAverage(series->values, series->len, *period_size);
+		stat->outputs = malloc(sizeof(struct _statGraph_output) * stat->num_outputs);
+		stat->outputs[0].values = res; stat->outputs[0].len = series->len;
+
+		return 0;
+	}
+
+	if (stat->stat == 4) {
+		#ifdef DEBUG
+			printf("\tstat: 4: Standard Deviation\n");
+		#endif
+
+		int* period_size = stat->settings[0].data;
+		struct _statGraph_output* series = getInput(last_step, stat->inputs);
+
+		double* res = standardDeviation(series->values, series->len, *period_size);
+		stat->outputs = malloc(sizeof(struct _statGraph_output) * stat->num_outputs);
+		stat->outputs[0].values = res; stat->outputs[0].len = series->len;
+
+		return 0;
 	}
 
 	return 1;
