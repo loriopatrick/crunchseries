@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "quote.h"
+#include "stats.h"
 
 #include "statGraph.h"
 
@@ -109,47 +110,68 @@ int getGraphStep(StatGraph* graph) {
 	return step;
 }
 
-int executeStat(struct _statGraph_step* last_step, struct _statGraph_stat* stat, double** outputs) {
-	// struct outDump* out = malloc(sizeof(struct outDump));
+struct _statGraph_output* getInput(struct _statGraph_step* source, struct _statGraph_input* map) {
+	return source->stats[map->stat].outputs + map->output;
+}
 
-	// if (stat == 1) { // sql query
-	// 	char* query = settings[0];
-	// 	char* queryFixed = malloc(settings_sizes[0] + 1);
-	// 	memcpy(queryFixed, query, settings_sizes[0]);
-	// 	queryFixed[settings_sizes[0]] = '\0';
-	// 	free(query);
-	// 	QUOTES* quotes = getQuotesByQuery(queryFixed);
-	// 	free(queryFixed);
+int executeStat(struct _statGraph_step* last_step, struct _statGraph_stat* stat) {
+	if (stat->stat == 1) { // sql query
+		#ifdef DEBUG
+			printf("\tstat: 1: SQL Query\n");
+		#endif
 
-	// 	out->outputs = malloc(sizeof(double*) * 6);
-	// 	out->outputs[0] = quotes->utime;
-	// 	out->outputs[1] = quotes->high;
-	// 	out->outputs[2] = quotes->low;
-	// 	out->outputs[3] = quotes->open;
-	// 	out->outputs[4] = quotes->close;
-	// 	out->outputs[5] = quotes->volume;
+		char* query = stat->settings[0].data;
+		QUOTES* quotes = getQuotesByQuery(query);
+		printf("\tquery: %s\n\t# of results: %i\n", query, quotes->count);
 
-	// 	out->outputs_len = 6;
-	// 	out->output_size = quotes->count;
+		stat->outputs = malloc(sizeof(struct _statGraph_output) * stat->num_outputs);
+		stat->outputs[0].values = quotes->utime; stat->outputs[0].len = quotes->count;
+		stat->outputs[1].values = quotes->high; stat->outputs[1].len = quotes->count;
+		stat->outputs[2].values = quotes->low; stat->outputs[2].len = quotes->count;
+		stat->outputs[3].values = quotes->open; stat->outputs[3].len = quotes->count;
+		stat->outputs[4].values = quotes->close; stat->outputs[4].len = quotes->count;
+		stat->outputs[5].values = quotes->volume; stat->outputs[5].len = quotes->count;
 
-	// 	return out;
-	// }
+		return 0;
+	}
 
-	return 0;
+	if (stat->stat == 2) {
+		#ifdef DEBUG
+			printf("\tstat: 2: Simple Moving Average\n");
+		#endif
+
+		int* period_size = stat->settings[0].data;
+		struct _statGraph_output* series = getInput(last_step, stat->inputs);
+
+		double* res = simpleMovingAverage(series->values, series->len, *period_size);
+		stat->outputs = malloc(sizeof(struct _statGraph_output) * stat->num_outputs);
+		stat->outputs[0].values = res; stat->outputs[0].len = series->len;
+	}
+
+	return 1;
 }
 
 int executeGraphStep(StatGraph* graph, int step_pos) {
+	#ifdef DEBUG
+		printf("----- start:::executeGraphStep\n");
+	#endif
 
 	struct _statGraph_step* step = graph->steps + step_pos;
 	struct _statGraph_step* last_step = step_pos == 0? 0 : step - 1;
 
 	int i, err;
 	for (i = 0; i < step->num_stats; ++i) {
-		double** outputs = malloc(sizeof(double*) * step->num_outputs);
-		if ((err = executeStat(last_step, step->stats + i, outputs))) {
+		if ((err = executeStat(last_step, step->stats + i))) {
+			#ifdef DEBUG
+				printf("----- error:::executeGraphStep: %i\n", err);
+			#endif
+
 			return err;
 		}
 	}
 
+	#ifdef DEBUG
+		printf("----- end:::executeGraphStep\n");
+	#endif
 	return 0;
 }

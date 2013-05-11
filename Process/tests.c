@@ -82,7 +82,7 @@ void testStatGraph() {
 	char* query = getQuoteQS("eod", querya);
 	free(querya);
 
-	temp = strlen(query);
+	temp = strlen(query) + 1;
 	memcpy(data+pos, &temp, sizeof(int)); // byte size for setting
 	pos += sizeof(int);
 
@@ -129,7 +129,7 @@ void testStatGraph() {
 	memcpy(data+pos, &temp, sizeof(int)); // input map which stat?
 	pos += sizeof(int);
 
-	temp = 0;
+	temp = 4;
 	memcpy(data+pos, &temp, sizeof(int)); // input map which output?
 	pos += sizeof(int);
 
@@ -143,7 +143,9 @@ void testStatGraph() {
 	printf("step: %i\n", getGraphStep(graph));
 
 	executeGraphStep(graph, 0);
+	executeGraphStep(graph, 1);
 
+	printArray(graph->steps[1].stats[0].outputs[0].values, graph->steps[1].stats[0].outputs[0].len);
 	return;
 }
 
