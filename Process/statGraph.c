@@ -2,13 +2,16 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "quote.h"
+
 #include "statGraph.h"
 
-// #define DEBUG
+#define DEBUG
 
 /*
 
-	Todo: How should settings be passed through?
+	Stat data schema
+	================
 
 	Data format
 	- number of steps
@@ -23,107 +26,130 @@
 			- number of inputs for stat
 			- {foreach input}
 				- input map corresponding to last output
+			- number of outputs for stat
 */
 
-struct graph* buildGraph(void** inputs, void* data, int len) {
-	struct graph* res = malloc(sizeof(struct graph));
-	res->inputs = inputs;
+int buildStat(struct _statGraph_stat* stat, void* data) {
+	int pos = 0;
 
-	int intSize = sizeof(int);
-
-	int pos = 0, i, j, k;
-	memcpy(&res->steps_len, data, intSize); pos += intSize;
+	memcpy(&stat->stat, data, sizeof(int)); pos += sizeof(int);
 	#ifdef DEBUG
-	printf("# of steps: %i\n", res->steps_len);
+		printf("\tstatId: %i\n", stat->stat);
 	#endif
 
-	res->steps = malloc(sizeof(struct step) * res->steps_len);
+	memcpy(&stat->num_settings, data + pos, sizeof(int)); pos += sizeof(int);
+	#ifdef DEBUG
+		printf("\tnumber of settings: %i\n", stat->num_settings);
+	#endif
 
-	for (i = 0; i < res->steps_len; ++i) { // {foreach step}
-		struct step* step = res->steps + i;
-		
-		memcpy(&step->stats_len, data + pos, intSize); pos += intSize; // number of stats for step
-		
-		#ifdef DEBUG
-		printf("\t# of stats: %i\n", step->stats_len);
-		#endif
+	stat->settings = malloc(sizeof(struct _statGraph_setting) * stat->num_settings);
+	int i;
+	for (i = 0; i < stat->num_settings; ++i) {
+		memcpy(&stat->settings[i].len, data + pos, sizeof(int)); pos += sizeof(int);
+		stat->settings[i].data = malloc(stat->settings[i].len);
+		memcpy(stat->settings[i].data, data + pos, stat->settings[i].len); pos += stat->settings[i].len;
+	}
 
-		step->stats = malloc(sizeof(int) * step->stats_len);
-		step->settings = malloc(sizeof(void*) * step->stats_len);
-		step->setting_sizes = malloc(sizeof(int*) * step->stats_len);
-		step->settings_len = malloc(sizeof(int) * step->stats_len);
-		step->input_maps = malloc(sizeof(int*) * step->stats_len);
-		step->outputs = 0;
-		
-		for (j = 0; j < res->steps[i].stats_len; ++j) { // {foreach stat}
-			memcpy(step->stats + j, data + pos, intSize); pos += intSize; // stat id number
-			
+	memcpy(&stat->num_inputs, data + pos, sizeof(int)); pos += sizeof(int);
+	#ifdef DEBUG
+		printf("\tnumber of inputs: %i\n", stat->num_inputs);
+	#endif
+
+	stat->inputs = malloc(sizeof(struct _statGraph_input) * stat->num_inputs);
+	memcpy(stat->inputs, data + pos, sizeof(struct _statGraph_input) * stat->num_inputs); pos += sizeof(struct _statGraph_input) * stat->num_inputs;
+
+	memcpy(&stat->num_outputs, data + pos, sizeof(int)); pos += sizeof(int);
+	#ifdef DEBUG
+		printf("\tnumber of outputs: %i\n", stat->num_outputs);
+	#endif
+
+	stat->outputs = 0;
+	return pos;
+}
+
+StatGraph* buildGraph(void* data) {
+	#ifdef DEBUG
+		printf("----- start:::buildGraph\n");
+	#endif
+
+	StatGraph* res = malloc(sizeof(StatGraph));
+
+	int pos = 0;
+	memcpy(&res->num_steps, data+pos, sizeof(int)); pos += sizeof(int);
+
+	#ifdef DEBUG
+		printf("# of steps: %i\n", res->num_steps);
+	#endif
+
+	res->steps = malloc(sizeof(struct _statGraph_step));
+
+	int i, j;
+	for (i = 0; i < res->num_steps; ++i) {
+		memcpy(&res->steps[i].num_stats, data + pos, sizeof(int)); pos += sizeof(int);
+		res->steps[i].stats = malloc(sizeof(struct _statGraph_stat));
+
+		for (j = 0; j < res->steps[i].num_stats; ++j) {
+			pos += buildStat(res->steps[i].stats + j, data + pos);
 			#ifdef DEBUG
-			printf("\t\tstat id: %i\n", step->stats[j]);
+				printf("\n");
 			#endif
-
-			memcpy(step->settings_len + j, data + pos, intSize); // number of settings for stat
-			
-			#ifdef DEBUG
-			printf("\t\t# of settings: %i\n", step->settings_len[j]);
-			#endif
-
-			step->setting_sizes[j] = malloc(intSize * step->settings_len[j]);
-			step->settings[j] = malloc(sizeof(void*) * step->settings_len[j]);
-			pos += intSize;
-
-			for (k = 0; k < step->settings_len[j]; ++k) { // {foreach setting}
-				memcpy(step->setting_sizes[j] + k, data + pos, intSize); pos += intSize;
-				
-				#ifdef DEBUG
-				printf("\t\t\tsetting size: %i\n", step->setting_sizes[j][k]);
-				#endif
-
-				step->settings[j][k] = malloc(step->setting_sizes[j][k]);
-				memcpy(step->settings[j][k], data + pos, step->setting_sizes[j][k]); pos += step->setting_sizes[j][k];
-				
-				#ifdef DEBUG
-				printf("\t\t\tsetting value: %s\n", step->settings[j][k]);
-				#endif
-			}
-
-			int input_maps_len;
-			memcpy(&input_maps_len, data + pos, intSize); pos += intSize;
-			
-			#ifdef DEBUG
-			printf("\t\t# of inptus: %i\n", input_maps_len);
-			#endif
-			
-			if (input_maps_len > 0) {
-				step->input_maps[j] = malloc(intSize * input_maps_len);
-				memcpy(step->input_maps + j, data + pos, intSize * input_maps_len); pos += intSize * input_maps_len;
-			}
 		}
 	}
+
+	#ifdef DEBUG
+		printf("----- end:::buildGraph\n");
+	#endif
 
 	return res;
 }
 
-int getGraphStep(struct graph* graph) {
+int getGraphStep(StatGraph* graph) {
 	int step = 0;
-	while(graph->steps[step].outputs) ++step;
+	while(graph->steps[step].stats[0].outputs) ++step;
 	return step;
 }
 
-double* executeStat(void** inputs, int* input_map, int stat) {
+int executeStat(struct _statGraph_step* last_step, struct _statGraph_stat* stat, double** outputs) {
+	// struct outDump* out = malloc(sizeof(struct outDump));
+
+	// if (stat == 1) { // sql query
+	// 	char* query = settings[0];
+	// 	char* queryFixed = malloc(settings_sizes[0] + 1);
+	// 	memcpy(queryFixed, query, settings_sizes[0]);
+	// 	queryFixed[settings_sizes[0]] = '\0';
+	// 	free(query);
+	// 	QUOTES* quotes = getQuotesByQuery(queryFixed);
+	// 	free(queryFixed);
+
+	// 	out->outputs = malloc(sizeof(double*) * 6);
+	// 	out->outputs[0] = quotes->utime;
+	// 	out->outputs[1] = quotes->high;
+	// 	out->outputs[2] = quotes->low;
+	// 	out->outputs[3] = quotes->open;
+	// 	out->outputs[4] = quotes->close;
+	// 	out->outputs[5] = quotes->volume;
+
+	// 	out->outputs_len = 6;
+	// 	out->output_size = quotes->count;
+
+	// 	return out;
+	// }
+
 	return 0;
 }
 
-void executeGraphStep(struct graph* graph, int step_pos) {
-	void** last_output = step_pos == 0? 
-		graph->inputs : 
-		(void**)graph->steps[step_pos - 1].outputs;
+int executeGraphStep(StatGraph* graph, int step_pos) {
 
-	int i;
-	struct step* step = graph->steps + step_pos;
-	step->outputs = malloc(sizeof(void*) * step->stats_len);
-	for (i = 0; i < step->stats_len; ++i) {
-		int* input_map = step->input_maps[i];
-		step->outputs[i] = executeStat(last_output, input_map, step->stats[i]);
+	struct _statGraph_step* step = graph->steps + step_pos;
+	struct _statGraph_step* last_step = step_pos == 0? 0 : step - 1;
+
+	int i, err;
+	for (i = 0; i < step->num_stats; ++i) {
+		double** outputs = malloc(sizeof(double*) * step->num_outputs);
+		if ((err = executeStat(last_step, step->stats + i, outputs))) {
+			return err;
+		}
 	}
+
+	return 0;
 }

@@ -4,7 +4,8 @@
 #include <mysql.h>
 
 MYSQL_RES* DB_query(char* query);
-int DB_numRows(MYSQL_RES* res);
+
+void printDBErrors();
 
 void DB_connect();
 void DB_close();

@@ -14,6 +14,7 @@ struct _QUOTES {
 } typedef QUOTES;
 
 QUOTES* getQuotes(MYSQL_RES* res);
+QUOTES* getQuotesByQuery(char* query);
 void printQuote(QUOTES* quotes, int place);
 
 char* getQuoteQS(char* series, char* query);

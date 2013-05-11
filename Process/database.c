@@ -23,10 +23,6 @@ void initDBSync() {
 	pthread_mutex_init(&queryDBLock, 0);
 }
 
-int DB_numRows(MYSQL_RES* res) {
-	return mysql_num_rows(res);
-}
-
 void printDBErrors() {
 	printf("MYSQL ERROR: %s\n", mysql_error(conn));
 }
@@ -43,8 +39,4 @@ void DB_close() {
 	if (!conn) return;
 	mysql_close(conn);
 	conn = 0;
-}
-
-void DB_freeRes(MYSQL_RES* res) {
-	mysql_free_result(res);
 }

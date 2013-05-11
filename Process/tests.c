@@ -78,7 +78,7 @@ void testStatGraph() {
 	memcpy(data+pos, &temp, sizeof(int)); // number of settings (1)
 	pos += sizeof(int);
 
-	char* querya = getQuoteQSRange("GOOG", 0, 99999999);
+	char* querya = getQuoteQSRange("GOOG", 0, 9999999999);
 	char* query = getQuoteQS("eod", querya);
 	free(querya);
 
@@ -93,6 +93,10 @@ void testStatGraph() {
 
 	temp = 0;
 	memcpy(data+pos, &temp, sizeof(int)); // number of inputs (0)
+	pos += sizeof(int);
+
+	temp = 6;
+	memcpy(data+pos, &temp, sizeof(int)); // number of outputs
 	pos += sizeof(int);
 
 	// -------- new step --------
@@ -122,22 +126,32 @@ void testStatGraph() {
 	pos += sizeof(int);
 
 	temp = 0;
-	memcpy(data+pos, &temp, sizeof(int)); // input map (0)
+	memcpy(data+pos, &temp, sizeof(int)); // input map which stat?
+	pos += sizeof(int);
+
+	temp = 0;
+	memcpy(data+pos, &temp, sizeof(int)); // input map which output?
+	pos += sizeof(int);
+
+	temp = 1;
+	memcpy(data+pos, &temp, sizeof(int)); // number of outputs
 	pos += sizeof(int);
 
 
-	struct graph* graph = buildGraph(0, data, pos);
+	StatGraph* graph = buildGraph(data);
 
 	printf("step: %i\n", getGraphStep(graph));
+
+	executeGraphStep(graph, 0);
 
 	return;
 }
 
 int main(int args, char** argv) {
-	// DB_connect();
+	DB_connect();
 
+	// testQuoteQuery();
 	testStatGraph();
 
-	// DB_close();
-	// return 0;
+	DB_close();
 }

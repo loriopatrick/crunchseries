@@ -21,7 +21,7 @@ int getQuote(MYSQL_RES* res, QUOTES* quotes, int pos) {
 }
 
 QUOTES* getQuotes(MYSQL_RES* res) {
-	int count = DB_numRows(res);
+	int count = mysql_num_rows(res);
 	if (count <= 0) return 0;
 
 	QUOTES* quotes = malloc(sizeof(QUOTES));
@@ -37,6 +37,13 @@ QUOTES* getQuotes(MYSQL_RES* res) {
 	int pos = 0;
 	while(getQuote(res, quotes, pos++));
 
+	return quotes;
+}
+
+QUOTES* getQuotesByQuery(char* query) {
+	MYSQL_RES* res = DB_query(query);
+	QUOTES* quotes = getQuotes(res);
+	mysql_free_result(res);
 	return quotes;
 }
 
