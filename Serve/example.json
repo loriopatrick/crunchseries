@@ -1,38 +1,43 @@
 {
 	"nodes":{
 		"db":{
-			"statId":1,
-			"settings":{
-				"series":"eod",
-				"symbol":"GOOG",
-				"beginUTime":0,
-				"endUTime":0
-			}
+			"statId":1
 		},
 		"sma":{
 			"statId":2,
-			"settings":{
-				"period_size":12
-			},
-			"inputs":{
-				"values":{
+			"inputs": [
+				{
 					"node":"db",
 					"output":4
 				}
-			}
+			]
+		},
+		"stdv":{
+			"statId":3,
+			"inputs": [
+				{
+					"node":"db",
+					"output":4
+				}
+			]
 		},
 		"output":{
-			"statId":0,
-			"inputs":{
-				"SMA":{
+			"statId":-1,
+			"inputs":[
+				{
 					"node":"sma",
 					"output":0
 				},
-				"TIME":{
+				{
 					"node":"db",
 					"output":0
+				},
+				{
+					"node":"stdv",
+					"output":0
 				}
-			}
+			]
 		}
-	}
+	},
+	"end":"output"
 }
