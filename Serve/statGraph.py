@@ -1,54 +1,140 @@
 """
 Turns JSON statGraph data into Process statGraph data
-nodes -> steps
+nodes -> steps -> binary
 """
 
 statInfo = {
 	'-1':{
-		'name':'Output'
+		'name':'Output',
+		'outputs':-1
 	},
 	'0':{
 		'name':'Copy',
-		'inputs':{
-			'data':0
-		},
+		'inputs':1,
 		'outputs':1
 	},
 	'1':{
 		'name':'SQL',
 		'inputs':0,
-		'settings':[]
+		'settings':{
+			'series':{
+				'type':'s',
+				'size':3
+			},
+			'symbol':{
+				'type':'s',
+				'size':0
+			},
+			'begin':{
+				'type':'d',
+				'size':8
+			},
+			'end':{
+				'type':'d',
+				'size':8
+			}
+		},
+		'outputs':6
+	},
+	'2':{
+		'name':'Simple Moving Average',
+		'inputs':1,
+		'settings':{
+			'period_size':{
+				'type':'i',
+				'size':4
+			}
+		},
+		'outputs':1
+	},
+	'3':{
+		'name':'Exponential Moving Average',
+		'inputs':1,
+		'settings':{
+			'period_size':{
+				'type':'i',
+				'size':4
+			}
+		},
+		'outputs':1
+	},
+	'4':{
+		'name':'Standard Deviation',
+		'inputs':1,
+		'settings':{
+			'period_size':{
+				'type':'i',
+				'size':4
+			}
+		},
+		'outputs':1
 	}
 }
 
-class Node:
-	def __init__(self, id, data):
-		self.id = id
-		self.data = data
-		self.order = -1
-	
-	def serialize(self):
-		pass
+import struct
 
-	def get_inputs(self, nodes):
+class Node:
+	def __init__(self, id):
+		self.id = id
+		self.order = -1
+
+	def set_data(self, statId, inputs, settings, outputs):
+		self.data = data
+		self.statId = statId
+		self.inputs_len = inputs
+		self.settings_map = settings
+		self.outputs_len = outputs
+
+	def set_settings(self, settings):
+		self.settings = []
+		for setting_map in self.settings_map:
+			got = False
+			for setting in settings:
+				if setting == setting_map:
+					got = True
+					setting_dict = {
+						'value':settings[setting]
+					}
+					setting_map_dict = self.settings_map[setting_map]
+					s_type, s_size = setting_map_dict['type'], setting_map_dict['size']
+					print s_type, s_size
+
+	def set_inputs(self, inputs, nodes):
 		self.inputs = []
 
-		if 'inputs' not in self.data:
+		if inputs is None:
 			return
 		
-		for inp in self.data['inputs']:
+		for inp in inputs:
 			self.inputs.append({
 				'node':nodes[inp['node']],
 				'output':inp['output']
 			})
+	
+	def serialize(self):
+		data = struct.pack('ii', self.statInfo, len(self.settings))
+		for setting in self.settings:
+			pass
+
+	def __str__(self):
+		return str(self.id)
 
 def get_nodes(data):
 	nodes = {}
-	for node in data['nodes']:
-		nodes[node] = Node(node, data['nodes'][node])
+	for node_id in data['nodes']:
+		node = Node(node_id)
+		node_data = data['nodes'][node_id]
+		node.inputs_data = node_data.get('inputs', None)
+		stat_info = statInfo[str(node_data['statId'])]
+		node.set_data(
+			statId=node_data['statId'], 
+			inputs=stat_info.get('inputs', 0), 
+			settings=stat_info.get('settings', []), 
+			outputs=stat_info['outputs'])
+		nodes[node_id] = node
 
 	for node in nodes:
-		nodes[node].get_inputs(nodes)
+		nodes[node].set_inputs(nodes[node].inputs_data, nodes)
 
 	return nodes
 
@@ -83,13 +169,14 @@ def build_steps(nodes):
 	return res
 
 def get_copy_node(node, output):
-	copy = Node(0, None)
+	copy = Node('0')
 	copy.inputs = [
 		{
 			'node':node,
 			'output':output
 		}
 	]
+	copy.set_data(statId=0, inputs=1, settings=[], outputs=1)
 
 	return copy
 
@@ -102,12 +189,41 @@ def fill_steps(steps):
 					copy_node = get_copy_node(inp['node'], inp['output'])
 					steps[step + 1].append(copy_node)
 
+def build_input_maps(steps, nodes):
+	steps_len = len(steps)
+	step_outputs = []
+	for step in range(0, steps_len):
+		step = steps_len - step - 1
+		new_step_outputs = []
+		for node in steps[step]:
 
-def connect_steps(steps):
-	pass
+			node.input_map = []
+			for inp in node.inputs:
+				# map inputs to step_outputs
+				got = False
+				for i in range(0, len(step_outputs)):
+					output = step_outputs[i]
+					if output['node'].id == '0':
+						output = output['node'].inputs[0]
+
+					if output['node'].id == inp['node'].id and output['output'] == inp['output']:
+						node.input_map.append(i)
+						got = True
+						break
+
+				if not got:
+					raise Exception('Could not find value stat: %s inputs' % node.id)
+			
+			for output in range(0, node.outputs_len):
+				# build new step_outputs
+				new_step_outputs.append({'node':node, 'output':output})
+			
+
+		step_outputs = new_step_outputs
 
 def serialize_steps(steps):
 	pass
+
 
 if __name__ == '__main__':
 	import json
@@ -119,9 +235,7 @@ if __name__ == '__main__':
 	order_nodes([nodes[data['end']]])
 	steps = build_steps(nodes)
 	fill_steps(steps)
-	connect_steps(steps)
-
-	# print steps
+	build_input_maps(steps, nodes)
 
 	# for node in nodes:
 	# 	print '%s - %s' % (node, nodes[node].order)
