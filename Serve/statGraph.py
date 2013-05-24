@@ -97,7 +97,13 @@ class Node:
 					}
 					setting_map_dict = self.settings_map[setting_map]
 					s_type, s_size = setting_map_dict['type'], setting_map_dict['size']
-					print s_type, s_size
+					setting_dict['type'] = s_type
+					setting_dict['size'] = s_size
+					self.settings.append(setting_dict)
+					break
+
+			if got is False:
+				raise Exception('Settings for stat doesn\'t fit template')
 
 	def set_inputs(self, inputs, nodes):
 		self.inputs = []
@@ -112,9 +118,31 @@ class Node:
 			})
 	
 	def serialize(self):
-		data = struct.pack('ii', self.statInfo, len(self.settings))
+		print 'serialize', self.id, self.settings
+		data = struct.pack('=ii', self.statId, len(self.settings))
 		for setting in self.settings:
-			pass
+			size, value, value_type = setting['size'], setting['value'], setting['type']
+			
+			if value_type == 's':
+				if size == 0:
+					size = len(value)
+				value = value[:size]
+
+			data += struct.pack('i', size)
+
+			if value_type == 's':
+				value_type = 's%s' % size
+				value = str(value)
+
+			data += struct.pack('=%s' % value_type, value)
+
+		data += struct.pack('=i', len(self.input_map))
+		for inp in self.input_map:
+			data += struct.pack('=i', inp)
+
+		data += struct.pack('=i', self.outputs_len)
+
+		return data
 
 	def __str__(self):
 		return str(self.id)
@@ -131,6 +159,7 @@ def get_nodes(data):
 			inputs=stat_info.get('inputs', 0), 
 			settings=stat_info.get('settings', []), 
 			outputs=stat_info['outputs'])
+		node.set_settings(node_data.get('settings', None))
 		nodes[node_id] = node
 
 	for node in nodes:
@@ -177,6 +206,7 @@ def get_copy_node(node, output):
 		}
 	]
 	copy.set_data(statId=0, inputs=1, settings=[], outputs=1)
+	copy.set_settings(None)
 
 	return copy
 
@@ -222,8 +252,16 @@ def build_input_maps(steps, nodes):
 		step_outputs = new_step_outputs
 
 def serialize_steps(steps):
-	pass
+	steps_len = len(steps)
+	data = struct.pack('=i', steps_len)
 
+	for step in range(0, steps_len):
+		step = steps_len - step - 1
+		data += struct.pack('=i', len(steps[step]))
+		for node in steps[step]:
+			data += node.serialize()
+
+	return data
 
 if __name__ == '__main__':
 	import json
@@ -236,6 +274,12 @@ if __name__ == '__main__':
 	steps = build_steps(nodes)
 	fill_steps(steps)
 	build_input_maps(steps, nodes)
+	data = serialize_steps(steps)
+	# print data
+
+	toHex = lambda x:'0x%s' % ',0x'.join([hex(ord(c))[2:].zfill(2) for c in x])
+
+	print data.encode('hex')
 
 	# for node in nodes:
 	# 	print '%s - %s' % (node, nodes[node].order)
