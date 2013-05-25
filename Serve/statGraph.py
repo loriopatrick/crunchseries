@@ -71,6 +71,12 @@ statInfo = {
 	}
 }
 
+def intArray(s):
+	res = ':: '
+	for x in s:
+		res += str(ord(x)) + ', '
+	return res
+
 import struct
 
 class Node:
@@ -118,8 +124,9 @@ class Node:
 			})
 	
 	def serialize(self):
-		print 'serialize', self.id, self.settings
 		data = struct.pack('=ii', self.statId, len(self.settings))
+		print self.statId, 'i', 'statId', intArray(struct.pack('i', self.statId))
+		print len(self.settings), 'i', 'settings len', intArray(struct.pack('i', len(self.settings)))
 		for setting in self.settings:
 			size, value, value_type = setting['size'], setting['value'], setting['type']
 			
@@ -129,18 +136,26 @@ class Node:
 				value = value[:size]
 
 			data += struct.pack('i', size)
+			print size, 'i', 'setting size', intArray(struct.pack('i', size))
 
 			if value_type == 's':
-				value_type = 's%s' % size
+				value_type = '%ss' % size
 				value = str(value)
 
+			print value, value_type, 'setting', intArray(struct.pack('=%s' % value_type, value)), struct.pack('%s' % value_type, value)
 			data += struct.pack('=%s' % value_type, value)
 
 		data += struct.pack('=i', len(self.input_map))
+		print len(self.input_map), 'i', 'inputs len', intArray(struct.pack('=i', len(self.input_map)))
+		
 		for inp in self.input_map:
-			data += struct.pack('=i', inp)
+			print inp, 'i', 'input map stat pos', intArray(struct.pack('=i', inp[0]))
+			print inp, 'i', 'input map stat output', intArray(struct.pack('=i', inp[1]))
+			data += struct.pack('=i', inp[0])
+			data += struct.pack('=i', inp[1])
 
 		data += struct.pack('=i', self.outputs_len)
+		print self.outputs_len, 'i', 'outputs', intArray(struct.pack('=i', self.outputs_len))
 
 		return data
 
@@ -225,8 +240,8 @@ def build_input_maps(steps, nodes):
 	for step in range(0, steps_len):
 		step = steps_len - step - 1
 		new_step_outputs = []
+		node_pos = 0
 		for node in steps[step]:
-
 			node.input_map = []
 			for inp in node.inputs:
 				# map inputs to step_outputs
@@ -237,7 +252,7 @@ def build_input_maps(steps, nodes):
 						output = output['node'].inputs[0]
 
 					if output['node'].id == inp['node'].id and output['output'] == inp['output']:
-						node.input_map.append(i)
+						node.input_map.append((node_pos, output['output']))
 						got = True
 						break
 
@@ -246,7 +261,9 @@ def build_input_maps(steps, nodes):
 			
 			for output in range(0, node.outputs_len):
 				# build new step_outputs
-				new_step_outputs.append({'node':node, 'output':output})
+				new_step_outputs.append({'node':node, 'output':output, 'node_pos':node_pos})
+
+			node_pos += 1
 			
 
 		step_outputs = new_step_outputs
@@ -254,10 +271,12 @@ def build_input_maps(steps, nodes):
 def serialize_steps(steps):
 	steps_len = len(steps)
 	data = struct.pack('=i', steps_len)
+	print steps_len, 'i', 'steps len', intArray(struct.pack('=i', steps_len))
 
 	for step in range(0, steps_len):
 		step = steps_len - step - 1
 		data += struct.pack('=i', len(steps[step]))
+		print len(steps[step]), 'i', 'stats len', intArray(struct.pack('=i', len(steps[step])))
 		for node in steps[step]:
 			data += node.serialize()
 
@@ -277,9 +296,9 @@ if __name__ == '__main__':
 	data = serialize_steps(steps)
 	# print data
 
-	toHex = lambda x:'0x%s' % ',0x'.join([hex(ord(c))[2:].zfill(2) for c in x])
+	print intArray(data)
 
-	print data.encode('hex')
+	# print data.encode('hex')
 
 	# for node in nodes:
 	# 	print '%s - %s' % (node, nodes[node].order)
