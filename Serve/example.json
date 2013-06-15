@@ -2,12 +2,12 @@
 	"nodes":{
 		"db":{
 			"statId":1,
-			"settings":{
-				"series":"eod",
-				"symbol":"GOOG",
-				"begin":0,
-				"end":999999999999
-			}
+			"settings": [
+				"eod",
+				"GOOG",
+				0.0,
+				999999999999.0
+			]
 		},
 		"sma":{
 			"statId":2,
@@ -17,24 +17,24 @@
 					"output":4
 				}
 			],
-			"settings": {
-				"period_size":24
-			}
+			"settings": [
+				24
+			]
 		},
-		"ema":{
-			"statId":3,
+		"stdv":{
+			"statId":4,
 			"inputs": [
 				{
 					"node":"db",
 					"output":4
 				}
 			],
-			"settings":{
-				"period_size":24
-			}
+			"settings": [
+				24
+			]
 		},
 		"output":{
-			"statId":-1,
+			"statId":0,
 			"inputs":[
 				{
 					"node":"sma",
@@ -45,11 +45,11 @@
 					"output":0
 				},
 				{
-					"node":"ema",
+					"node":"stdv",
 					"output":0
 				}
 			]
 		}
 	},
-	"end":"output"
+	"head":"output"
 }

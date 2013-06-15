@@ -26,21 +26,16 @@ struct _statGraph_stat {
 	int num_inputs;
 
 	struct _statGraph_output* outputs;
-	int num_outputs;
-};
-
-struct _statGraph_step {
-	struct _statGraph_stat* stats;
-	int num_stats;
 };
 
 struct _statGraph_graph {
-	struct _statGraph_step* steps;
-	int num_steps;
+	struct _statGraph_stat* stats;
+	int num_stats;
+
+	int head;
 } typedef StatGraph;
 
 StatGraph* buildGraph(void* data);
-int getGraphStep(StatGraph* graph);
-int executeGraphStep(StatGraph* graph, int step_pos);
+int runStat(struct _statGraph_stat* stat, StatGraph* graph);
 
 #endif
