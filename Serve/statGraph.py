@@ -1,304 +1,98 @@
-"""
-Turns JSON statGraph data into Process statGraph data
-nodes -> steps -> binary
-"""
+from struct import pack
 
-statInfo = {
-	'-1':{
-		'name':'Output',
-		'outputs':-1
-	},
-	'0':{
-		'name':'Copy',
-		'inputs':1,
-		'outputs':1
-	},
-	'1':{
-		'name':'SQL',
-		'inputs':0,
-		'settings':{
-			'series':{
-				'type':'s',
-				'size':3
-			},
-			'symbol':{
-				'type':'s',
-				'size':0
-			},
-			'begin':{
-				'type':'d',
-				'size':8
-			},
-			'end':{
-				'type':'d',
-				'size':8
-			}
-		},
-		'outputs':6
-	},
-	'2':{
-		'name':'Simple Moving Average',
-		'inputs':1,
-		'settings':{
-			'period_size':{
-				'type':'i',
-				'size':4
-			}
-		},
-		'outputs':1
-	},
-	'3':{
-		'name':'Exponential Moving Average',
-		'inputs':1,
-		'settings':{
-			'period_size':{
-				'type':'i',
-				'size':4
-			}
-		},
-		'outputs':1
-	},
-	'4':{
-		'name':'Standard Deviation',
-		'inputs':1,
-		'settings':{
-			'period_size':{
-				'type':'i',
-				'size':4
-			}
-		},
-		'outputs':1
-	}
-}
-
-def intArray(s):
-	res = ':: '
-	for x in s:
-		res += str(ord(x)) + ', '
-	return res
-
-import struct
-
-class Node:
-	def __init__(self, id):
-		self.id = id
-		self.order = -1
-
-	def set_data(self, statId, inputs, settings, outputs):
+class StatGraphSerializer:
+	def __init__(self, data):
 		self.data = data
-		self.statId = statId
-		self.inputs_len = inputs
-		self.settings_map = settings
-		self.outputs_len = outputs
 
-	def set_settings(self, settings):
-		self.settings = []
-		for setting_map in self.settings_map:
-			got = False
-			for setting in settings:
-				if setting == setting_map:
-					got = True
-					setting_dict = {
-						'value':settings[setting]
-					}
-					setting_map_dict = self.settings_map[setting_map]
-					s_type, s_size = setting_map_dict['type'], setting_map_dict['size']
-					setting_dict['type'] = s_type
-					setting_dict['size'] = s_size
-					self.settings.append(setting_dict)
-					break
+	def get_nodes(self):
+		res = []
+		for node_name in self.data['nodes']:
+			res.append((node_name, self.data['nodes'][node_name]))
 
-			if got is False:
-				raise Exception('Settings for stat doesn\'t fit template')
+		return res
 
-	def set_inputs(self, inputs, nodes):
-		self.inputs = []
+	def prep_node(self, node):
+		if not 'inputs' in node[1]:
+			node[1]['inputs'] = []
 
-		if inputs is None:
-			return
-		
-		for inp in inputs:
-			self.inputs.append({
-				'node':nodes[inp['node']],
-				'output':inp['output']
-			})
-	
+		if not 'settings' in node[1]:
+			node[1]['settings'] = []
+
+		return node
+
+	def serialize_setting(self, setting):
+		if type(setting) == int:
+			value = pack('i', setting)
+			return pack('i', len(value)) + value
+
+		if type(setting) == float:
+			value = pack('d', setting)
+			return pack('i', len(value)) + value
+
+		if type(setting) == str or type(setting) == unicode:
+			setting = str(setting)
+			value = pack('%is' % len(setting), setting)
+			return pack('i', len(value)) + value
+
+		raise Exception('Unknown type: %s' % setting)
+
+	def get_node_pos(self, name, nodes):
+		for x in range(len(nodes)):
+			if name == nodes[x][0]:
+				return x
+		return -1
+
 	def serialize(self):
-		data = struct.pack('=ii', self.statId, len(self.settings))
-		print self.statId, 'i', 'statId', intArray(struct.pack('i', self.statId))
-		print len(self.settings), 'i', 'settings len', intArray(struct.pack('i', len(self.settings)))
-		for setting in self.settings:
-			size, value, value_type = setting['size'], setting['value'], setting['type']
-			
-			if value_type == 's':
-				if size == 0:
-					size = len(value)
-				value = value[:size]
+		'''
+		Format:
+			int # of nodes
+			{foreach node}
+				int statId
+				int # of settings
+				{foreach setting}
+					int # setting size
+					char[] setting value
+				int # of inputs
+				{foreach input}
+					int stat number in array
+					int output
+			int head
+		'''
+		nodes = self.get_nodes()
+		data = pack('i', len(nodes))
 
-			data += struct.pack('i', size)
-			print size, 'i', 'setting size', intArray(struct.pack('i', size))
+		for node in nodes:
+			self.prep_node(node)
 
-			if value_type == 's':
-				value_type = '%ss' % size
-				value = str(value)
+			data += pack('i', node[1]['statId'])
+			data += pack('i', len(node[1]['settings']))
 
-			print value, value_type, 'setting', intArray(struct.pack('=%s' % value_type, value)), struct.pack('%s' % value_type, value)
-			data += struct.pack('=%s' % value_type, value)
+			for setting in node[1]['settings']:
+				data += self.serialize_setting(setting)
 
-		data += struct.pack('=i', len(self.input_map))
-		print len(self.input_map), 'i', 'inputs len', intArray(struct.pack('=i', len(self.input_map)))
-		
-		for inp in self.input_map:
-			print inp, 'i', 'input map stat pos', intArray(struct.pack('=i', inp[0]))
-			print inp, 'i', 'input map stat output', intArray(struct.pack('=i', inp[1]))
-			data += struct.pack('=i', inp[0])
-			data += struct.pack('=i', inp[1])
+			data += pack('i', len(node[1]['inputs']))
+			for dependency in node[1]['inputs']:
+				dep_pos = self.get_node_pos(dependency['node'], nodes)
+				data += pack('i', dep_pos)
+				data += pack('i', dependency['output'])
 
-		data += struct.pack('=i', self.outputs_len)
-		print self.outputs_len, 'i', 'outputs', intArray(struct.pack('=i', self.outputs_len))
+		data += pack('i', self.get_node_pos(self.data['head'], nodes))
 
 		return data
 
-	def __str__(self):
-		return str(self.id)
+	def get_bytes(self, data):
+		res = []
+		for x in data:
+			res.append(str(ord(x)))
+		return ','.join(res)
 
-def get_nodes(data):
-	nodes = {}
-	for node_id in data['nodes']:
-		node = Node(node_id)
-		node_data = data['nodes'][node_id]
-		node.inputs_data = node_data.get('inputs', None)
-		stat_info = statInfo[str(node_data['statId'])]
-		node.set_data(
-			statId=node_data['statId'], 
-			inputs=stat_info.get('inputs', 0), 
-			settings=stat_info.get('settings', []), 
-			outputs=stat_info['outputs'])
-		node.set_settings(node_data.get('settings', None))
-		nodes[node_id] = node
+from json import loads
 
-	for node in nodes:
-		nodes[node].set_inputs(nodes[node].inputs_data, nodes)
+request_data = loads(open('example.json').read())
+parser = StatGraphSerializer(request_data)
+print parser.get_bytes(parser.serialize())
+# dep_tree = tree_dependencies(request_data['end'], request_data)
 
-	return nodes
+# print dep_tree
 
-def order_nodes(to_define, order=0):
-	for node in to_define:
-		if order > node.order:
-			node.order = order
-
-		inputs = node.inputs
-		next_to_define = []
-		for inp in inputs:
-			next_to_define.append(inp['node'])
-		order_nodes(next_to_define, order + 1)
-
-def build_steps(nodes):
-	high_order = 0
-	steps = {}
-
-	for node_id in nodes:
-		node = nodes[node_id]
-		if node.order == -1: continue
-		if str(node.order) not in steps:
-			steps[str(node.order)] = []
-		steps[str(node.order)].append(node)
-		if node.order > high_order:
-			high_order = node.order
-
-	res = []
-	for x in range(0, high_order + 1):
-		res.append(steps[str(x)])	
-
-	return res
-
-def get_copy_node(node, output):
-	copy = Node('0')
-	copy.inputs = [
-		{
-			'node':node,
-			'output':output
-		}
-	]
-	copy.set_data(statId=0, inputs=1, settings=[], outputs=1)
-	copy.set_settings(None)
-
-	return copy
-
-def fill_steps(steps):
-	for step in range(0, len(steps)):
-		step_nodes = steps[step]
-		for node in step_nodes:
-			for inp in node.inputs:
-				if not inp['node'] in steps[step + 1]:
-					copy_node = get_copy_node(inp['node'], inp['output'])
-					steps[step + 1].append(copy_node)
-
-def build_input_maps(steps, nodes):
-	steps_len = len(steps)
-	step_outputs = []
-	for step in range(0, steps_len):
-		step = steps_len - step - 1
-		new_step_outputs = []
-		node_pos = 0
-		for node in steps[step]:
-			node.pos = node_pos
-			node_pos += 1
-
-			node.input_map = []
-			for inp in node.inputs:
-				# map inputs to step_outputs
-				got = False
-				for i in range(0, len(step_outputs)):
-					output = step_outputs[i]
-					if output['node'].id == '0':
-						output = output['node'].inputs[0]
-
-					if output['node'].id == inp['node'].id and output['output'] == inp['output']:
-						node.input_map.append((output['node'].pos, output['output']))
-						got = True
-						break
-
-				if not got:
-					raise Exception('Could not find value stat: %s inputs' % node.id)
-			
-			for output in range(0, node.outputs_len):
-				# build new step_outputs
-				new_step_outputs.append({'node':node, 'output':output, 'node_pos':node_pos})
-
-		step_outputs = new_step_outputs
-
-def serialize_steps(steps):
-	steps_len = len(steps)
-	data = struct.pack('=i', steps_len)
-	print steps_len, 'i', 'steps len', intArray(struct.pack('=i', steps_len))
-
-	for step in range(0, steps_len):
-		step = steps_len - step - 1
-		data += struct.pack('=i', len(steps[step]))
-		print len(steps[step]), 'i', 'stats len', intArray(struct.pack('=i', len(steps[step])))
-		for node in steps[step]:
-			data += node.serialize()
-
-	return data
-
-if __name__ == '__main__':
-	import json
-	f = open('example.json', 'r')
-	data = json.loads(f.read())
-	f.close()
-
-	nodes = get_nodes(data)
-	order_nodes([nodes[data['end']]])
-	steps = build_steps(nodes)
-	fill_steps(steps)
-	build_input_maps(steps, nodes)
-	data = serialize_steps(steps)
-	# print data
-
-	print intArray(data)
-
-	# print data.encode('hex')
-
-	# for node in nodes:
-	# 	print '%s - %s' % (node, nodes[node].order)
+# layers = build_layers(node_data)
