@@ -22,7 +22,7 @@ int getQuote(MYSQL_RES* res, QUOTES* quotes, int pos) {
 
 QUOTES* getQuotes(MYSQL_RES* res) {
 	int count = mysql_num_rows(res);
-	if (count <= 0) return 0;
+	// if (count <= 0) return 0;
 
 	QUOTES* quotes = malloc(sizeof(QUOTES));
 	
@@ -36,7 +36,7 @@ QUOTES* getQuotes(MYSQL_RES* res) {
 
 	int pos = 0;
 	while(getQuote(res, quotes, pos++));
-
+	
 	return quotes;
 }
 
@@ -64,22 +64,19 @@ void printQuote(QUOTES* quotes, int place) {
 }
 
 char* getQuoteQS(char* series, char* query) {
-        int series_len = strlen(series), query_len = strlen(query);
-        char* res = malloc(67 + series_len + query_len);
-        memcpy(res, "SELECT symbol, epoch, high, low, open, close, volume FROM series_", 65);
-        memcpy(res + 65, series, series_len);
-        memcpy(res + 65 + series_len, " ", 1);
-        memcpy(res + 66 + series_len, query, query_len);
-        res[66 + series_len + query_len] = '\0';
-        return res;
+	int series_len = strlen(series), query_len = strlen(query);
+	char* res = malloc(67 + series_len + query_len);
+	memcpy(res, "SELECT symbol, epoch, high, low, open, close, volume FROM series_", 65);
+	memcpy(res + 65, series, series_len);
+	memcpy(res + 65 + series_len, " ", 1);
+	memcpy(res + 66 + series_len, query, query_len);
+	res[66 + series_len + query_len] = '\0';
+	return res;
 }
 
 char* getQuoteQSRange(char* symbol, double begin, double end) {
-        char* format = " WHERE symbol=\"%s\" AND epoch >= %f AND epoch <= %f ORDER BY epoch ASC\0";
-        int query_size = 1 + snprintf(0, 0, format, symbol, begin, end);
-        char* query = malloc(query_size);
-        memset(query, '\0', query_size);
-        sprintf(query, format, symbol, begin, end);
-
-        return query;
+	char* format = " WHERE symbol=\"%s\" AND epoch >= %f AND epoch <= %f ORDER BY epoch ASC\0";
+	char* query = 0;
+	asprintf(&query, format, symbol, begin, end);
+	return query;
 }

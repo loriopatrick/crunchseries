@@ -242,6 +242,9 @@ def build_input_maps(steps, nodes):
 		new_step_outputs = []
 		node_pos = 0
 		for node in steps[step]:
+			node.pos = node_pos
+			node_pos += 1
+
 			node.input_map = []
 			for inp in node.inputs:
 				# map inputs to step_outputs
@@ -252,7 +255,7 @@ def build_input_maps(steps, nodes):
 						output = output['node'].inputs[0]
 
 					if output['node'].id == inp['node'].id and output['output'] == inp['output']:
-						node.input_map.append((node_pos, output['output']))
+						node.input_map.append((output['node'].pos, output['output']))
 						got = True
 						break
 
@@ -262,9 +265,6 @@ def build_input_maps(steps, nodes):
 			for output in range(0, node.outputs_len):
 				# build new step_outputs
 				new_step_outputs.append({'node':node, 'output':output, 'node_pos':node_pos})
-
-			node_pos += 1
-			
 
 		step_outputs = new_step_outputs
 

@@ -61,93 +61,21 @@ void testStats() {
 */
 
 void testStatGraph() {
-	char data[300];
-	int pos = 0;
 
-	int temp = 2;
-	memcpy(data, &temp, sizeof(int)); // number of steps (2)
-	pos += sizeof(int);
+	char data[] = {3, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0, 101, 111, 100, 4, 0, 0, 0, 71, 79, 79, 71, 8, 0, 0, 0, 0, 224, 255, 161, 148, 26, 109, 66, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255};
 
-	temp = 1;
-	memcpy(data+pos, &temp, sizeof(int)); // first step: number of stats (1)
-	pos += sizeof(int);
+	StatGraph* graph = buildGraph(data);
 
-	memcpy(data+pos, &temp, sizeof(int)); // stat id (1[quote query])
-	pos += sizeof(int);
+	printf("\n\n\n");
+	printf("\n\n\n");
+	printf("\n\n\n");
 
-	memcpy(data+pos, &temp, sizeof(int)); // number of settings (1)
-	pos += sizeof(int);
-
-	char* querya = getQuoteQSRange("GOOG", 0, 9999999999);
-	char* query = getQuoteQS("eod", querya);
-	free(querya);
-
-	temp = strlen(query) + 1;
-	memcpy(data+pos, &temp, sizeof(int)); // byte size for setting
-	pos += sizeof(int);
-
-	memcpy(data+pos, query, temp); // setting
-	pos += temp;
-
-	free(query);
-
-	temp = 0;
-	memcpy(data+pos, &temp, sizeof(int)); // number of inputs (0)
-	pos += sizeof(int);
-
-	temp = 6;
-	memcpy(data+pos, &temp, sizeof(int)); // number of outputs
-	pos += sizeof(int);
-
-	// -------- new step --------
-
-	temp = 1;
-	memcpy(data+pos, &temp, sizeof(int)); // number of stats id (2[moving average])
-	pos += sizeof(int);
-
-	temp = 2;
-	memcpy(data+pos, &temp, sizeof(int)); // stat id (2[moving average])
-	pos += sizeof(int);
-
-	temp = 1;
-	memcpy(data+pos, &temp, sizeof(int)); // number of settings
-	pos += sizeof(int);
-
-	temp = sizeof(int);
-	memcpy(data+pos, &temp, sizeof(int)); // byte size of setting
-	pos += sizeof(int);
-
-	temp = 20;
-	memcpy(data+pos, &temp, sizeof(int)); // setting
-	pos += sizeof(int);
-
-	temp = 1;
-	memcpy(data+pos, &temp, sizeof(int)); // number of inputs (1)
-	pos += sizeof(int);
-
-	temp = 0;
-	memcpy(data+pos, &temp, sizeof(int)); // input map which stat?
-	pos += sizeof(int);
-
-	temp = 4;
-	memcpy(data+pos, &temp, sizeof(int)); // input map which output?
-	pos += sizeof(int);
-
-	temp = 1;
-	memcpy(data+pos, &temp, sizeof(int)); // number of outputs
-	pos += sizeof(int);
-
-
-	// StatGraph* graph = buildGraph(data);
-
-	char data2[] = {3, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0, 101, 111, 100, 4, 0, 0, 0, 71, 79, 79, 71, 8, 0, 0, 0, 0, 224, 255, 161, 148, 26, 109, 66, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255};
-
-	StatGraph* testGraph = buildGraph(data2);
-
-	// printf("step: %i\n", getGraphStep(graph));
-
-	// executeGraphStep(graph, 0);
-	// executeGraphStep(graph, 1);
+	printf("Integ:: %i == 3? \n", graph[0].steps[1].stats[0].stat);
+	executeGraphStep(graph, 0);
+	printf("Integ:: %i == 3? \n", graph[0].steps[1].stats[0].stat);
+	executeGraphStep(graph, 1);
+	printf("Integ:: %i == 3? \n", graph[0].steps[1].stats[0].stat);
+	executeGraphStep(graph, 2);
 
 	// printArray(graph->steps[1].stats[0].outputs[0].values, graph->steps[1].stats[0].outputs[0].len);
 	return;

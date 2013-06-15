@@ -9,69 +9,55 @@ class Periods:
 	EOD='eod', 86400
 
 class Series:
-	def __init__(self, period):
+	def __init__(self, symbol, period, search_symbol=None):
 		periods = ['eom', 'eod'] # end of minute, end of day respectively
 
 		if period[0] not in periods:
 			raise Exception('Unkown period: %s, options: %s' % (period, periods))
 
 		self.period = period
+		self._symbol = symbol
+		self._search_symbol = search_symbol
 
-	def save(self, data, cursor):
-		required = ['symbol', 'epoch', 'high', 'low', 'open', 'close', 'volume']
+	def insert(self, data, cursor):
+		required = ['epoch', 'high', 'low', 'open', 'close', 'volume']
 		for item in required:
 			if item not in data:
 				raise Error('%s required in data along with: %s', (item, required))
-		print data
+
+		data['symbol'] = self.symbol
 		cursor.execute(''.join([
-				'INSERT INTO series_', self.period[0], 
-				' (symbol, epoch, high, low, open, close, volume',
-				')VALUES(', 
-				'%(symbol)s, %(epoch)s, %(high)s, %(low)s, %(open)s, %(close)s, %(volume)s)'
-			]), data)
+			'INSERT INTO series_', self.period[0], 
+			' (symbol, epoch, high, low, open, close, volume',
+			')VALUES(', 
+			'%(symbol)s, %(epoch)s, %(high)s, %(low)s, %(open)s, %(close)s, %(volume)s)'
+		]), data)
 
-	def first_epoch(self, symbol, cursor, order='DESC'):
-		cursor.execute('SELECT epoch FROM series_%s WHERE symbol="%s" ORDER BY epoch %s LIMIT 1' % (self.period[0], symbol, order))
-
-		rows = cursor.fetchall()
-		for row in rows:
-			return int(row[0])
-
-	def first_zero_epoch(self, symbol, cursor, order='DESC'):
-		cursor.execute('SELECT epoch FROM series_%s WHERE symbol="%s" AND volume="0" ORDER BY epoch %s LIMIT 1' % (self.period[0], symbol, order))
-
-		rows = cursor.fetchall()
-		for row in rows:
-			return int(row[0])
+	@property
+	def symbol(self):
+		if self._search_symbol is None:
+			return self._symbol
+		return self._search_symbol
 
 
 class GoogleFinace():
-	def __init__(self, symbol, search_symbol=None):
-		self.symbol = symbol
+	def __init__(self, series, span='100Y'):
+		self.series = series
+		self.span = span
 
-		if search_symbol:
-			self.search_symbol = search_symbol
-		else:
-			self.search_symbol = symbol
-
-	def request(self, interval='60', span='100Y'):
 		url = ''.join([
 			'http://www.google.com/finance/getprices',
-			'?p=', span,
-			'&q=', self.symbol,
-			'&i=', str(interval)
+			'?p=', self.span,
+			'&q=', self.series.symbol,
+			'&i=', str(self.series.period[1])
 		])
-
-		print url
 
 		self.data_lines = requests.get(url).text.split('\n')
 
 	def extract(self):
-		if not hasattr(self, 'data_lines'):
-			raise('Rquest has not yet been made')
-
 		header = True
 		last_date = 0
+
 		for line in self.data_lines:
 			if not len(line):
 				continue
@@ -80,10 +66,11 @@ class GoogleFinace():
 				if line.startswith('EXCHANGE%3D'):
 					self.exchange = line[len('EXCHANGE%3D'):]
 					continue
+				
 				if line.startswith('INTERVAL='):
 					self.interval = int(line[len('INTERVAL='):])
-					print 'INTERVAL: %s' % self.interval
 					continue
+				
 				if line.startswith('a'):
 					header = False
 				else:
@@ -102,7 +89,7 @@ class GoogleFinace():
 				date = last_date + self.interval * int(parts[0])
 
 			yield {
-				'symbol':self.symbol,
+				'symbol':self.series.symbol,
 				'epoch':int(date),
 				'close':float(parts[1]),
 				'high':float(parts[2]),
@@ -111,28 +98,35 @@ class GoogleFinace():
 				'volume':int(parts[5])
 			}
 
-	def save(self, series, cursor):
-		extractor = self.extract()
-		first = True
-		for item in extractor:
-
-			if first:
-				first = False
-				if self.interval != series.period[1]:
-					raise Exception('intervals don\'t match')
-
+	def save(self, cursor, extraction=None):
+		if extraction is None:
+			extraction = self.extract()
+		
+		for item in extraction:
 			try:
-				series.save(item, cursor)
-			except:
-				pass
+				series.insert(item, cursor)
+				print 'inserted: %s' % item
+			except Exception as e:
+				if e[0] == 1146:
+					print 'Table doesn\'t exist'
+					break
+				if e[0] == 1062:
+					continue
+				print 'Error: %s' % e
+				break
 
 
 if __name__ == '__main__':
-	series = Series(Periods.EOD)
+	import sys
 
-	test = GoogleFinace('GOOG')
-	test.request(series.period[1])
+	symbol = 'GOOG'
+	if len(sys.argv) > 1:
+		symbol = sys.argv[1]
+
+	series = Series(symbol, Periods.EOD)
+	extractor = GoogleFinace(series)
 
 	cursor = database.cursor()
-	test.save(series, cursor)
+	extractor.save(cursor)
 	database.commit()
+	database.close()

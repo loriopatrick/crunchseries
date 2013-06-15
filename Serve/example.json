@@ -21,7 +21,7 @@
 				"period_size":24
 			}
 		},
-		"stdv":{
+		"ema":{
 			"statId":3,
 			"inputs": [
 				{
@@ -45,7 +45,7 @@
 					"output":0
 				},
 				{
-					"node":"stdv",
+					"node":"ema",
 					"output":0
 				}
 			]

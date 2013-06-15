@@ -1,3 +1,4 @@
+# table series_eom
 create table series_eom(
 	id INT PRIMARY KEY AUTO_INCREMENT,
 	symbol char(8),
@@ -8,7 +9,9 @@ create table series_eom(
 	close double,
 	volume int,
 	UNIQUE KEY `symbol` (`symbol`, `epoch`));
+# table-end
 
+# table series_eod
 create table series_eod(
 	id INT PRIMARY KEY AUTO_INCREMENT,
 	symbol char(8),
@@ -19,3 +22,4 @@ create table series_eod(
 	close double,
 	volume bigint,
 	UNIQUE KEY `symbol` (`symbol`, `epoch`));
+# table-end

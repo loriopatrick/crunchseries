@@ -32,7 +32,7 @@ void DB_connect() {
 	initDBSync();
 	mysql_library_init(0, 0, 0);
 	conn = mysql_init(0);
-	mysql_real_connect(conn, "localhost", "root", "root", "crunchseries", 0, 0, 0);
+	mysql_real_connect(conn, "localhost", "root", "", "crunchseries", 0, 0, 0);
 }
 
 void DB_close() {

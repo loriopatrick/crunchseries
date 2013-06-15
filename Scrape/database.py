@@ -5,7 +5,7 @@ _con = None
 def con():
 	global _con
 	if not _con:
-		_con = MySQLdb.connect('localhost', 'root', 'root', 'crunchseries')
+		_con = MySQLdb.connect('localhost', 'root', '', 'crunchseries')
 	return _con
 
 def cursor():
