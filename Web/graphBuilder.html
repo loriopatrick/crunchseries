@@ -42,16 +42,19 @@
 
 
 <svg width="800" height="600">
+
+	<svg class="lines"></svg>
+
 	<svg class="node" x="10" y="10">
 		<rect class="body" y="15" width="200" height="80" style="fill:blue;" />
 
 		<rect class="handle" y="15" width="200" height="15" fill="green" />
 
-		<rect class="connector" x="5" width="15" height="15" style="fill:grey;" />
+		<rect class="connector" x="5" width="15" height="15" fill="grey" />
 
-		<rect class="connector" y="95" x="5" width="15" height="15" style="fill:grey;" />
+		<rect class="connector" y="95" x="5" width="15" height="15" fill="grey" />
 
-		<text class="connector" x="10" y="60" fill="white">Standard Deviation</text>
+		<text x="10" y="60" fill="white">Standard Deviation</text>
 	</svg>
 
 	<svg class="node" x="10" y="10">
@@ -59,11 +62,11 @@
 
 		<rect class="handle" y="15" width="200" height="15" fill="green" />
 
-		<rect class="connector" x="5" width="15" height="15" style="fill:grey;" />
+		<rect class="connector" x="5" width="15" height="15" fill="grey" />
 
-		<rect class="connector" y="95" x="5" width="15" height="15" style="fill:grey;" />
+		<rect class="connector" y="95" x="5" width="15" height="15" fill="grey" />
 
-		<text class="connector" x="10" y="60" fill="white">Standard Deviation</text>
+		<text x="10" y="60" fill="white">Standard Deviation</text>
 	</svg>
 </svg>
 
@@ -79,7 +82,10 @@
 		}
 
 		var root = $('svg').first();
+		var linesHolder = root.find('svg.lines');
 		var nodes = root.find('svg.node');
+
+		var connections = [];
 
 		var draggingNode = null;
 		var line = null;
@@ -89,7 +95,13 @@
 		$(document.body).mouseup(function () {
 			draggingNode = null;
 			if (lineStart && hoverConnector && lineStart != hoverConnector) {
-				// todo: keep and link line
+				var center = hoverConnector.getCenter();
+				line.attr({
+					'x2': center.x,
+					'y2': center.y
+				});
+				lineStart.addConn(line, true);
+				hoverConnector.addConn(line, false);
 			} else if (line) {
 				line.remove();
 			}
@@ -100,8 +112,21 @@
 
 		$(document.body).mousemove(function (evt) {
 			if (draggingNode) {
-				draggingNode.el.attr('x', evt.pageX - draggingNode.pos.x);
-				draggingNode.el.attr('y', evt.pageY - draggingNode.pos.y);
+				draggingNode.el.attr({
+					'x':evt.pageX - draggingNode.pos.x,
+					'y':evt.pageY - draggingNode.pos.y
+				});
+
+				for (var i = 0; i < draggingNode.el.cons.length; ++i) {
+					var con = draggingNode.el.cons[i];
+					var place = con.isStart? '1' : '2';
+					var center = con.el.getCenter();
+
+					var change = {};
+					change['x' + place] = center.x;
+					change['y' + place] = center.y;
+					con.line.attr(change);
+				}
 			}
 	
 			var rootOffset = root.offset();
@@ -115,6 +140,8 @@
 		nodes.each(function () {
 			var $node = $(this);
 			var $handle = $node.find('.handle').first();
+
+			$node.cons = [];
 
 			$handle.mousedown(function (evt) {
 				var offset = $node.offset();
@@ -135,29 +162,45 @@
 				var $con = $(this);
 
 				$con.hover(function () {
-					hoverConnector = this;
+					hoverConnector = $con;
+					$con.attr('fill', 'yellow');
 				}, function () {
 					hoverConnector = null;
+					$con.attr('fill', 'grey');
 				});
 
-				$con.mousedown(function () {
-					lineStart = this;
-
+				$con.getCenter = function () {
 					var conOffset = $con.offset();
 					var rootOffset = root.offset();
 
 					var x = conOffset.left - rootOffset.left + $con.attr('width') / 2;
 					var y = conOffset.top - rootOffset.top + $con.attr('height') / 2;
 
+					return {x: x, y: y};
+				};
+
+				$con.addConn = function (line, isStart) {
+					$node.cons.push({
+						el: $con,
+						line: line,
+						isStart: isStart
+					});
+				};
+
+				$con.mousedown(function () {
+					lineStart = $con;
+
+					var center = $con.getCenter();
+
 					line = $(makeSVG('line', {
 						'stroke-width': '2',
 						'stroke': 'black',
-						'x1': x,
-						'y1': y,
-						'x2': x,
-						'y2': y
+						'x1': center.x,
+						'y1': center.y,
+						'x2': center.x,
+						'y2': center.y
 					}));
-					line.appendTo(root);
+					line.appendTo(linesHolder);
 				});
 			});
 		});
