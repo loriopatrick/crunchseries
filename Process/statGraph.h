@@ -37,5 +37,6 @@ struct _statGraph_graph {
 
 StatGraph* buildGraph(void* data);
 int runStat(struct _statGraph_stat* stat, StatGraph* graph);
+int runStat(struct _statGraph_stat* stat, StatGraph* graph);
 
 #endif

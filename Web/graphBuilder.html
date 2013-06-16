@@ -1,0 +1,170 @@
+<html>
+<head>
+	<title>Graph Builder</title>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+	<style>
+	#graph {
+		width: 800px;
+		height: 300px;
+		background: blue;
+	}
+	.node {
+		width: 100px;
+		height: 50px;
+		background: white;
+		border: solid 1px black;
+	}
+	.inputs, ul {
+		display: inline;
+		list-style-type: none;
+		padding-right: 20px;
+	}
+	ul > li {
+		background-color: green;
+		float: left;
+		width: 5px;
+		height: 5px;
+	}
+
+	svg {
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
+	</style>
+</head>
+<body>
+
+
+
+
+<svg width="800" height="600">
+	<svg class="node" x="10" y="10">
+		<rect class="body" y="15" width="200" height="80" style="fill:blue;" />
+
+		<rect class="handle" y="15" width="200" height="15" fill="green" />
+
+		<rect class="connector" x="5" width="15" height="15" style="fill:grey;" />
+
+		<rect class="connector" y="95" x="5" width="15" height="15" style="fill:grey;" />
+
+		<text class="connector" x="10" y="60" fill="white">Standard Deviation</text>
+	</svg>
+
+	<svg class="node" x="10" y="10">
+		<rect class="body" y="15" width="200" height="80" style="fill:blue;" />
+
+		<rect class="handle" y="15" width="200" height="15" fill="green" />
+
+		<rect class="connector" x="5" width="15" height="15" style="fill:grey;" />
+
+		<rect class="connector" y="95" x="5" width="15" height="15" style="fill:grey;" />
+
+		<text class="connector" x="10" y="60" fill="white">Standard Deviation</text>
+	</svg>
+</svg>
+
+
+<script>
+	$(function () {
+
+		function makeSVG(tag, attrs) {
+			var el= document.createElementNS('http://www.w3.org/2000/svg', tag);
+			for (var k in attrs)
+			el.setAttribute(k, attrs[k]);
+			return el;
+		}
+
+		var root = $('svg').first();
+		var nodes = root.find('svg.node');
+
+		var draggingNode = null;
+		var line = null;
+		var lineStart = null;
+		var hoverConnector = null;
+
+		$(document.body).mouseup(function () {
+			draggingNode = null;
+			if (lineStart && hoverConnector && lineStart != hoverConnector) {
+				// todo: keep and link line
+			} else if (line) {
+				line.remove();
+			}
+
+			lineStart = null;
+			line = null;
+		});
+
+		$(document.body).mousemove(function (evt) {
+			if (draggingNode) {
+				draggingNode.el.attr('x', evt.pageX - draggingNode.pos.x);
+				draggingNode.el.attr('y', evt.pageY - draggingNode.pos.y);
+			}
+	
+			var rootOffset = root.offset();
+
+			if (line) {
+				line.attr('x2', evt.pageX - rootOffset.left);
+				line.attr('y2', evt.pageY - rootOffset.top);
+			}
+		});
+
+		nodes.each(function () {
+			var $node = $(this);
+			var $handle = $node.find('.handle').first();
+
+			$handle.mousedown(function (evt) {
+				var offset = $node.offset();
+				var relX = evt.pageX - offset.left;
+				var relY = evt.pageY - offset.top;
+
+				draggingNode = {
+					el: $node,
+					pos: {
+						x: relX,
+						y: relY
+					}
+				};
+			});
+
+			var connectors = $node.find('.connector');
+			connectors.each(function () {
+				var $con = $(this);
+
+				$con.hover(function () {
+					hoverConnector = this;
+				}, function () {
+					hoverConnector = null;
+				});
+
+				$con.mousedown(function () {
+					lineStart = this;
+
+					var conOffset = $con.offset();
+					var rootOffset = root.offset();
+
+					var x = conOffset.left - rootOffset.left + $con.attr('width') / 2;
+					var y = conOffset.top - rootOffset.top + $con.attr('height') / 2;
+
+					line = $(makeSVG('line', {
+						'stroke-width': '2',
+						'stroke': 'black',
+						'x1': x,
+						'y1': y,
+						'x2': x,
+						'y2': y
+					}));
+					line.appendTo(root);
+				});
+			});
+		});
+	});
+</script>
+
+
+
+</body>
+</html>
