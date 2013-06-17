@@ -2,12 +2,8 @@
 <head>
 	<title>Graph Builder</title>
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
 	<style>
-	#graph {
-		width: 800px;
-		height: 300px;
-		background: blue;
-	}
 	.node {
 		width: 100px;
 		height: 50px;
@@ -39,172 +35,203 @@
 <body>
 
 
-
-
-<svg width="800" height="600">
-
-	<svg class="lines"></svg>
-
-	<svg class="node" x="10" y="10">
-		<rect class="body" y="15" width="200" height="80" style="fill:blue;" />
-
-		<rect class="handle" y="15" width="200" height="15" fill="green" />
-
-		<rect class="connector" x="5" width="15" height="15" fill="grey" />
-
-		<rect class="connector" y="95" x="5" width="15" height="15" fill="grey" />
-
-		<text x="10" y="60" fill="white">Standard Deviation</text>
-	</svg>
-
-	<svg class="node" x="10" y="10">
-		<rect class="body" y="15" width="200" height="80" style="fill:blue;" />
-
-		<rect class="handle" y="15" width="200" height="15" fill="green" />
-
-		<rect class="connector" x="5" width="15" height="15" fill="grey" />
-
-		<rect class="connector" y="95" x="5" width="15" height="15" fill="grey" />
-
-		<text x="10" y="60" fill="white">Standard Deviation</text>
-	</svg>
-</svg>
-
-
 <script>
-	$(function () {
 
-		function makeSVG(tag, attrs) {
-			var el= document.createElementNS('http://www.w3.org/2000/svg', tag);
-			for (var k in attrs)
-			el.setAttribute(k, attrs[k]);
-			return el;
+	$(function () {
+		var paper = Raphael(0, 0, window.innerWidth, window.innerHeight);
+		var dragNode = null;
+
+		var defaultNode = {
+			x: 0,
+			y: 0,
+			inputs: [{name:'input'}],
+			outputs: [{name:'output'}],
+			settings: []
+		};
+
+		var circle = paper.rect(0, 0, 10, 10);		
+
+		function addNode(opts) {
+			opts = $.extend(true, {}, defaultNode, opts || {});
+
+			var node = paper.set();
+			node.push(
+				paper.rect(0, 15, 200, 80).attr('fill', 'grey')
+				, paper.rect(1, 16, 198, 10)
+					.attr({
+						'fill':'yellow',
+						'stroke-width':0
+					})
+					.drag(function (dx, dy, x, y) {
+						node.translate(dx - this.lastX, dy - this.lastY);
+						this.lastX = dx;
+						this.lastY = dy;
+					}, function () {
+						this.lastX = 0;
+						this.lastY = 0;
+					})
+				, paper.rect(3, 18, 7, 7)
+					.attr('fill', 'red')
+					.dblclick(function () {
+						node.remove()
+					})
+
+				, paper.text(100, 60, 'Standard Deviation').attr('fill', 'black')
+			);
+
+			for (var i = 0; i < opts.inputs.length; ++i) {
+				node.push(
+					paper.rect(0, 30 + i * 15, 10, 10)
+						.attr('fill', 'blue')
+						.drag(function (dx, dy, x, y) {
+							circle.attr({x:x, y:y});
+						})
+				);
+			}
+
+			return node;
 		}
 
-		var root = $('svg').first();
-		var linesHolder = root.find('svg.lines');
-		var nodes = root.find('svg.node');
-
-		var connections = [];
-
-		var draggingNode = null;
-		var line = null;
-		var lineStart = null;
-		var hoverConnector = null;
-
-		$(document.body).mouseup(function () {
-			draggingNode = null;
-			if (lineStart && hoverConnector && lineStart != hoverConnector) {
-				var center = hoverConnector.getCenter();
-				line.attr({
-					'x2': center.x,
-					'y2': center.y
-				});
-				lineStart.addConn(line, true);
-				hoverConnector.addConn(line, false);
-			} else if (line) {
-				line.remove();
-			}
-
-			lineStart = null;
-			line = null;
-		});
-
-		$(document.body).mousemove(function (evt) {
-			if (draggingNode) {
-				draggingNode.el.attr({
-					'x':evt.pageX - draggingNode.pos.x,
-					'y':evt.pageY - draggingNode.pos.y
-				});
-
-				for (var i = 0; i < draggingNode.el.cons.length; ++i) {
-					var con = draggingNode.el.cons[i];
-					var place = con.isStart? '1' : '2';
-					var center = con.el.getCenter();
-
-					var change = {};
-					change['x' + place] = center.x;
-					change['y' + place] = center.y;
-					con.line.attr(change);
-				}
-			}
-	
-			var rootOffset = root.offset();
-
-			if (line) {
-				line.attr('x2', evt.pageX - rootOffset.left);
-				line.attr('y2', evt.pageY - rootOffset.top);
-			}
-		});
-
-		nodes.each(function () {
-			var $node = $(this);
-			var $handle = $node.find('.handle').first();
-
-			$node.cons = [];
-
-			$handle.mousedown(function (evt) {
-				var offset = $node.offset();
-				var relX = evt.pageX - offset.left;
-				var relY = evt.pageY - offset.top;
-
-				draggingNode = {
-					el: $node,
-					pos: {
-						x: relX,
-						y: relY
-					}
-				};
-			});
-
-			var connectors = $node.find('.connector');
-			connectors.each(function () {
-				var $con = $(this);
-
-				$con.hover(function () {
-					hoverConnector = $con;
-					$con.attr('fill', 'yellow');
-				}, function () {
-					hoverConnector = null;
-					$con.attr('fill', 'grey');
-				});
-
-				$con.getCenter = function () {
-					var conOffset = $con.offset();
-					var rootOffset = root.offset();
-
-					var x = conOffset.left - rootOffset.left + $con.attr('width') / 2;
-					var y = conOffset.top - rootOffset.top + $con.attr('height') / 2;
-
-					return {x: x, y: y};
-				};
-
-				$con.addConn = function (line, isStart) {
-					$node.cons.push({
-						el: $con,
-						line: line,
-						isStart: isStart
-					});
-				};
-
-				$con.mousedown(function () {
-					lineStart = $con;
-
-					var center = $con.getCenter();
-
-					line = $(makeSVG('line', {
-						'stroke-width': '2',
-						'stroke': 'black',
-						'x1': center.x,
-						'y1': center.y,
-						'x2': center.x,
-						'y2': center.y
-					}));
-					line.appendTo(linesHolder);
-				});
-			});
-		});
+		addNode(0, 0);
 	});
+
+
+	// $(function () {
+
+		
+
+	// 	var root = $('svg').first();
+	// 	var linesHolder = root.find('svg.lines');
+	// 	var nodes = root.find('svg.node');
+
+	// 	var connections = [];
+
+	// 	var draggingNode = null;
+	// 	var line = null;
+	// 	var lineStart = null;
+	// 	var hoverConnector = null;
+
+	// 	$(document.body).mouseup(function () {
+	// 		draggingNode = null;
+	// 		if (lineStart && hoverConnector && lineStart != hoverConnector && (!hoverConnector.hasCon || hoverConnector.attr('type') != 'input')) {
+	// 			var center = hoverConnector.getCenter();
+	// 			line.attr({
+	// 				'x2': center.x,
+	// 				'y2': center.y
+	// 			});
+	// 			lineStart.addConn(line, true);
+	// 			hoverConnector.addConn(line, false);
+	// 		} else if (line) {
+	// 			line.remove();
+	// 		}
+
+	// 		lineStart = null;
+	// 		line = null;
+	// 	});
+
+	// 	$(document.body).mousemove(function (evt) {
+	// 		if (draggingNode) {
+	// 			draggingNode.el.attr({
+	// 				'x':evt.pageX - draggingNode.pos.x,
+	// 				'y':evt.pageY - draggingNode.pos.y
+	// 			});
+
+	// 			for (var i = 0; i < draggingNode.el.cons.length; ++i) {
+	// 				var con = draggingNode.el.cons[i];
+	// 				var place = con.isStart? '1' : '2';
+	// 				var center = con.el.getCenter();
+
+	// 				var change = {};
+	// 				change['x' + place] = center.x;
+	// 				change['y' + place] = center.y;
+	// 				con.line.attr(change);
+	// 			}
+	// 		}
+	
+	// 		var rootOffset = root.offset();
+
+	// 		if (line) {
+	// 			line.attr('x2', evt.pageX - rootOffset.left);
+	// 			line.attr('y2', evt.pageY - rootOffset.top);
+	// 		}
+	// 	});
+
+	// 	nodes.each(function () {
+	// 		var $node = $(this);
+	// 		var $handle = $node.find('.handle').first();
+
+	// 		$node.cons = [];
+
+	// 		$handle.mousedown(function (evt) {
+	// 			var offset = $node.offset();
+	// 			var relX = evt.pageX - offset.left;
+	// 			var relY = evt.pageY - offset.top;
+
+	// 			draggingNode = {
+	// 				el: $node,
+	// 				pos: {
+	// 					x: relX,
+	// 					y: relY
+	// 				}
+	// 			};
+	// 		});
+
+	// 		var connectors = $node.find('.connector');
+	// 		connectors.each(function () {
+	// 			var $con = $(this);
+	// 			$con.hasCon = false;
+
+
+	// 			$con.hover(function () {
+	// 				hoverConnector = $con;
+	// 				if ($con.hasCon && $con.attr('type') == 'input') {
+	// 					$con.attr('fill', 'red');
+	// 				} else {
+	// 					$con.attr('fill', 'yellow');
+	// 				}
+	// 			}, function () {
+	// 				hoverConnector = null;
+	// 				$con.attr('fill', 'grey');
+	// 			});
+
+	// 			$con.getCenter = function () {
+	// 				var conOffset = $con.offset();
+	// 				var rootOffset = root.offset();
+
+	// 				var x = conOffset.left - rootOffset.left + $con.attr('width') / 2;
+	// 				var y = conOffset.top - rootOffset.top + $con.attr('height') / 2;
+
+	// 				return {x: x, y: y};
+	// 			};
+
+
+	// 			$con.addConn = function (line, isStart) {
+	// 				$con.hasCon = true;
+	// 				$node.cons.push({
+	// 					el: $con,
+	// 					line: line,
+	// 					isStart: isStart
+	// 				});
+	// 			};
+
+	// 			$con.mousedown(function () {
+	// 				lineStart = $con;
+
+	// 				var center = $con.getCenter();
+
+	// 				line = $(makeSVG('line', {
+	// 					'stroke-width': '2',
+	// 					'stroke': 'black',
+	// 					'x1': center.x,
+	// 					'y1': center.y,
+	// 					'x2': center.x,
+	// 					'y2': center.y
+	// 				}));
+	// 				line.appendTo(linesHolder);
+	// 			});
+	// 		});
+	// 	});
+	// });
 </script>
 
 
