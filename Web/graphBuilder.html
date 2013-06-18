@@ -2,27 +2,16 @@
 <head>
 	<title>Graph Builder</title>
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
-	<script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+	<link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
 	<style>
-	.node {
-		width: 100px;
-		height: 50px;
-		background: white;
-		border: solid 1px black;
-	}
-	.inputs, ul {
-		display: inline;
-		list-style-type: none;
-		padding-right: 20px;
-	}
-	ul > li {
-		background-color: green;
-		float: left;
-		width: 5px;
-		height: 5px;
-	}
+	#graph {
+		position: relative;
+		overflow: hidden;
 
-	svg {
+		width: 800px;
+		height: 600px;
+
 		-webkit-touch-callout: none;
 		-webkit-user-select: none;
 		-khtml-user-select: none;
@@ -30,211 +19,233 @@
 		-ms-user-select: none;
 		user-select: none;
 	}
+	.nodes {
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		width: 100%;
+	}
+	.node {
+		border-radius: 5px;
+		position: absolute;
+		background: rgba(3, 3, 3, 0.69);
+		color: white;
+		width: 250px;
+		overflow: hidden;
+	}
+	.node .title {
+		clear: both;
+		padding: 5px;
+		text-align: center;
+		background: rgba(0, 0, 0, 0.4);
+	}
+	.node .options {
+		overflow: hidden;
+		padding: 10px;
+	}
+	.node .options .inputs, .node .options .outputs {
+		width: 25%;
+		float: left;
+		text-align: left;
+	}
+
+	.node .options .outputs {
+		text-align: right;
+	}
+
+	.node .options .inputs .con:hover, .node .options .outputs .con:hover {
+		color: yellow;
+	}
+
+	.node .options .settings {
+		width: 50%;
+		float: left;
+	}
 	</style>
 </head>
 <body>
 
 
+<div id="graph"></div>
+
+
 <script>
 
-	$(function () {
-		var paper = Raphael(0, 0, window.innerWidth, window.innerHeight);
-		var dragNode = null;
+(function ($) {
+	$.fn.drag = function (opts) {
+		var dragging = false;
+		var $con = $(opts.container || document.body);
+		var $this = $(this);
 
-		var defaultNode = {
-			x: 0,
-			y: 0,
-			inputs: [{name:'input'}],
-			outputs: [{name:'output'}],
-			settings: []
-		};
+		$con.mousemove(function (evt) {
+			if (!dragging) return;
+			if (!opts.move) return;
 
-		var circle = paper.rect(0, 0, 10, 10);		
+			var offset = $con.offset();
+			opts.move.call($this, evt.pageX - offset.left, evt.pageY - offset.top);
+		});
 
-		function addNode(opts) {
-			opts = $.extend(true, {}, defaultNode, opts || {});
-
-			var node = paper.set();
-			node.push(
-				paper.rect(0, 15, 200, 80).attr('fill', 'grey')
-				, paper.rect(1, 16, 198, 10)
-					.attr({
-						'fill':'yellow',
-						'stroke-width':0
-					})
-					.drag(function (dx, dy, x, y) {
-						node.translate(dx - this.lastX, dy - this.lastY);
-						this.lastX = dx;
-						this.lastY = dy;
-					}, function () {
-						this.lastX = 0;
-						this.lastY = 0;
-					})
-				, paper.rect(3, 18, 7, 7)
-					.attr('fill', 'red')
-					.dblclick(function () {
-						node.remove()
-					})
-
-				, paper.text(100, 60, 'Standard Deviation').attr('fill', 'black')
-			);
-
-			for (var i = 0; i < opts.inputs.length; ++i) {
-				node.push(
-					paper.rect(0, 30 + i * 15, 10, 10)
-						.attr('fill', 'blue')
-						.drag(function (dx, dy, x, y) {
-							circle.attr({x:x, y:y});
-						})
-				);
+		$this.mousedown(function (evt) {
+			if (opts.start) {
+				var conOffset = $con.offset();
+				opts.start.call($this, evt.pageX - conOffset.left, evt.pageY - conOffset.top);
 			}
 
-			return node;
-		}
+			dragging = true;
+		});
 
-		addNode(0, 0);
+		$(document.body).mouseup(function (evt) {
+			if (opts.stop) {
+				var conOffset = $con.offset();
+				opts.stop.call($this, evt.pageX - conOffset.left, evt.pageY - conOffset.top);
+			}
+			
+			dragging = false;
+		});
+	};
+})(jQuery);
+
+function makeSVG(tag, attrs) {
+	var el= document.createElementNS('http://www.w3.org/2000/svg', tag);
+	for (var k in attrs || {})
+	el.setAttribute(k, attrs[k]);
+	return el;
+}
+
+function Graph(graph) {
+	var $graph = $(graph);
+	$graph.find('*').unbind().remove();
+
+	var svg = makeSVG('svg', {
+		'width':$graph.width(),
+		'height':$graph.height()
 	});
 
+	var $svg = $(svg);
+	$svg.appendTo($graph);
 
-	// $(function () {
+	var $nodes = $('<div class="nodes"></div>');
+	$nodes.appendTo($graph);
 
+	function newConnection(x, y) {
+		var path = makeSVG('path');
+		var pathStr = ['M', 0, ',', 0, 'L', 0, ',', 0, 'z'];
+		var P = {sx:1, sy: 3, ex: 5, ey: 7};
 		
+		function start(x, y) {
+			pathStr[P.sx] = x;
+			pathStr[P.sy] = y;
+		}
 
-	// 	var root = $('svg').first();
-	// 	var linesHolder = root.find('svg.lines');
-	// 	var nodes = root.find('svg.node');
+		function end(x, y) {
+			pathStr[P.ex] = x;
+			pathStr[p.ey] = y;
+		}
 
-	// 	var connections = [];
+		function update() {
+			path.attr('d', pathStr.join(''));
+		}
 
-	// 	var draggingNode = null;
-	// 	var line = null;
-	// 	var lineStart = null;
-	// 	var hoverConnector = null;
+		function remove() {
+			$(path).remove();
+		}
 
-	// 	$(document.body).mouseup(function () {
-	// 		draggingNode = null;
-	// 		if (lineStart && hoverConnector && lineStart != hoverConnector && (!hoverConnector.hasCon || hoverConnector.attr('type') != 'input')) {
-	// 			var center = hoverConnector.getCenter();
-	// 			line.attr({
-	// 				'x2': center.x,
-	// 				'y2': center.y
-	// 			});
-	// 			lineStart.addConn(line, true);
-	// 			hoverConnector.addConn(line, false);
-	// 		} else if (line) {
-	// 			line.remove();
-	// 		}
+		var _this = {};
+		_this.start = start;
+		_this.end = end;
+		_this.update = update;
+		_this.remove = remove;
 
-	// 		lineStart = null;
-	// 		line = null;
-	// 	});
+		return _this;
+	}
 
-	// 	$(document.body).mousemove(function (evt) {
-	// 		if (draggingNode) {
-	// 			draggingNode.el.attr({
-	// 				'x':evt.pageX - draggingNode.pos.x,
-	// 				'y':evt.pageY - draggingNode.pos.y
-	// 			});
+	function newNode(node) {
+		var $node = $('<div class="node"></div>');
+		var html = [
+			  '<div class="title">', node.title, '</div>'
+			, '<div class="options"><div>'
 
-	// 			for (var i = 0; i < draggingNode.el.cons.length; ++i) {
-	// 				var con = draggingNode.el.cons[i];
-	// 				var place = con.isStart? '1' : '2';
-	// 				var center = con.el.getCenter();
+				, '<div class="inputs">'
+		];
 
-	// 				var change = {};
-	// 				change['x' + place] = center.x;
-	// 				change['y' + place] = center.y;
-	// 				con.line.attr(change);
-	// 			}
-	// 		}
-	
-	// 		var rootOffset = root.offset();
+		for (var i = 0; i < node.inputs.length; ++i) {
+			html.push(
+				'<div class="con" type="input" input="',i,'"> <i class="icon-stop"></i> '
+					, node.inputs[i].name
+				, '</div>'
+			);
+		}
 
-	// 		if (line) {
-	// 			line.attr('x2', evt.pageX - rootOffset.left);
-	// 			line.attr('y2', evt.pageY - rootOffset.top);
-	// 		}
-	// 	});
+		html.push(
+				'</div>'
+				, '<div class="settings"><div style="padding: 0 15px;">'
+		);
 
-	// 	nodes.each(function () {
-	// 		var $node = $(this);
-	// 		var $handle = $node.find('.handle').first();
+		for (var i = 0; i < node.settings.length; ++i) {
+			html.push(
+				'<div> '
+					, node.settings[i].name
+				, '</div>'
+			);
+		}
 
-	// 		$node.cons = [];
+		html.push(
+				'</div></div>'
+				, '<div class="outputs">'
+		);
 
-	// 		$handle.mousedown(function (evt) {
-	// 			var offset = $node.offset();
-	// 			var relX = evt.pageX - offset.left;
-	// 			var relY = evt.pageY - offset.top;
+		for (var i = 0; i < node.outputs.length; ++i) {
+			html.push(
+				'<div class="con" type="output" output="',i,'"> '
+					, node.outputs[i].name
+				, '<i class="icon-stop"></i> </div>'
+			);
+		}
 
-	// 			draggingNode = {
-	// 				el: $node,
-	// 				pos: {
-	// 					x: relX,
-	// 					y: relY
-	// 				}
-	// 			};
-	// 		});
+		html.push(
+			'</div>'
+			, '</div></div>'
+		);
 
-	// 		var connectors = $node.find('.connector');
-	// 		connectors.each(function () {
-	// 			var $con = $(this);
-	// 			$con.hasCon = false;
+		$node.html(html.join(''));
+		$node.html();
 
+		$node.find('.con').drag({
+			move: function (x, y) {
+				console.log(x, y);
+			},
+			start: function (x, y) {
+				console.log(x, y);
+			}
+		});
+		return $node;
+	}
 
-	// 			$con.hover(function () {
-	// 				hoverConnector = $con;
-	// 				if ($con.hasCon && $con.attr('type') == 'input') {
-	// 					$con.attr('fill', 'red');
-	// 				} else {
-	// 					$con.attr('fill', 'yellow');
-	// 				}
-	// 			}, function () {
-	// 				hoverConnector = null;
-	// 				$con.attr('fill', 'grey');
-	// 			});
+	newNode({
+		title:'Standard Deviation',
+		inputs: [
+			{
+				name: 'test1'
+			}
+		],
+		settings: [
+			{
+				name: 'Period Size',
+				type: 'int'
+			}
+		],
+		outputs: [
+			{
+				name: 'test2'
+			}
+		]
+	}).draggable({handle:'.title'}).appendTo($nodes);
+}
 
-	// 			$con.getCenter = function () {
-	// 				var conOffset = $con.offset();
-	// 				var rootOffset = root.offset();
-
-	// 				var x = conOffset.left - rootOffset.left + $con.attr('width') / 2;
-	// 				var y = conOffset.top - rootOffset.top + $con.attr('height') / 2;
-
-	// 				return {x: x, y: y};
-	// 			};
-
-
-	// 			$con.addConn = function (line, isStart) {
-	// 				$con.hasCon = true;
-	// 				$node.cons.push({
-	// 					el: $con,
-	// 					line: line,
-	// 					isStart: isStart
-	// 				});
-	// 			};
-
-	// 			$con.mousedown(function () {
-	// 				lineStart = $con;
-
-	// 				var center = $con.getCenter();
-
-	// 				line = $(makeSVG('line', {
-	// 					'stroke-width': '2',
-	// 					'stroke': 'black',
-	// 					'x1': center.x,
-	// 					'y1': center.y,
-	// 					'x2': center.x,
-	// 					'y2': center.y
-	// 				}));
-	// 				line.appendTo(linesHolder);
-	// 			});
-	// 		});
-	// 	});
-	// });
+var graph = new Graph('#graph');
 </script>
-
-
 
 </body>
 </html>
