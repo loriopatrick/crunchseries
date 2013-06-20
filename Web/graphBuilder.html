@@ -1,9 +1,9 @@
 <html>
 <head>
 	<title>Graph Builder</title>
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
-	<script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
-	<link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+	<script src="jquery.min.js"></script>
+	<script src="jquery-ui.min.js"></script>
+	<link href="bootstrap-combined.min.css" rel="stylesheet">
 	<style>
 	#graph {
 		position: relative;
@@ -63,6 +63,11 @@
 		width: 50%;
 		float: left;
 	}
+
+	.icon-stop {
+		background: black;
+		margin-left: 5px;
+	}
 	</style>
 </head>
 <body>
@@ -77,32 +82,36 @@
 	$.fn.drag = function (opts) {
 		var dragging = false;
 		var $con = $(opts.container || document.body);
-		var $this = $(this);
 
-		$con.mousemove(function (evt) {
-			if (!dragging) return;
-			if (!opts.move) return;
+		this.each(function () {
+			var $this = $(this);
+			$con.mousemove(function (evt) {
+				if (!dragging) return;
+				if (!opts.move) return;
 
-			var offset = $con.offset();
-			opts.move.call($this, evt.pageX - offset.left, evt.pageY - offset.top);
-		});
+				var offset = $con.offset();
+				opts.move.call($this, evt.pageX - offset.left, evt.pageY - offset.top);
+			});
 
-		$this.mousedown(function (evt) {
-			if (opts.start) {
-				var conOffset = $con.offset();
-				opts.start.call($this, evt.pageX - conOffset.left, evt.pageY - conOffset.top);
-			}
+			$this.mousedown(function (evt) {
+				if (opts.start) {
+					var conOffset = $con.offset();
+					opts.start.call($this, evt.pageX - conOffset.left, evt.pageY - conOffset.top, conOffset);
+				}
 
-			dragging = true;
-		});
+				dragging = true;
+			});
 
-		$(document.body).mouseup(function (evt) {
-			if (opts.stop) {
-				var conOffset = $con.offset();
-				opts.stop.call($this, evt.pageX - conOffset.left, evt.pageY - conOffset.top);
-			}
-			
-			dragging = false;
+			$(document.body).mouseup(function (evt) {
+				if (!dragging) return;
+
+				if (opts.stop) {
+					var conOffset = $con.offset();
+					opts.stop.call($this, evt.pageX - conOffset.left, evt.pageY - conOffset.top);
+				}
+				
+				dragging = false;
+			});
 		});
 	};
 })(jQuery);
@@ -130,7 +139,7 @@ function Graph(graph) {
 	$nodes.appendTo($graph);
 
 	function newConnection(x, y) {
-		var path = makeSVG('path');
+		var path = $(makeSVG('path', {'stroke':'black', 'stroke-width':3}));
 		var pathStr = ['M', 0, ',', 0, 'L', 0, ',', 0, 'z'];
 		var P = {sx:1, sy: 3, ex: 5, ey: 7};
 		
@@ -141,7 +150,7 @@ function Graph(graph) {
 
 		function end(x, y) {
 			pathStr[P.ex] = x;
-			pathStr[p.ey] = y;
+			pathStr[P.ey] = y;
 		}
 
 		function update() {
@@ -149,17 +158,31 @@ function Graph(graph) {
 		}
 
 		function remove() {
-			$(path).remove();
+			path.remove();
 		}
 
-		var _this = {};
-		_this.start = start;
-		_this.end = end;
-		_this.update = update;
-		_this.remove = remove;
+		function set(el) {
+			path.appendTo(el);
+		}
 
-		return _this;
+		function stick($start, $end) {
+			console.log('stick!!');
+		}
+
+		start(x, y);
+
+		var con = {};
+		con.start = start;
+		con.end = end;
+		con.update = update;
+		con.remove = remove;
+		con.set = set;
+		con.stick = stick;
+
+		return con;
 	}
+
+	var overSpot = null;
 
 	function newNode(node) {
 		var $node = $('<div class="node"></div>');
@@ -212,12 +235,19 @@ function Graph(graph) {
 		$node.html(html.join(''));
 		$node.html();
 
+		var con = null;
+
 		$node.find('.con').drag({
 			move: function (x, y) {
-				console.log(x, y);
+				console.log('move', x, y);
+				con.end(x, y);
+				con.update();
 			},
-			start: function (x, y) {
-				console.log(x, y);
+			start: function (x, y, offset) {
+				var spot = this.find('.icon-stop').first();
+				var spotOffset = spot.offset();
+				con = newConnection(spotOffset.left - offset.left + spot.width() / 2, spotOffset.top - offset.top + spot.height() / 2);
+				con.set($svg);
 			}
 		});
 		return $node;
