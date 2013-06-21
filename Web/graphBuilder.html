@@ -1,9 +1,8 @@
 <html>
 <head>
 	<title>Graph Builder</title>
-	<script src="jquery.min.js"></script>
-	<script src="jquery-ui.min.js"></script>
-	<link href="bootstrap-combined.min.css" rel="stylesheet">
+	<script src="lib/angular.min.js"></script>
+	<link href="lib/bootstrap-combined.min.css" rel="stylesheet" />
 	<style>
 	#graph {
 		position: relative;
@@ -19,7 +18,7 @@
 		-ms-user-select: none;
 		user-select: none;
 	}
-	.nodes {
+	.nodes .canvas {
 		position: absolute;
 		top: 0;
 		left: 0;
@@ -35,7 +34,7 @@
 		width: 250px;
 		overflow: hidden;
 	}
-	.node .title {
+	.node .header {
 		clear: both;
 		padding: 5px;
 		text-align: center;
@@ -64,217 +63,284 @@
 		float: left;
 	}
 
-	.icon-stop {
+	.handle {
+		width: 20px;
+		height: 20px;
 		background: black;
 		margin-left: 5px;
+		float: left;
 	}
 	</style>
 </head>
-<body>
+<body ng-app>
 
 
-<div id="graph"></div>
+<div id="graph" ng-controller="Graph" ng-mouseup="mouseup($event)" ng-mousemove="mousemove($event)">
+	<svg class="canvas">
+		<path stroke="black" stroke-width="5" ng-repeat="line in lines" ng-model="line" d="{{line.d}}"></path>
+		<path stroke="black" stroke-width="2" ng-model="ghostLine" ng-show="ghostLine" d="{{ghostLine}}"></path>
+	</svg>
+	<div class="nodes">
+		<div class="node" ng-repeat="node in nodes" style="left: {{node.x}}; top: {{node.y}}px;">
+			<div class="header" ng-mousedown="select(node, $event)">{{node.name}}</div>
+			<div class="options">
+				<div class="inputs">
+					<div class="input" ng-repeat="(i, input) in node.inputs">
+						<div class="handle" ng-mouseover="selectInput($event, node, i)" ng-mouseout="clearInput()"></div> {{input.name}}
+					</div>
+				</div>
+
+				<div class="settings">
+					<div class="setting" ng-repeat="setting in node.settings">
+						{{setting.name}}
+					</div>
+				</div>
+
+				<div class="outputs">
+					<div class="output" ng-repeat="(i, output) in node.outputs" >
+						{{output.name}} <div class="handle" ng-mousedown="selectOutput($event, node, i)"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="main.js"></script>
 
 
 <script>
+// (function ($) {
+// 	$.fn.drag = function (opts) {
+// 		var dragging = false;
+// 		var $con = $(opts.container || document.body);
 
-(function ($) {
-	$.fn.drag = function (opts) {
-		var dragging = false;
-		var $con = $(opts.container || document.body);
+// 		this.each(function () {
+// 			var $this = $(this);
+// 			$con.mousemove(function (evt) {
+// 				if (!dragging) return;
+// 				if (!opts.move) return;
 
-		this.each(function () {
-			var $this = $(this);
-			$con.mousemove(function (evt) {
-				if (!dragging) return;
-				if (!opts.move) return;
+// 				var offset = $con.offset();
+// 				opts.move.call($this, evt.pageX - offset.left, evt.pageY - offset.top);
+// 			});
 
-				var offset = $con.offset();
-				opts.move.call($this, evt.pageX - offset.left, evt.pageY - offset.top);
-			});
+// 			$this.mousedown(function (evt) {
+// 				if (opts.start) {
+// 					var conOffset = $con.offset();
+// 					opts.start.call($this, evt.pageX - conOffset.left, evt.pageY - conOffset.top, conOffset);
+// 				}
 
-			$this.mousedown(function (evt) {
-				if (opts.start) {
-					var conOffset = $con.offset();
-					opts.start.call($this, evt.pageX - conOffset.left, evt.pageY - conOffset.top, conOffset);
-				}
+// 				dragging = true;
+// 			});
 
-				dragging = true;
-			});
+// 			$(document.body).mouseup(function (evt) {
+// 				if (!dragging) return;
 
-			$(document.body).mouseup(function (evt) {
-				if (!dragging) return;
-
-				if (opts.stop) {
-					var conOffset = $con.offset();
-					opts.stop.call($this, evt.pageX - conOffset.left, evt.pageY - conOffset.top);
-				}
+// 				if (opts.stop) {
+// 					var conOffset = $con.offset();
+// 					opts.stop.call($this, evt.pageX - conOffset.left, evt.pageY - conOffset.top);
+// 				}
 				
-				dragging = false;
-			});
-		});
-	};
-})(jQuery);
+// 				dragging = false;
+// 			});
+// 		});
+// 	};
+// })(jQuery);
 
-function makeSVG(tag, attrs) {
-	var el= document.createElementNS('http://www.w3.org/2000/svg', tag);
-	for (var k in attrs || {})
-	el.setAttribute(k, attrs[k]);
-	return el;
-}
+// function makeSVG(tag, attrs) {
+// 	var el= document.createElementNS('http://www.w3.org/2000/svg', tag);
+// 	for (var k in attrs || {})
+// 	el.setAttribute(k, attrs[k]);
+// 	return el;
+// }
 
-function Graph(graph) {
-	var $graph = $(graph);
-	$graph.find('*').unbind().remove();
+// function Connection(opts) {
+// 	opts = otps || {};
+// 	var scope = this;
 
-	var svg = makeSVG('svg', {
-		'width':$graph.width(),
-		'height':$graph.height()
-	});
+// 	scope.$el = $(makeSVG('path', {
+// 		'stroke':'black',
+// 		'stroke-width':3
+// 	}));
+// 	scope.path = ['M', 0, ',', 0, 'L', 0, ',', 0, 'z'];
+// 	scope.pos = {sx:1, sy: 3, ex: 5, ey: 7};
+// 	scope.offset = $.extend({left: 0, top: 0}, opts.offset || {});
 
-	var $svg = $(svg);
-	$svg.appendTo($graph);
+// 	scope.startPos = function(x, y) {
+// 		scope.path[scope.pos.sx] = x - scope.offset.left;
+// 		scope.path[scope.pos.sy] = y - scope.offset.top;
+// 	}
 
-	var $nodes = $('<div class="nodes"></div>');
-	$nodes.appendTo($graph);
+// 	scope.start = function($el) {
+// 		if (!$el) throw 'Start el is not defined';
+// 		scope.startEl = $el;
+// 		var offset = $el.offset();
+// 		scope.startPos(offset.left + offset.width() / 2, offset.top + offset.height() / 2);
+// 	};
 
-	function newConnection(x, y) {
-		var path = $(makeSVG('path', {'stroke':'black', 'stroke-width':3}));
-		var pathStr = ['M', 0, ',', 0, 'L', 0, ',', 0, 'z'];
-		var P = {sx:1, sy: 3, ex: 5, ey: 7};
+// 	scope.endPos = function(x, y) {
+// 		scope.path[scope.pos.ex] = x;
+// 		scope.path[scope.pos.ey] = y;
+// 	};
+
+// 	scope.end = function($el) {
+// 		if (!$el) throw 'End el is not defined';
+// 		scope.endEl = $el;
+// 		var offset = $el.offset();
+// 		scope.startPos(offset.left + offset.width() / 2, offset.top + offset.height() / 2);
+// 	};
+
+// 	scope.apply = function() {
+// 		scope.$el.attr('d', scope.path.join(''));
+// 	};
+
+// 	scope.update = function(apply) {
+// 		scope.start(scope.startEl);
+// 		scope.end(scope.eadEl);
+// 		if (apply !== false) scope.apply();
+// 	};
+
+// 	scope.remove = function() {
+// 		scope.$el.remove();
+// 	};
+
+// 	scope.append = function(el) {
+// 		scope.$el.appendTo(el);
+// 	};
+// }
+
+// function Node() {
+// 	var scope = this;
+
+// 	scope.$node = $('<div class="node"></div>');
+
+// 	function buildNodeGuts() {
+// 		var html = [];
+// 		html.push('<div class="title">', node.title, '</div>');
+// 		html.push('<div class="options">');
+
+// 		function replace(str, source, replace) {
+// 			return str.split(source).join(replace);
+// 		}
+
+// 		function addArray(divAttr, itemTemplate, items) {
+// 			html.push('<div ');
+// 			for (var key in divAttr) {
+// 				html.push(key, '="', divAttr, '" ');
+// 			}
+// 			html.push('>');
+
+// 			for (var i = 0; i < items.length; ++i) {
+// 				var itemStr = itemTemplate;
+// 				for (var key in items[i]) {
+// 					itemStr = replace(itemStr, '{{' + key + '}}', $.extend({}, items[i][key], {i:i}));
+// 				}
+// 				html.push(itemStr);
+// 			}
+// 			html.push('</div>');
+// 		}
+
+// 		addArray({'class':'inputs'}, '<div class="con" type="input" input="{{i}}"> <i class="icon-stop"></i> {{name}}</div>', node.inputs);
+
+// 		html.push('<div class="settings">');
+
+// 		addArray({'style':'padding: 0 15px;'}, '<div class="con" type="input" input="{{i}}"> <i class="icon-stop"></i> {{name}}</div>', node.inputs);
+
+// 		html.push('</div>');
+
+
+// 		html.push('</div><div class="settings"><div style="padding: 0 15px;">');
+
+// 		for (var i = 0; i < node.settings.length; ++i) {
+// 			html.push(
+// 				'<div> '
+// 					, node.settings[i].name
+// 				, '</div>'
+// 			);
+// 		}
+
+// 		html.push('</div></div><div class="outputs">');
+
+// 		for (var i = 0; i < node.outputs.length; ++i) {
+// 			html.push(
+// 				'<div class="con" type="output" output="',i,'"> '
+// 					, node.outputs[i].name
+// 				, '<i class="icon-stop"></i> </div>'
+// 			);
+// 		}
+
+// 		html.push(
+// 			'</div>'
+// 			, '</div></div>'
+// 		);
+
+// 		$node.html(html.join(''));
+// 		$node.html();
+// 	}
+// }
+
+// function Graph(graph) {
+// 	var scope = this;
+
+// 	scope.$graph = $(graph);
+// 	scope.$graph.find('*').unbind().remove();
+
+// 	var svg = makeSVG('svg', {
+// 		'width':$graph.width(),
+// 		'height':$graph.height()
+// 	});
+
+// 	scope.$svg = $(svg);
+// 	scope.$svg.appendTo(scope.$graph);
+
+// 	scope.$nodes = $('<div class="nodes"></div>');
+// 	scope.$nodes.appendTo($graph);
+
+// 	function newNode(node) {
+// 		var $node = $('<div class="node"></div>');
 		
-		function start(x, y) {
-			pathStr[P.sx] = x;
-			pathStr[P.sy] = y;
-		}
 
-		function end(x, y) {
-			pathStr[P.ex] = x;
-			pathStr[P.ey] = y;
-		}
+// 		var con = null;
 
-		function update() {
-			path.attr('d', pathStr.join(''));
-		}
+// 		$node.find('.con').drag({
+// 			move: function (x, y) {
+// 				console.log('move', x, y);
+// 				con.end(x, y);
+// 				con.update();
+// 			},
+// 			start: function (x, y, offset) {
+// 				var spot = this.find('.icon-stop').first();
+// 				var spotOffset = spot.offset();
+// 				con = newConnection(spotOffset.left - offset.left + spot.width() / 2, spotOffset.top - offset.top + spot.height() / 2);
+// 				con.set($svg);
+// 			}
+// 		});
+// 		return $node;
+// 	}
 
-		function remove() {
-			path.remove();
-		}
+// 	newNode({
+// 		title:'Standard Deviation',
+// 		inputs: [
+// 			{
+// 				name: 'test1'
+// 			}
+// 		],
+// 		settings: [
+// 			{
+// 				name: 'Period Size',
+// 				type: 'int'
+// 			}
+// 		],
+// 		outputs: [
+// 			{
+// 				name: 'test2'
+// 			}
+// 		]
+// 	}).draggable({handle:'.title'}).appendTo($nodes);
+// }
 
-		function set(el) {
-			path.appendTo(el);
-		}
-
-		function stick($start, $end) {
-			console.log('stick!!');
-		}
-
-		start(x, y);
-
-		var con = {};
-		con.start = start;
-		con.end = end;
-		con.update = update;
-		con.remove = remove;
-		con.set = set;
-		con.stick = stick;
-
-		return con;
-	}
-
-	var overSpot = null;
-
-	function newNode(node) {
-		var $node = $('<div class="node"></div>');
-		var html = [
-			  '<div class="title">', node.title, '</div>'
-			, '<div class="options"><div>'
-
-				, '<div class="inputs">'
-		];
-
-		for (var i = 0; i < node.inputs.length; ++i) {
-			html.push(
-				'<div class="con" type="input" input="',i,'"> <i class="icon-stop"></i> '
-					, node.inputs[i].name
-				, '</div>'
-			);
-		}
-
-		html.push(
-				'</div>'
-				, '<div class="settings"><div style="padding: 0 15px;">'
-		);
-
-		for (var i = 0; i < node.settings.length; ++i) {
-			html.push(
-				'<div> '
-					, node.settings[i].name
-				, '</div>'
-			);
-		}
-
-		html.push(
-				'</div></div>'
-				, '<div class="outputs">'
-		);
-
-		for (var i = 0; i < node.outputs.length; ++i) {
-			html.push(
-				'<div class="con" type="output" output="',i,'"> '
-					, node.outputs[i].name
-				, '<i class="icon-stop"></i> </div>'
-			);
-		}
-
-		html.push(
-			'</div>'
-			, '</div></div>'
-		);
-
-		$node.html(html.join(''));
-		$node.html();
-
-		var con = null;
-
-		$node.find('.con').drag({
-			move: function (x, y) {
-				console.log('move', x, y);
-				con.end(x, y);
-				con.update();
-			},
-			start: function (x, y, offset) {
-				var spot = this.find('.icon-stop').first();
-				var spotOffset = spot.offset();
-				con = newConnection(spotOffset.left - offset.left + spot.width() / 2, spotOffset.top - offset.top + spot.height() / 2);
-				con.set($svg);
-			}
-		});
-		return $node;
-	}
-
-	newNode({
-		title:'Standard Deviation',
-		inputs: [
-			{
-				name: 'test1'
-			}
-		],
-		settings: [
-			{
-				name: 'Period Size',
-				type: 'int'
-			}
-		],
-		outputs: [
-			{
-				name: 'test2'
-			}
-		]
-	}).draggable({handle:'.title'}).appendTo($nodes);
-}
-
-var graph = new Graph('#graph');
+// var graph = new Graph('#graph');
 </script>
 
 </body>
