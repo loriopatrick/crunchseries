@@ -30,140 +30,15 @@ function Graph($scope, $element){
 			]
 		},
 		{
-			name: 'EMA',
-			x: 20,
-			y: 20,
-			inputs: [
-				{name: 'in'}
-			],
-			settings: [
-				{name: 'p-size', type: 'int'}
-			],
-			outputs: [
-				{name: 'out'}
-			]
-		},
-		{
-			name: 'Standard Deviation',
-			x: 0,
-			y: 0,
-			inputs: [
-				{name: 'in'}
-			],
-			settings: [
-				{name: 'p-size', type: 'int'}
-			],
-			outputs: [
-				{name: 'out'}
-			]
-		},
-		{
-			name: 'SMA',
+			name: 'Difference',
 			x: 10,
 			y: 10,
 			inputs: [
-				{name: 'in'}
+				{name: 'a'},
+				{name: 'b'}
 			],
 			settings: [
-				{name: 'p-size', type: 'int'}
-			],
-			outputs: [
-				{name: 'out'}
-			]
-		},
-		{
-			name: 'EMA',
-			x: 20,
-			y: 20,
-			inputs: [
-				{name: 'in'}
-			],
-			settings: [
-				{name: 'p-size', type: 'int'}
-			],
-			outputs: [
-				{name: 'out'}
-			]
-		},
-		{
-			name: 'Standard Deviation',
-			x: 0,
-			y: 0,
-			inputs: [
-				{name: 'in'}
-			],
-			settings: [
-				{name: 'p-size', type: 'int'}
-			],
-			outputs: [
-				{name: 'out'}
-			]
-		},
-		{
-			name: 'SMA',
-			x: 10,
-			y: 10,
-			inputs: [
-				{name: 'in'}
-			],
-			settings: [
-				{name: 'p-size', type: 'int'}
-			],
-			outputs: [
-				{name: 'out'}
-			]
-		},
-		{
-			name: 'EMA',
-			x: 20,
-			y: 20,
-			inputs: [
-				{name: 'in'}
-			],
-			settings: [
-				{name: 'p-size', type: 'int'}
-			],
-			outputs: [
-				{name: 'out'}
-			]
-		},
-		{
-			name: 'Standard Deviation',
-			x: 0,
-			y: 0,
-			inputs: [
-				{name: 'in'}
-			],
-			settings: [
-				{name: 'p-size', type: 'int'}
-			],
-			outputs: [
-				{name: 'out'}
-			]
-		},
-		{
-			name: 'SMA',
-			x: 10,
-			y: 10,
-			inputs: [
-				{name: 'in'}
-			],
-			settings: [
-				{name: 'p-size', type: 'int'}
-			],
-			outputs: [
-				{name: 'out'}
-			]
-		},
-		{
-			name: 'EMA',
-			x: 20,
-			y: 20,
-			inputs: [
-				{name: 'in'}
-			],
-			settings: [
-				{name: 'p-size', type: 'int'}
+				{name: 'foo'}
 			],
 			outputs: [
 				{name: 'out'}
@@ -233,7 +108,7 @@ function Graph($scope, $element){
 		$scope.dragging = null;
 		if ($scope.selectedOutput && $scope.selectedInput
 				&& $scope.selectedOutput.node != $scope.selectedInput.node
-				&& isInputOpen($scope.selectedInput.node)) {
+				&& isInputOpen($scope.selectedInput.node, $scope.selectedInput.input)) {
 
 			$scope.lines.push(buildLine({
 				output: $scope.selectedOutput,
@@ -245,9 +120,10 @@ function Graph($scope, $element){
 		$scope.ghostLine = null;
 	};
 
-	function isInputOpen(node) {
+	function isInputOpen(node, input) {
 		for (var i = 0; i < $scope.lines.length; ++i) {
-			if (node == $scope.lines[i].input.node) return false;
+			if (node == $scope.lines[i].input.node
+				&& input == $scope.lines[i].input.input) return false;
 		}
 		return true;
 	}
@@ -255,7 +131,7 @@ function Graph($scope, $element){
 	$scope.selectInput = function (evt, node, input) {
 		$scope.selectedInput = {node: node, input: input, el: evt.target};
 
-		var isOpen = isInputOpen(node);
+		var isOpen = isInputOpen(node, input);
 		if ($scope.selectedOutput) {
 			node.inputs[input].style = isOpen? 'add':'';
 		} else if (!isOpen) {
