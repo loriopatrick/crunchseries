@@ -27,22 +27,24 @@
 		width: 100%;
 	}
 	.node {
+		font-size: 12px;
 		border-radius: 5px;
 		position: absolute;
-		background: rgba(3, 3, 3, 0.69);
+		background: rgba(111, 111, 111, 1);
 		color: white;
-		width: 250px;
+		width: 150px;
 		overflow: hidden;
 	}
 	.node .header {
+		font-size: 14px;
 		clear: both;
-		padding: 5px;
+		padding: 2px;
 		text-align: center;
-		background: rgba(0, 0, 0, 0.4);
+		background: rgb(37, 37, 37);
 	}
 	.node .options {
 		overflow: hidden;
-		padding: 10px;
+		padding: 10px 0;
 	}
 	.node .options .inputs, .node .options .outputs {
 		width: 25%;
@@ -64,10 +66,13 @@
 	}
 
 	.handle {
-		width: 20px;
-		height: 20px;
+		width: 15px;
+		height: 15px;
 		background: black;
-		margin-left: 5px;
+		float: left;
+	}
+
+	.handleMsg {
 		float: left;
 	}
 	</style>
@@ -77,16 +82,17 @@
 
 <div id="graph" ng-controller="Graph" ng-mouseup="mouseup($event)" ng-mousemove="mousemove($event)">
 	<svg class="canvas">
-		<path stroke="black" stroke-width="5" ng-repeat="line in lines" ng-model="line" d="{{line.d}}"></path>
+		<path stroke="black" stroke-width="5" fill="transparent" ng-repeat="line in lines" ng-model="line" d="{{line.d}}"></path>
 		<path stroke="black" stroke-width="2" ng-model="ghostLine" ng-show="ghostLine" d="{{ghostLine}}"></path>
 	</svg>
 	<div class="nodes">
 		<div class="node" ng-repeat="node in nodes" style="left: {{node.x}}; top: {{node.y}}px;">
-			<div class="header" ng-mousedown="select(node, $event)">{{node.name}}</div>
+			<div class="header" ng-mousedown="selectNode(node, $event)">{{node.name}}</div>
 			<div class="options">
 				<div class="inputs">
 					<div class="input" ng-repeat="(i, input) in node.inputs">
-						<div class="handle" ng-mouseover="selectInput($event, node, i)" ng-mouseout="clearInput()"></div> {{input.name}}
+						<div class="handle" ng-mouseover="selectInput($event, node, i)" ng-mouseout="clearInput()"></div>
+						<div class="handleMsg">{{input.name}}</div>
 					</div>
 				</div>
 
@@ -98,7 +104,8 @@
 
 				<div class="outputs">
 					<div class="output" ng-repeat="(i, output) in node.outputs" >
-						{{output.name}} <div class="handle" ng-mousedown="selectOutput($event, node, i)"></div>
+						<div class="handleMsg">{{output.name}}</div>
+						<div class="handle" style="float: right;" ng-mousedown="selectOutput($event, node, i)"></div>
 					</div>
 				</div>
 			</div>
