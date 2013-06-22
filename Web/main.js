@@ -66,9 +66,22 @@ function Graph($scope, $element){
 
 		if ($scope.selectedOutput) {
 			var pos = getConPos($scope.selectedOutput);
-			$scope.ghostLine = ['M', pos.x, ',', pos.y, 'L', evt.x, ',', evt.y, 'z'].join('');
+			var offset = getGraphOffset();
+			$scope.ghostLine = ['M', pos.x, ',', pos.y, 'L', evt.x - offset.x, ',', evt.y - offset.y, 'z'].join('');
 		}
 	};
+
+	function getGraphOffset() {
+		var x = 0, y = 0;
+		var obj = $element[0];
+		while (obj) {
+			x += obj.offsetLeft;
+			y += obj.offsetTop;
+			obj = obj.offsetParent;
+		}
+
+		return {x:x, y:y};
+	}
 
 	function updateLines () {
 		for (var i = 0; i < $scope.lines.length; ++i) {
