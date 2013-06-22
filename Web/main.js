@@ -41,7 +41,7 @@ function Graph($scope, $element){
 				{name: 'foo'}
 			],
 			outputs: [
-				{name: 'out'}
+				{name: 'a-b'}
 			]
 		}
 	];
