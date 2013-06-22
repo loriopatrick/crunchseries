@@ -42,6 +42,132 @@ function Graph($scope, $element){
 			outputs: [
 				{name: 'out'}
 			]
+		},
+		{
+			name: 'Standard Deviation',
+			x: 0,
+			y: 0,
+			inputs: [
+				{name: 'in'}
+			],
+			settings: [
+				{name: 'p-size', type: 'int'}
+			],
+			outputs: [
+				{name: 'out'}
+			]
+		},
+		{
+			name: 'SMA',
+			x: 10,
+			y: 10,
+			inputs: [
+				{name: 'in'}
+			],
+			settings: [
+				{name: 'p-size', type: 'int'}
+			],
+			outputs: [
+				{name: 'out'}
+			]
+		},
+		{
+			name: 'EMA',
+			x: 20,
+			y: 20,
+			inputs: [
+				{name: 'in'}
+			],
+			settings: [
+				{name: 'p-size', type: 'int'}
+			],
+			outputs: [
+				{name: 'out'}
+			]
+		},
+		{
+			name: 'Standard Deviation',
+			x: 0,
+			y: 0,
+			inputs: [
+				{name: 'in'}
+			],
+			settings: [
+				{name: 'p-size', type: 'int'}
+			],
+			outputs: [
+				{name: 'out'}
+			]
+		},
+		{
+			name: 'SMA',
+			x: 10,
+			y: 10,
+			inputs: [
+				{name: 'in'}
+			],
+			settings: [
+				{name: 'p-size', type: 'int'}
+			],
+			outputs: [
+				{name: 'out'}
+			]
+		},
+		{
+			name: 'EMA',
+			x: 20,
+			y: 20,
+			inputs: [
+				{name: 'in'}
+			],
+			settings: [
+				{name: 'p-size', type: 'int'}
+			],
+			outputs: [
+				{name: 'out'}
+			]
+		},
+		{
+			name: 'Standard Deviation',
+			x: 0,
+			y: 0,
+			inputs: [
+				{name: 'in'}
+			],
+			settings: [
+				{name: 'p-size', type: 'int'}
+			],
+			outputs: [
+				{name: 'out'}
+			]
+		},
+		{
+			name: 'SMA',
+			x: 10,
+			y: 10,
+			inputs: [
+				{name: 'in'}
+			],
+			settings: [
+				{name: 'p-size', type: 'int'}
+			],
+			outputs: [
+				{name: 'out'}
+			]
+		},
+		{
+			name: 'EMA',
+			x: 20,
+			y: 20,
+			inputs: [
+				{name: 'in'}
+			],
+			settings: [
+				{name: 'p-size', type: 'int'}
+			],
+			outputs: [
+				{name: 'out'}
+			]
 		}
 	];
 
@@ -144,11 +270,12 @@ function Graph($scope, $element){
 		}
 	};
 
-	$scope.removeInputLine = function (node, i) {
+	$scope.removeInputLine = function (node, input) {
 		for (var i = 0; i < $scope.lines.length; ++i) {
 			var line = $scope.lines[i];
-			if (line.input.node == node && line.input.input == i) {
+			if (line.input.node == node && line.input.input == input) {
 				$scope.lines.splice(i, 1);
+				console.log('removed item');
 				return;
 			}
 		}
