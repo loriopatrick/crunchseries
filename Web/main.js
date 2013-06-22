@@ -3,8 +3,8 @@ function Graph($scope, $element){
 	$scope.nodes = [
 		{
 			name: 'Standard Deviation',
-			x: 10,
-			y: 10,
+			x: 0,
+			y: 0,
 			inputs: [
 				{name: 'in'}
 			],
@@ -28,6 +28,20 @@ function Graph($scope, $element){
 			outputs: [
 				{name: 'out'}
 			]
+		},
+		{
+			name: 'EMA',
+			x: 20,
+			y: 20,
+			inputs: [
+				{name: 'in'}
+			],
+			settings: [
+				{name: 'p-size', type: 'int'}
+			],
+			outputs: [
+				{name: 'out'}
+			]
 		}
 	];
 
@@ -39,8 +53,30 @@ function Graph($scope, $element){
 			x: evt.x - node.x,
 			y: evt.y - node.y
 		};
-		console.log('mouse down', evt);
 	};
+
+	$scope.mousemove = function (evt) {
+		if ($scope.dragging) {
+			$scope.dragging.x = evt.x - $scope.dragging.dragOffest.x;
+			$scope.dragging.y = evt.y - $scope.dragging.dragOffest.y;
+
+			updateLines();
+		}
+
+		if ($scope.selectedOutput) {
+			var pos = getConPos($scope.selectedOutput);
+			$scope.ghostLine = ['M', pos.x, ',', pos.y, 'L', evt.x, ',', evt.y, 'z'].join('');
+		}
+	};
+
+	function updateLines () {
+		for (var i = 0; i < $scope.lines.length; ++i) {
+			if ($scope.dragging == $scope.lines[i].input.node
+				|| $scope.dragging == $scope.lines[i].output.node) {
+				buildLine($scope.lines[i]);
+			}
+		}
+	}
 
 	function getConPos (con) {
 		return {
@@ -49,44 +85,7 @@ function Graph($scope, $element){
 		}
 	}
 
-	$scope.mousemove = function (evt) {
-		if ($scope.dragging) {
-			$scope.dragging.x = evt.x - $scope.dragging.dragOffest.x;
-			$scope.dragging.y = evt.y - $scope.dragging.dragOffest.y;
-
-			$scope.updateLines();
-		}
-
-		if ($scope.selectedOutput) {
-			console.log($scope.selectedOutput);
-			var pos = getConPos($scope.selectedOutput);
-			$scope.ghostLine = ['M', pos.x, ',', pos.y, 'L', evt.x, ',', evt.y, 'z'].join('');
-		}
-	};
-
-	$scope.mouseup = function (evt) {
-		$scope.dragging = null;
-		if ($scope.selectedOutput && $scope.selectedInput) {
-			$scope.lines.push($scope.buildLine({
-				output: $scope.selectedOutput,
-				input: $scope.selectedInput
-			}));
-		}
-		$scope.selectedOutput = null;
-		$scope.selectedInput = null;
-		$scope.ghostLine = null;
-	};
-
-	$scope.updateLines = function () {
-		for (var i = 0; i < $scope.lines.length; ++i) {
-			if ($scope.dragging == $scope.lines[i].input.node
-				|| $scope.dragging == $scope.lines[i].output.node) {
-				$scope.buildLine($scope.lines[i]);
-			}
-		}
-	};
-
-	$scope.buildLine = function (baseLine) {
+	function buildLine (baseLine) {
 		var output = getConPos(baseLine.output);
 		var input = getConPos(baseLine.input);
 
@@ -102,20 +101,60 @@ function Graph($scope, $element){
 		].join('');
 
 		return baseLine;
+	}
+
+	$scope.mouseup = function (evt) {
+		$scope.dragging = null;
+		if ($scope.selectedOutput && $scope.selectedInput
+				&& $scope.selectedOutput.node != $scope.selectedInput.node
+				&& isInputOpen($scope.selectedInput.node)) {
+
+			$scope.lines.push(buildLine({
+				output: $scope.selectedOutput,
+				input: $scope.selectedInput
+			}));
+		}
+		$scope.selectedOutput = null;
+		$scope.clearInput();
+		$scope.ghostLine = null;
 	};
+
+	function isInputOpen(node) {
+		for (var i = 0; i < $scope.lines.length; ++i) {
+			if (node == $scope.lines[i].input.node) return false;
+		}
+		return true;
+	}
 
 	$scope.selectInput = function (evt, node, input) {
 		$scope.selectedInput = {node: node, input: input, el: evt.target};
-		console.log('select input', node, input);
+
+		var isOpen = isInputOpen(node);
+		if ($scope.selectedOutput) {
+			node.inputs[input].style = isOpen? 'add':'';
+		} else if (!isOpen) {
+			node.inputs[input].style = 'remove';
+		}
 	};
 
 	$scope.clearInput = function () {
-		$scope.selectedInput = null;
-		console.log('clear input');
+		if ($scope.selectedInput) {
+			$scope.selectedInput.node.inputs[$scope.selectedInput.input].style = '';
+			$scope.selectedInput = null;
+		}
+	};
+
+	$scope.removeInputLine = function (node, i) {
+		for (var i = 0; i < $scope.lines.length; ++i) {
+			var line = $scope.lines[i];
+			if (line.input.node == node && line.input.input == i) {
+				$scope.lines.splice(i, 1);
+				return;
+			}
+		}
 	};
 
 	$scope.selectOutput = function (evt, node, output) {
 		$scope.selectedOutput = {node: node, output: output, el: evt.target};
-		console.log('select output', node, output);
 	};
 }

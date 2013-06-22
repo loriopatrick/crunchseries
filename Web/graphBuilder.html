@@ -72,6 +72,14 @@
 		float: left;
 	}
 
+	.handle.add {
+		background: white;
+	}
+
+	.handle.remove {
+		background: red;
+	}
+
 	.handleMsg {
 		float: left;
 	}
@@ -91,7 +99,7 @@
 			<div class="options">
 				<div class="inputs">
 					<div class="input" ng-repeat="(i, input) in node.inputs">
-						<div class="handle" ng-mouseover="selectInput($event, node, i)" ng-mouseout="clearInput()"></div>
+						<div ng-model="input" class="handle {{input.style}}" ng-mouseover="selectInput($event, node, i)" ng-mouseout="clearInput()" ng-mousedown="removeInputLine(node, i)"></div>
 						<div class="handleMsg">{{input.name}}</div>
 					</div>
 				</div>
