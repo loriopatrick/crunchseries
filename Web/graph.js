@@ -182,7 +182,6 @@ function clone(obj) {
 function GraphController($scope, $element){
 	$scope.connections = [];
 	$scope.nodes = [];
-
 	$scope.btnGroups = [
 		{
 			name: 'Statistics',
@@ -217,31 +216,32 @@ function GraphController($scope, $element){
 			]
 		}
 	];
-
 	$scope.guideLine = null;
+
+	var selectedOutput, selectedInput, dragging;
 
 	$scope.addNode = function (name) {
 		$scope.nodes.push(clone(NodesInfo[name]));
 	};
 
 	$scope.selectNode = function (node, evt) {
-		$scope.dragging = node;
-		$scope.dragging.dragOffest = {
+		dragging = node;
+		dragging.dragOffest = {
 			x: evt.x - node.x,
 			y: evt.y - node.y
 		};
 	};
 
 	$scope.mousemove = function (evt) {
-		if ($scope.dragging) {
-			$scope.dragging.x = evt.x - $scope.dragging.dragOffest.x;
-			$scope.dragging.y = evt.y - $scope.dragging.dragOffest.y;
+		if (dragging) {
+			dragging.x = Math.max(evt.x - dragging.dragOffest.x, 0);
+			dragging.y = Math.max(evt.y - dragging.dragOffest.y, 40);
 
 			updateConnections();
 		}
 
-		if ($scope.selectedOutput) {
-			var pos = getHandlePos($scope.selectedOutput);
+		if (selectedOutput) {
+			var pos = getHandlePos(selectedOutput);
 			var offset = getGraphOffset();
 			$scope.guideLine = ['M', pos.x, ',', pos.y, 'L', evt.x - offset.left, ',', evt.y - offset.top, 'z'].join('');
 		}
@@ -255,8 +255,8 @@ function GraphController($scope, $element){
 
 	function updateConnections () {
 		for (var i = 0; i < $scope.connections.length; ++i) {
-			if ($scope.dragging == $scope.connections[i].input.node
-				|| $scope.dragging == $scope.connections[i].output.node) {
+			if (dragging == $scope.connections[i].input.node
+				|| dragging == $scope.connections[i].output.node) {
 				buildConnection($scope.connections[i]);
 			}
 		}
@@ -291,17 +291,17 @@ function GraphController($scope, $element){
 	}
 
 	$scope.mouseup = function (evt) {
-		$scope.dragging = null;
-		if ($scope.selectedOutput && $scope.selectedInput
-				&& $scope.selectedOutput.node != $scope.selectedInput.node
-				&& isInputOpen($scope.selectedInput.node, $scope.selectedInput.input)) {
+		dragging = null;
+		if (selectedOutput && selectedInput
+				&& selectedOutput.node != selectedInput.node
+				&& isInputOpen(selectedInput.node, selectedInput.input)) {
 
 			$scope.connections.push(buildConnection({
-				output: $scope.selectedOutput,
-				input: $scope.selectedInput
+				output: selectedOutput,
+				input: selectedInput
 			}));
 		}
-		$scope.selectedOutput = null;
+		selectedOutput = null;
 		$scope.clearInput();
 		$scope.guideLine = null;
 	};
@@ -315,10 +315,10 @@ function GraphController($scope, $element){
 	}
 
 	$scope.selectInput = function (evt, node, input) {
-		$scope.selectedInput = {node: node, input: input, el: evt.target};
+		selectedInput = {node: node, input: input, el: evt.target};
 
 		var isOpen = isInputOpen(node, input);
-		if ($scope.selectedOutput) {
+		if (selectedOutput) {
 			node.inputs[input].style = isOpen? 'add':'';
 		} else if (!isOpen) {
 			node.inputs[input].style = 'remove';
@@ -326,9 +326,9 @@ function GraphController($scope, $element){
 	};
 
 	$scope.clearInput = function () {
-		if ($scope.selectedInput) {
-			$scope.selectedInput.node.inputs[$scope.selectedInput.input].style = '';
-			$scope.selectedInput = null;
+		if (selectedInput) {
+			selectedInput.node.inputs[selectedInput.input].style = '';
+			selectedInput = null;
 		}
 	};
 
@@ -344,7 +344,7 @@ function GraphController($scope, $element){
 	};
 
 	$scope.selectOutput = function (evt, node, output) {
-		$scope.selectedOutput = {node: node, output: output, el: evt.target};
+		selectedOutput = {node: node, output: output, el: evt.target};
 	};
 }
 
