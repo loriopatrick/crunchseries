@@ -167,6 +167,19 @@ var NodesInfo = {
 			{name: 'low'},
 			{name: 'volume'}
 		]
+	},
+	'Output': {
+		name: 'Output',
+		statId: 0,
+		x: 50,
+		y: 50,
+		inputs: [
+			{name: 'in'}
+		],
+		settings: [
+			{name: 'name', val:''}
+		],
+		outputs: []
 	}
 };
 
@@ -389,6 +402,89 @@ function GraphController($scope, $element){
 
 	$scope.selectOutput = function (evt, node, output) {
 		selectedOutput = {node: node, output: output, el: evt.target};
+	};
+
+	$scope.serialize = function () {
+		function getInputs(node) {
+			var inputs = [];
+			for (var i = 0; i < $scope.connections.length; ++i) {
+				var con = $scope.connections[i];
+				if (con.input.node === node) {
+					inputs.push(con);
+				}
+			}
+
+			return inputs;
+		}
+
+		var outputs = [], nodes = {};
+		for (var i = 0; i < $scope.nodes.length; ++i) {
+			var node = $scope.nodes[i];
+			if (node.statId === 0) {
+				outputs.push(node);
+			} else {
+				nodes['node-' + i] = node;
+			}
+		}
+
+		function findNodeId (node) {
+			for (var key in nodes) {
+				if (node == nodes[key]) return key;
+			}
+			throw 'WTF! node not found';
+		}
+
+		if (!outputs.length) return;
+		var outputNode = {
+			statId: 0,
+			inputs: [],
+			settings: []
+		};
+
+		for (var i = 0; i < outputs.length; ++i) {
+			var con = getInputs(outputs[i])[0];
+			outputNode.inputs.push({
+				name: findNodeId(con.output.node),
+				output: parseInt(con.output.output)
+			});
+			outputNode.settings.push(outputs[i].settings[0].val);
+		}
+
+		var resNodes = {};
+		for (var key in nodes) {
+			var node = nodes[key];
+			var resNode = {
+				statId: node.statId || -1,
+				inputs: [],
+				settings: []
+			};
+
+			var cons = getInputs(node);
+			for (var i = 0; i < cons.length; ++i) {
+				var outputId = findNodeId(cons[i].output.node);
+				var output = cons[i].output.output;
+
+				resNode.inputs[cons[i].input.input] = {
+					name: outputId,
+					output: parseInt(output)
+				};
+			}
+
+			for (var i = 0; i < node.settings.length; ++i) {
+				resNode.settings.push(node.settings[i].val);
+			}
+
+			resNodes[key] = resNode;
+		}
+
+		resNodes['output'] = outputNode;
+
+		var res = {
+			nodes: resNodes,
+			head: 'output'
+		};
+
+		console.log(res);
 	};
 }
 
