@@ -3,13 +3,14 @@ var App = App || angular.module('App', []);
 var NodesInfo = {
 	'Standard Deviation': {
 		name: 'Standard Deviation',
+		statId: 4,
 		x: 50,
 		y: 50,
 		inputs: [
 			{name: 'in'}
 		],
 		settings: [
-			{name: 'period', type: 'int'}
+			{name: 'period', type: 'int', val: 24}
 		],
 		outputs: [
 			{name: 'out'}
@@ -17,13 +18,14 @@ var NodesInfo = {
 	},
 	'Simple Moving Average': {
 		name: 'Simple Moving Average',
+		statId: 2,
 		x: 50,
 		y: 50,
 		inputs: [
 			{name: 'in'}
 		],
 		settings: [
-			{name: 'period', type: 'int'}
+			{name: 'period', type: 'int', val: 24}
 		],
 		outputs: [
 			{name: 'out'}
@@ -31,13 +33,14 @@ var NodesInfo = {
 	},
 	'Exponential Moving Average': {
 		name: 'Exponential Moving Average',
+		statId: 3,
 		x: 50,
 		y: 50,
 		inputs: [
 			{name: 'in'}
 		],
 		settings: [
-			{name: 'period', type: 'int'}
+			{name: 'period', type: 'int', val: 24}
 		],
 		outputs: [
 			{name: 'out'}
@@ -50,9 +53,7 @@ var NodesInfo = {
 		inputs: [
 			{name: 'in'}
 		],
-		settings: [
-			{name: ''}
-		],
+		settings: [],
 		outputs: [
 			{name: 'out'}
 		]
@@ -65,9 +66,7 @@ var NodesInfo = {
 			{name: 'a'},
 			{name: 'b'}
 		],
-		settings: [
-			{name: '+'}
-		],
+		settings: [],
 		outputs: [
 			{name: 'a+b'}
 		]
@@ -80,9 +79,7 @@ var NodesInfo = {
 			{name: 'a'},
 			{name: 'b'}
 		],
-		settings: [
-			{name: '-'}
-		],
+		settings: [],
 		outputs: [
 			{name: 'a-b'}
 		]
@@ -95,9 +92,7 @@ var NodesInfo = {
 			{name: 'a'},
 			{name: 'b'}
 		],
-		settings: [
-			{name: '*'}
-		],
+		settings: [],
 		outputs: [
 			{name: 'a*b'}
 		]
@@ -110,9 +105,7 @@ var NodesInfo = {
 			{name: 'a'},
 			{name: 'b'}
 		],
-		settings: [
-			{name: '/'}
-		],
+		settings: [],
 		outputs: [
 			{name: 'a/b'}
 		]
@@ -125,9 +118,7 @@ var NodesInfo = {
 			{name: 'a'},
 			{name: 'b'}
 		],
-		settings: [
-			{name: 'r2'}
-		],
+		settings: [],
 		outputs: [
 			{name: 'out'}
 		]
@@ -140,15 +131,13 @@ var NodesInfo = {
 			{name: 'a'},
 			{name: 'b'}
 		],
-		settings: [
-			{name: '%'}
-		],
+		settings: [],
 		outputs: [
 			{name: 'out'}
 		]
 	},
 	'Database': {
-		name: '% Difference',
+		name: 'Database',
 		statId: 1,
 		x: 50,
 		y: 50,

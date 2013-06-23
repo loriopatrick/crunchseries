@@ -36,11 +36,10 @@
 }
 .graph .node {
 	font-size: 12px;
-	border-radius: 5px;
 	position: absolute;
-	background: rgba(111, 111, 111, 1);
-	color: white !important;
+	background: rgb(241, 241, 241);
 	overflow: hidden;
+	border: dashed 1px rgb(54, 54, 54);
 }
 .graph .node .closeBtn {
 	position: absolute;
@@ -53,26 +52,27 @@
 	clear: both;
 	padding: 2px;
 	text-align: center;
-	background: rgb(37, 37, 37);
+	background: rgb(206, 206, 206);
 }
 .graph .node .options {
 	overflow: hidden;
 	padding: 10px 0;
 }
 .graph .node table {
-	color: white;
+	font-size: 14px;
 }
 .graph .node .input, .graph .node .output {
 	width: 100%;
 	float: left;
 	clear: both;
-	color: white;
 }
 .graph .node .settings {
 	min-width: 100px;
-	padding: 0 10px;
+	padding: 5px 10px;
 }
-
+.graph .node .settings input {
+	max-width: 100px;
+}
 .graph .node .handle {
 	width: 15px;
 	height: 15px;
@@ -90,4 +90,5 @@
 
 .graph .node .handleMsg {
 	float: left;
+	padding: 0 5px;
 }
