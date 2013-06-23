@@ -1,47 +1,47 @@
 <div class="graph no-select" ng-mouseup="mouseup($event)" ng-mousemove="mousemove($event)">
-	<svg class="canvas">
-		<path stroke="black" stroke-width="5" fill="transparent" ng-repeat="conn in connections" ng-model="conn" d="{{conn.d}}"></path>
-		<path stroke="black" stroke-width="2" ng-model="guideLine" ng-show="guideLine" d="{{guideLine}}"></path>
-	</svg>
-	<div class="nodes">
-		<div class="controls">
-
-			<div class="btn-group" ng-repeat="group in btnGroups">
-				<a class="btn dropdown-toggle" data-toggle="dropdown" href="javascript:;">
-					{{group.name}}
-					<span class="caret"></span>
-				</a>
-				<ul class="dropdown-menu">
-					<li>
-						<a href="javascript:;" ng-repeat="btn in group.buttons" ng-click="addNode(btn)">{{btn}}</a>
-					</li>
-				</ul>
-			</div>
-
+	<div class="controls">
+		<div class="btn-group" ng-repeat="group in btnGroups">
+			<a class="btn dropdown-toggle" data-toggle="dropdown" href="javascript:;">
+				{{group.name}}
+				<span class="caret"></span>
+			</a>
+			<ul class="dropdown-menu">
+				<li>
+					<a href="javascript:;" ng-repeat="btn in group.buttons" ng-click="addNode(btn)">{{btn}}</a>
+				</li>
+			</ul>
 		</div>
-		<div class="node" ng-repeat="node in nodes" style="left: {{node.x}}; top: {{node.y}}px;">
-			<div class="header" ng-mousedown="selectNode(node, $event)">{{node.name}}</div>
-			<table class="options">
-				<tr>
-					<td class="inputs">
-						<div class="input" ng-repeat="(i, input) in node.inputs">
-							<div ng-model="input" class="handle {{input.style}}" ng-mouseover="selectInput($event, node, i)" ng-mouseout="clearInput()" ng-mousedown="removeInputConnection(node, i)"></div>
-							<div class="handleMsg">{{input.name}}</div>
-						</div>
-					</td>
-					<td class="settings">
-						<div class="setting" ng-repeat="setting in node.settings">
-							{{setting.name}}
-						</div>
-					</td>
-					<td class="outputs">
-						<div class="output" ng-repeat="(i, output) in node.outputs" >
-							<div class="handleMsg">{{output.name}}</div>
-							<div class="handle" style="float: right;" ng-mousedown="selectOutput($event, node, i)"></div>
-						</div>
-					</td>
-				</tr>
-			</table>
+	</div>
+	<div class="display">
+		<svg class="canvas">
+			<path stroke="black" stroke-width="5" fill="transparent" ng-repeat="conn in connections" ng-model="conn" d="{{conn.d}}"></path>
+			<path stroke="black" stroke-width="2" ng-model="guideLine" ng-show="guideLine" d="{{guideLine}}"></path>
+		</svg>
+		<div class="nodes">
+			<div class="node" ng-repeat="node in nodes" style="left: {{node.x}}; top: {{node.y}}px;">
+				<div class="header" ng-mousedown="selectNode(node, $event)">{{node.name}}</div>
+				<table class="options">
+					<tr>
+						<td class="inputs">
+							<div class="input" ng-repeat="(i, input) in node.inputs">
+								<div ng-model="input" class="handle {{input.style}}" ng-mouseover="selectInput($event, node, i)" ng-mouseout="clearInput()" ng-mousedown="removeInputConnection(node, i)"></div>
+								<div class="handleMsg">{{input.name}}</div>
+							</div>
+						</td>
+						<td class="settings">
+							<div class="setting" ng-repeat="setting in node.settings">
+								{{setting.name}}
+							</div>
+						</td>
+						<td class="outputs">
+							<div class="output" ng-repeat="(i, output) in node.outputs" >
+								<div class="handleMsg">{{output.name}}</div>
+								<div class="handle" style="float: right;" ng-mousedown="selectOutput($event, node, i)"></div>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</div>
 		</div>
 	</div>
 </div>

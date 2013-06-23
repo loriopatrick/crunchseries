@@ -219,23 +219,32 @@ function GraphController($scope, $element){
 	$scope.guideLine = null;
 
 	var selectedOutput, selectedInput, dragging;
+	var scrollBoard = $($element[0]).find('.display').first();
 
 	$scope.addNode = function (name) {
-		$scope.nodes.push(clone(NodesInfo[name]));
+		var newNode = clone(NodesInfo[name]);
+		var newPos = normScroll(newNode.x, newNode.y);
+		newNode.x = newPos.x;
+		newNode.y = newPos.y;
+		$scope.nodes.push(newNode);
 	};
 
 	$scope.selectNode = function (node, evt) {
 		dragging = node;
-		dragging.dragOffest = {
-			x: evt.x - node.x,
-			y: evt.y - node.y
-		};
+		dragging.dragOffest = normScroll(
+			evt.x - node.x,
+			evt.y - node.y
+		);
 	};
 
 	$scope.mousemove = function (evt) {
 		if (dragging) {
-			dragging.x = Math.max(evt.x - dragging.dragOffest.x, 0);
-			dragging.y = Math.max(evt.y - dragging.dragOffest.y, 40);
+			var mousePos = normScroll(
+				evt.x - dragging.dragOffest.x,
+				evt.y - dragging.dragOffest.y
+			);
+			dragging.x = Math.max(mousePos.x, 0);
+			dragging.y = Math.max(mousePos.y, 40);
 
 			updateConnections();
 		}
@@ -243,14 +252,33 @@ function GraphController($scope, $element){
 		if (selectedOutput) {
 			var pos = getHandlePos(selectedOutput);
 			var offset = getGraphOffset();
-			$scope.guideLine = ['M', pos.x, ',', pos.y, 'L', evt.x - offset.left, ',', evt.y - offset.top, 'z'].join('');
+			var mousePos = normScroll(
+				evt.x - offset.left,
+				evt.y - offset.top
+			);
+			$scope.guideLine = ['M', pos.x, ',', pos.y, 'L', mousePos.x, ',', mousePos.y, 'z'].join('');
 		}
 	};
 
 	function getGraphOffset(obj) {
 		var x = 0, y = 0;
-		obj = obj || $element[0];
+		obj = obj || scrollBoard;
 		return $(obj).offset();
+	}
+
+	function getScrollOffset() {
+		return {
+			left: scrollBoard[0].scrollLeft,
+			top: scrollBoard[0].scrollTop
+		};
+	}
+
+	function normScroll (x, y) {
+		var scroll = getScrollOffset();
+		return {
+			x: x + scroll.left,
+			y: y + scroll.top
+		};
 	}
 
 	function updateConnections () {
@@ -266,10 +294,10 @@ function GraphController($scope, $element){
 		var offset = getGraphOffset();
 		var handleOffset = getGraphOffset(con.el);
 
-		return {
-			x: handleOffset.left - offset.left + 7,
-			y: handleOffset.top - offset.top + 7
-		}
+		return normScroll(
+			handleOffset.left - offset.left + 7,
+			handleOffset.top - offset.top + 7
+		);
 	}
 
 	function buildConnection (baseConn) {

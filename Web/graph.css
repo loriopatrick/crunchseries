@@ -10,6 +10,30 @@
 	position: relative;
 	overflow: hidden;
 }
+.graph .controls {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	padding: 5px;
+	background: rgb(238, 238, 238);
+	height: 30px;
+	border-bottom: solid 1px black;
+}
+.graph .display {
+	position: absolute;
+	top: 41px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	overflow: auto;
+}
+.graph .nodes, .graph .canvas {
+	width: 5000px;
+	height: 800px;
+	overflow: hidden;
+	position: absolute;
+}
 .graph .node {
 	font-size: 12px;
 	border-radius: 5px;
@@ -60,13 +84,4 @@
 
 .graph .node .handleMsg {
 	float: left;
-}
-
-.graph .controls {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	padding: 5px;
-	background: rgb(238, 238, 238);
 }
