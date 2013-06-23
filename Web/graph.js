@@ -260,7 +260,7 @@ function GraphController($scope, $element){
 				evt.y - dragging.dragOffest.y
 			);
 			dragging.x = Math.max(mousePos.x, 0);
-			dragging.y = Math.max(mousePos.y, 40);
+			dragging.y = Math.max(mousePos.y, 2);
 
 			updateConnections();
 		}
