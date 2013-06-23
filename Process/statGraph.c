@@ -109,7 +109,7 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 
 	if (stat->stat == 0) {
 		#ifdef DEBUG
-			printf("\tstat: -1: Copy Multiple Outputs\n");
+			printf("\tstat: 0: Copy Multiple Outputs\n");
 		#endif
 
 		int num_outputs = stat->num_inputs;

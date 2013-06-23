@@ -32,7 +32,7 @@
 						</td>
 						<td class="settings">
 							<div class="setting" ng-repeat="setting in node.settings">
-								{{setting.name}}
+								{{setting.name}} <input type="text" ng-model="setting.val" value="{{setting.val}}">
 							</div>
 						</td>
 						<td class="outputs">

@@ -88,7 +88,7 @@ class StatGraphSerializer:
 
 from json import loads
 
-request_data = loads(open('example.json').read())
+request_data = loads(open('example2.json').read())
 parser = StatGraphSerializer(request_data)
 print parser.get_bytes(parser.serialize())
 # dep_tree = tree_dependencies(request_data['end'], request_data)

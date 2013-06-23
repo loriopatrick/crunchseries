@@ -149,12 +149,12 @@ var NodesInfo = {
 	},
 	'Database': {
 		name: '% Difference',
+		statId: 1,
 		x: 50,
 		y: 50,
-		inputs: [
-			{name: 'dme'}
-		],
+		inputs: [],
 		settings: [
+			{name: 'Database'},
 			{name: 'Symbol'},
 			{name: 'Begin'},
 			{name: 'End'}
@@ -444,7 +444,7 @@ function GraphController($scope, $element){
 		for (var i = 0; i < outputs.length; ++i) {
 			var con = getInputs(outputs[i])[0];
 			outputNode.inputs.push({
-				name: findNodeId(con.output.node),
+				node: findNodeId(con.output.node),
 				output: parseInt(con.output.output)
 			});
 			outputNode.settings.push(outputs[i].settings[0].val);
@@ -465,12 +465,12 @@ function GraphController($scope, $element){
 				var output = cons[i].output.output;
 
 				resNode.inputs[cons[i].input.input] = {
-					name: outputId,
+					node: outputId,
 					output: parseInt(output)
 				};
 			}
 
-			for (var i = 0; i < node.settings.length; ++i) {
+			for (var i in node.settings) {
 				resNode.settings.push(node.settings[i].val);
 			}
 
@@ -484,7 +484,7 @@ function GraphController($scope, $element){
 			head: 'output'
 		};
 
-		console.log(res);
+		console.log(JSON.stringify(res));
 	};
 }
 
