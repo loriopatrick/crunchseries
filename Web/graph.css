@@ -1,0 +1,77 @@
+.no-select {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+.graph {
+	position: relative;
+	overflow: hidden;
+}
+.graph .node {
+	font-size: 12px;
+	border-radius: 5px;
+	position: absolute;
+	background: rgba(111, 111, 111, 1);
+	color: white;
+	width: 150px;
+	overflow: hidden;
+}
+.graph .node .header {
+	font-size: 14px;
+	clear: both;
+	padding: 2px;
+	text-align: center;
+	background: rgb(37, 37, 37);
+}
+.graph .node .options {
+	overflow: hidden;
+	padding: 10px 0;
+}
+.graph .node .inputs, .graph .node .outputs {
+	width: 25%;
+	float: left;
+	text-align: left;
+}
+.graph .node .outputs {
+	text-align: right;
+}
+.graph .node .input, .graph .node .output {
+	width: 100%;
+	float: left;
+	clear: both;
+}
+.graph .node .settings {
+	width: 50%;
+	float: left;
+}
+
+.graph .node .handle {
+	width: 15px;
+	height: 15px;
+	background: black;
+	float: left;
+}
+
+.graph .node .handle.add {
+	background: white;
+}
+
+.graph .node .handle.remove {
+	background: red;
+}
+
+.graph .node .handleMsg {
+	float: left;
+}
+
+.graph .controls {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 70px;
+	background: yellow;
+}

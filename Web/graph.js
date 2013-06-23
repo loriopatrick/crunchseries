@@ -1,10 +1,12 @@
-function Graph($scope, $element){
-	$scope.lines = [];
+var App = App || angular.module('App', []);
+
+function GraphController($scope, $element){
+	$scope.connections = [];
 	$scope.nodes = [
 		{
 			name: 'Standard Deviation',
-			x: 0,
-			y: 0,
+			x: 100,
+			y: 100,
 			inputs: [
 				{name: 'in'}
 			],
@@ -17,8 +19,8 @@ function Graph($scope, $element){
 		},
 		{
 			name: 'SMA',
-			x: 10,
-			y: 10,
+			x: 100,
+			y: 100,
 			inputs: [
 				{name: 'in'}
 			],
@@ -31,8 +33,8 @@ function Graph($scope, $element){
 		},
 		{
 			name: 'Difference',
-			x: 10,
-			y: 10,
+			x: 100,
+			y: 100,
 			inputs: [
 				{name: 'a'},
 				{name: 'b'}
@@ -46,7 +48,7 @@ function Graph($scope, $element){
 		}
 	];
 
-	$scope.ghostLine = null;
+	$scope.guideLine = null;
 
 	$scope.selectNode = function (node, evt) {
 		$scope.dragging = node;
@@ -61,13 +63,13 @@ function Graph($scope, $element){
 			$scope.dragging.x = evt.x - $scope.dragging.dragOffest.x;
 			$scope.dragging.y = evt.y - $scope.dragging.dragOffest.y;
 
-			updateLines();
+			updateConnections();
 		}
 
 		if ($scope.selectedOutput) {
-			var pos = getConPos($scope.selectedOutput);
+			var pos = getHandlePos($scope.selectedOutput);
 			var offset = getGraphOffset();
-			$scope.ghostLine = ['M', pos.x, ',', pos.y, 'L', evt.x - offset.x, ',', evt.y - offset.y, 'z'].join('');
+			$scope.guideLine = ['M', pos.x, ',', pos.y, 'L', evt.x - offset.x, ',', evt.y - offset.y, 'z'].join('');
 		}
 	};
 
@@ -83,38 +85,38 @@ function Graph($scope, $element){
 		return {x:x, y:y};
 	}
 
-	function updateLines () {
-		for (var i = 0; i < $scope.lines.length; ++i) {
-			if ($scope.dragging == $scope.lines[i].input.node
-				|| $scope.dragging == $scope.lines[i].output.node) {
-				buildLine($scope.lines[i]);
+	function updateConnections () {
+		for (var i = 0; i < $scope.connections.length; ++i) {
+			if ($scope.dragging == $scope.connections[i].input.node
+				|| $scope.dragging == $scope.connections[i].output.node) {
+				buildConnection($scope.connections[i]);
 			}
 		}
 	}
 
-	function getConPos (con) {
+	function getHandlePos (con) {
 		return {
 			x: con.el.offsetLeft + con.node.x + 7,
 			y: con.el.offsetTop + con.node.y + 7
 		}
 	}
 
-	function buildLine (baseLine) {
-		var output = getConPos(baseLine.output);
-		var input = getConPos(baseLine.input);
+	function buildConnection (baseConn) {
+		var output = getHandlePos(baseConn.output);
+		var input = getHandlePos(baseConn.input);
 
 		var xDist = output.x - input.x;
 		var curveDist = Math.abs(xDist / 2);
 		if (xDist > -20) curveDist += 100;
 
-		baseLine.d = [
+		baseConn.d = [
 			'M', output.x, ',', output.y,
 			'C', output.x + curveDist, ' ', output.y,
 			',', input.x - curveDist, ' ', input.y,
 			',', input.x, ' ', input.y
 		].join('');
 
-		return baseLine;
+		return baseConn;
 	}
 
 	$scope.mouseup = function (evt) {
@@ -123,20 +125,20 @@ function Graph($scope, $element){
 				&& $scope.selectedOutput.node != $scope.selectedInput.node
 				&& isInputOpen($scope.selectedInput.node, $scope.selectedInput.input)) {
 
-			$scope.lines.push(buildLine({
+			$scope.connections.push(buildConnection({
 				output: $scope.selectedOutput,
 				input: $scope.selectedInput
 			}));
 		}
 		$scope.selectedOutput = null;
 		$scope.clearInput();
-		$scope.ghostLine = null;
+		$scope.guideLine = null;
 	};
 
 	function isInputOpen(node, input) {
-		for (var i = 0; i < $scope.lines.length; ++i) {
-			if (node == $scope.lines[i].input.node
-				&& input == $scope.lines[i].input.input) return false;
+		for (var i = 0; i < $scope.connections.length; ++i) {
+			if (node == $scope.connections[i].input.node
+				&& input == $scope.connections[i].input.input) return false;
 		}
 		return true;
 	}
@@ -159,11 +161,11 @@ function Graph($scope, $element){
 		}
 	};
 
-	$scope.removeInputLine = function (node, input) {
-		for (var i = 0; i < $scope.lines.length; ++i) {
-			var line = $scope.lines[i];
+	$scope.removeInputConnection = function (node, input) {
+		for (var i = 0; i < $scope.connections.length; ++i) {
+			var line = $scope.connections[i];
 			if (line.input.node == node && line.input.input == input) {
-				$scope.lines.splice(i, 1);
+				$scope.connections.splice(i, 1);
 				console.log('removed item');
 				return;
 			}
@@ -174,3 +176,12 @@ function Graph($scope, $element){
 		$scope.selectedOutput = {node: node, output: output, el: evt.target};
 	};
 }
+
+App.directive('graph', function () {
+	return {
+		restrict: 'E',
+		replace: true,
+		templateUrl: 'templates/graph.html',
+		controller: GraphController
+	}
+});
