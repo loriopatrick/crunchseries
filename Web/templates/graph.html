@@ -4,7 +4,21 @@
 		<path stroke="black" stroke-width="2" ng-model="guideLine" ng-show="guideLine" d="{{guideLine}}"></path>
 	</svg>
 	<div class="nodes">
-		<div class="controls"></div>
+		<div class="controls">
+
+			<div class="btn-group" ng-repeat="group in btnGroups">
+				<a class="btn dropdown-toggle" data-toggle="dropdown" href="javascript:;">
+					{{group.name}}
+					<span class="caret"></span>
+				</a>
+				<ul class="dropdown-menu">
+					<li>
+						<a href="javascript:;" ng-repeat="btn in group.buttons" ng-click="addNode(btn)">{{btn}}</a>
+					</li>
+				</ul>
+			</div>
+
+		</div>
 		<div class="node" ng-repeat="node in nodes" style="left: {{node.x}}; top: {{node.y}}px;">
 			<div class="header" ng-mousedown="selectNode(node, $event)">{{node.name}}</div>
 			<div class="options">

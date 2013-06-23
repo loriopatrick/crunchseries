@@ -1,54 +1,228 @@
 var App = App || angular.module('App', []);
 
+var NodesInfo = {
+	'Standard Deviation': {
+		name: 'Standard Deviation',
+		x: 50,
+		y: 50,
+		inputs: [
+			{name: 'in'}
+		],
+		settings: [
+			{name: 'period', type: 'int'}
+		],
+		outputs: [
+			{name: 'out'}
+		]
+	},
+	'Simple Moving Average': {
+		name: 'Simple Moving Average',
+		x: 50,
+		y: 50,
+		inputs: [
+			{name: 'in'}
+		],
+		settings: [
+			{name: 'period', type: 'int'}
+		],
+		outputs: [
+			{name: 'out'}
+		]
+	},
+	'Exponential Moving Average': {
+		name: 'Exponential Moving Average',
+		x: 50,
+		y: 50,
+		inputs: [
+			{name: 'in'}
+		],
+		settings: [
+			{name: 'period', type: 'int'}
+		],
+		outputs: [
+			{name: 'out'}
+		]
+	},
+	'Slope': {
+		name: 'Slope',
+		x: 50,
+		y: 50,
+		inputs: [
+			{name: 'in'}
+		],
+		settings: [
+			{name: ''}
+		],
+		outputs: [
+			{name: 'out'}
+		]
+	},
+	'Sum': {
+		name: 'Sum',
+		x: 50,
+		y: 50,
+		inputs: [
+			{name: 'a'},
+			{name: 'b'}
+		],
+		settings: [
+			{name: '+'}
+		],
+		outputs: [
+			{name: 'a+b'}
+		]
+	},
+	'Difference': {
+		name: 'Difference',
+		x: 50,
+		y: 50,
+		inputs: [
+			{name: 'a'},
+			{name: 'b'}
+		],
+		settings: [
+			{name: '-'}
+		],
+		outputs: [
+			{name: 'a-b'}
+		]
+	},
+	'Product': {
+		name: 'Product',
+		x: 50,
+		y: 50,
+		inputs: [
+			{name: 'a'},
+			{name: 'b'}
+		],
+		settings: [
+			{name: '*'}
+		],
+		outputs: [
+			{name: 'a*b'}
+		]
+	},
+	'Quotient': {
+		name: 'Quotient',
+		x: 50,
+		y: 50,
+		inputs: [
+			{name: 'a'},
+			{name: 'b'}
+		],
+		settings: [
+			{name: '/'}
+		],
+		outputs: [
+			{name: 'a/b'}
+		]
+	},
+	'Correlation': {
+		name: 'Correlation',
+		x: 50,
+		y: 50,
+		inputs: [
+			{name: 'a'},
+			{name: 'b'}
+		],
+		settings: [
+			{name: 'r2'}
+		],
+		outputs: [
+			{name: 'out'}
+		]
+	},
+	'% Difference': {
+		name: '% Difference',
+		x: 50,
+		y: 50,
+		inputs: [
+			{name: 'a'},
+			{name: 'b'}
+		],
+		settings: [
+			{name: '%'}
+		],
+		outputs: [
+			{name: 'out'}
+		]
+	},
+	'Database': {
+		name: '% Difference',
+		x: 50,
+		y: 50,
+		inputs: [
+			{name: 'dme'}
+		],
+		settings: [
+			{name: 'Symbol'},
+			{name: 'Begin'},
+			{name: 'End'}
+		],
+		outputs: [
+			{name: 'time'},
+			{name: 'start'},
+			{name: 'close'},
+			{name: 'high'},
+			{name: 'low'},
+			{name: 'volume'}
+		]
+	}
+};
+
+function clone(obj) {
+	if (null == obj || "object" != typeof obj) return obj;
+	var copy = {};
+	for (var attr in obj) {
+		copy[attr] = clone(obj[attr]);
+	}
+	return copy;
+}
+
 function GraphController($scope, $element){
 	$scope.connections = [];
-	$scope.nodes = [
+	$scope.nodes = [];
+
+	$scope.btnGroups = [
 		{
-			name: 'Standard Deviation',
-			x: 100,
-			y: 100,
-			inputs: [
-				{name: 'in'}
-			],
-			settings: [
-				{name: 'p-size', type: 'int'}
-			],
-			outputs: [
-				{name: 'out'}
+			name: 'Statistics',
+			buttons: [
+				'Standard Deviation',
+				'Simple Moving Average',
+				'Exponential Moving Average',
+				'Slope'
 			]
 		},
 		{
-			name: 'SMA',
-			x: 100,
-			y: 100,
-			inputs: [
-				{name: 'in'}
-			],
-			settings: [
-				{name: 'p-size', type: 'int'}
-			],
-			outputs: [
-				{name: 'out'}
+			name: 'Operators',
+			buttons: [
+				'Sum',
+				'Difference',
+				'Product',
+				'Quotient'
 			]
 		},
 		{
-			name: 'Difference',
-			x: 100,
-			y: 100,
-			inputs: [
-				{name: 'a'},
-				{name: 'b'}
-			],
-			settings: [
-				{name: 'foo'}
-			],
-			outputs: [
-				{name: 'a-b'}
+			name: 'Benchmarks',
+			buttons: [
+				'Correlation',
+				'% Difference'
+			]
+		},
+		{
+			name: 'Other',
+			buttons: [
+				'Database',
+				'Output'
 			]
 		}
 	];
 
 	$scope.guideLine = null;
+
+	$scope.addNode = function (name) {
+		$scope.nodes.push(clone(NodesInfo[name]));
+	};
 
 	$scope.selectNode = function (node, evt) {
 		$scope.dragging = node;
