@@ -243,20 +243,14 @@ function GraphController($scope, $element){
 		if ($scope.selectedOutput) {
 			var pos = getHandlePos($scope.selectedOutput);
 			var offset = getGraphOffset();
-			$scope.guideLine = ['M', pos.x, ',', pos.y, 'L', evt.x - offset.x, ',', evt.y - offset.y, 'z'].join('');
+			$scope.guideLine = ['M', pos.x, ',', pos.y, 'L', evt.x - offset.left, ',', evt.y - offset.top, 'z'].join('');
 		}
 	};
 
-	function getGraphOffset() {
+	function getGraphOffset(obj) {
 		var x = 0, y = 0;
-		var obj = $element[0];
-		while (obj) {
-			x += obj.offsetLeft;
-			y += obj.offsetTop;
-			obj = obj.offsetParent;
-		}
-
-		return {x:x, y:y};
+		obj = obj || $element[0];
+		return $(obj).offset();
 	}
 
 	function updateConnections () {
@@ -269,9 +263,12 @@ function GraphController($scope, $element){
 	}
 
 	function getHandlePos (con) {
+		var offset = getGraphOffset();
+		var handleOffset = getGraphOffset(con.el);
+
 		return {
-			x: con.el.offsetLeft + con.node.x + 7,
-			y: con.el.offsetTop + con.node.y + 7
+			x: handleOffset.left - offset.left + 7,
+			y: handleOffset.top - offset.top + 7
 		}
 	}
 

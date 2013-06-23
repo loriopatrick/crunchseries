@@ -15,8 +15,7 @@
 	border-radius: 5px;
 	position: absolute;
 	background: rgba(111, 111, 111, 1);
-	color: white;
-	width: 200px;
+	color: white !important;
 	overflow: hidden;
 }
 .graph .node .header {
@@ -30,22 +29,18 @@
 	overflow: hidden;
 	padding: 10px 0;
 }
-.graph .node .inputs, .graph .node .outputs {
-	width: 25%;
-	float: left;
-	text-align: left;
-}
-.graph .node .outputs {
-	text-align: right;
+.graph .node table {
+	color: white;
 }
 .graph .node .input, .graph .node .output {
 	width: 100%;
 	float: left;
 	clear: both;
+	color: white;
 }
 .graph .node .settings {
-	width: 50%;
-	float: left;
+	min-width: 100px;
+	padding: 0 10px;
 }
 
 .graph .node .handle {

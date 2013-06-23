@@ -21,25 +21,27 @@
 		</div>
 		<div class="node" ng-repeat="node in nodes" style="left: {{node.x}}; top: {{node.y}}px;">
 			<div class="header" ng-mousedown="selectNode(node, $event)">{{node.name}}</div>
-			<div class="options">
-				<div class="inputs">
-					<div class="input" ng-repeat="(i, input) in node.inputs">
-						<div ng-model="input" class="handle {{input.style}}" ng-mouseover="selectInput($event, node, i)" ng-mouseout="clearInput()" ng-mousedown="removeInputConnection(node, i)"></div>
-						<div class="handleMsg">{{input.name}}</div>
-					</div>
-				</div>
-				<div class="settings">
-					<div class="setting" ng-repeat="setting in node.settings">
-						{{setting.name}}
-					</div>
-				</div>
-				<div class="outputs">
-					<div class="output" ng-repeat="(i, output) in node.outputs" >
-						<div class="handleMsg">{{output.name}}</div>
-						<div class="handle" style="float: right;" ng-mousedown="selectOutput($event, node, i)"></div>
-					</div>
-				</div>
-			</div>
+			<table class="options">
+				<tr>
+					<td class="inputs">
+						<div class="input" ng-repeat="(i, input) in node.inputs">
+							<div ng-model="input" class="handle {{input.style}}" ng-mouseover="selectInput($event, node, i)" ng-mouseout="clearInput()" ng-mousedown="removeInputConnection(node, i)"></div>
+							<div class="handleMsg">{{input.name}}</div>
+						</div>
+					</td>
+					<td class="settings">
+						<div class="setting" ng-repeat="setting in node.settings">
+							{{setting.name}}
+						</div>
+					</td>
+					<td class="outputs">
+						<div class="output" ng-repeat="(i, output) in node.outputs" >
+							<div class="handleMsg">{{output.name}}</div>
+							<div class="handle" style="float: right;" ng-mousedown="selectOutput($event, node, i)"></div>
+						</div>
+					</td>
+				</tr>
+			</table>
 		</div>
 	</div>
 </div>
