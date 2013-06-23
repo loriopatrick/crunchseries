@@ -42,6 +42,12 @@
 	color: white !important;
 	overflow: hidden;
 }
+.graph .node .closeBtn {
+	position: absolute;
+	top: 2;
+	left: 2;
+	font-size: 8px;
+}
 .graph .node .header {
 	font-size: 14px;
 	clear: both;

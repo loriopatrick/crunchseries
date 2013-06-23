@@ -229,6 +229,22 @@ function GraphController($scope, $element){
 		$scope.nodes.push(newNode);
 	};
 
+	$scope.destroyNode = function (node) {
+		if (!confirm('Are you sure you want to delete this node? (' + node.name + ')')) return;
+		for (var i = 0; i < $scope.connections.length;) {
+			var con = $scope.connections[i];
+			if (con.input.node == node || con.output.node == node) {
+				$scope.connections.splice(i, 1);
+				continue;
+			}
+
+			++i;
+		}
+
+		var nodePos = $scope.nodes.indexOf(node);
+		$scope.nodes.splice(nodePos, 1);
+	};
+
 	$scope.selectNode = function (node, evt) {
 		dragging = node;
 		dragging.dragOffest = normScroll(

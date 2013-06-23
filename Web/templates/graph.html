@@ -19,6 +19,7 @@
 		</svg>
 		<div class="nodes">
 			<div class="node" ng-repeat="node in nodes" style="left: {{node.x}}; top: {{node.y}}px;">
+				<a class="closeBtn" href="javascript:;" ng-click="destroyNode(node)">X</a>
 				<div class="header" ng-mousedown="selectNode(node, $event)">{{node.name}}</div>
 				<table class="options">
 					<tr>
