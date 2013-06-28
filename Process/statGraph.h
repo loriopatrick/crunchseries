@@ -36,7 +36,7 @@ struct _statGraph_graph {
 } typedef StatGraph;
 
 StatGraph* buildGraph(void* data);
-int runStat(struct _statGraph_stat* stat, StatGraph* graph);
+int runGraph(StatGraph* graph);
 int runStat(struct _statGraph_stat* stat, StatGraph* graph);
 
 #endif

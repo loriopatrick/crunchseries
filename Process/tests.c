@@ -4,6 +4,7 @@
 #include <sys/time.h>
 
 #include "network.h"
+#include "netHandler.h"
 #include "database.h"
 #include "quote.h"
 #include "statGraph.h"
@@ -57,6 +58,6 @@ void testStatGraph() {
 
 int main(int args, char** argv) {
 	DB_connect();
-	testStatGraph();
+	NET_startServer(5032, 20, netHandler);
 	DB_close();
 }

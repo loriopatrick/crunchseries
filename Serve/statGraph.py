@@ -1,4 +1,5 @@
 from struct import pack
+import process
 
 class StatGraphSerializer:
 	def __init__(self, data):
@@ -86,13 +87,24 @@ class StatGraphSerializer:
 			res.append(str(ord(x)))
 		return ','.join(res)
 
+
+class StatGraphProvider:
+	def __init__(self, data):
+		self.data = data
+		serializer = StatGraphSerializer(data)
+		self.request_data = serializer.serialize()
+
+	def request(self):
+		pass
+
+	def format(self):
+		pass
+
+
+
+
 from json import loads
 
 request_data = loads(open('example2.json').read())
 parser = StatGraphSerializer(request_data)
 print parser.get_bytes(parser.serialize())
-# dep_tree = tree_dependencies(request_data['end'], request_data)
-
-# print dep_tree
-
-# layers = build_layers(node_data)

@@ -1,6 +1,6 @@
 var App = App || angular.module('App', []);
 
-var NodesInfo = {
+var NodesInfo = { // todo: put these on the server and make API requests
 	'Standard Deviation': {
 		name: 'Standard Deviation',
 		statId: 4,
@@ -143,10 +143,10 @@ var NodesInfo = {
 		y: 50,
 		inputs: [],
 		settings: [
-			{name: 'Database'},
-			{name: 'Symbol'},
-			{name: 'Begin'},
-			{name: 'End'}
+			{name: 'Database', type: 'str'},
+			{name: 'Symbol', type: 'str'},
+			{name: 'Begin', type: 'float'},
+			{name: 'End', type: 'float'}
 		],
 		outputs: [
 			{name: 'time'},
@@ -166,7 +166,7 @@ var NodesInfo = {
 			{name: 'in'}
 		],
 		settings: [
-			{name: 'name', val:''}
+			{name: 'name', type: 'str', val:''}
 		],
 		outputs: []
 	}
@@ -393,87 +393,113 @@ function GraphController($scope, $element){
 		selectedOutput = {node: node, output: output, el: evt.target};
 	};
 
-	$scope.serialize = function () {
-		function getInputs(node) {
-			var inputs = [];
+	function serialize () {
+		var nodes = {};
+		var nodes_dict = {};
+
+		function getConnections(node) {
+			var cons = [];
 			for (var i = 0; i < $scope.connections.length; ++i) {
 				var con = $scope.connections[i];
 				if (con.input.node === node) {
-					inputs.push(con);
+					cons.push(con);
 				}
 			}
-
-			return inputs;
+			return cons;
 		}
 
-		var outputs = [], nodes = {};
-		for (var i = 0; i < $scope.nodes.length; ++i) {
-			var node = $scope.nodes[i];
-			if (node.statId === 0) {
-				outputs.push(node);
-			} else {
-				nodes['node-' + i] = node;
-			}
-		}
-
-		function findNodeId (node) {
-			for (var key in nodes) {
-				if (node == nodes[key]) return key;
+		function getNodeId (node) {
+			for (var key in nodes_dict) {
+				if (node == nodes_dict[key]) return key;
 			}
 			throw 'WTF! node not found';
 		}
 
-		if (!outputs.length) return;
-		var outputNode = {
-			statId: 0,
-			inputs: [],
-			settings: []
-		};
-
-		for (var i = 0; i < outputs.length; ++i) {
-			var con = getInputs(outputs[i])[0];
-			outputNode.inputs.push({
-				node: findNodeId(con.output.node),
-				output: parseInt(con.output.output)
-			});
-			outputNode.settings.push(outputs[i].settings[0].val);
+		function parseSetting (setting) {
+			switch (setting.type) {
+				case 'int':
+					return parseInt(setting.val);
+				case 'float':
+					return parseFloat(setting.val);
+				case 'str':
+					return setting.val.toString();
+				default:
+					return setting.val;
+			}
 		}
 
-		var resNodes = {};
-		for (var key in nodes) {
-			var node = nodes[key];
-			var resNode = {
-				statId: node.statId || -1,
-				inputs: [],
-				settings: []
+		function getNodes () {
+			for (var i = 0; i < $scope.nodes.length; ++i) {
+				var node = $scope.nodes[i];
+				if (node.statId === 0) continue;
+
+				var sNode = {
+					statId: node.statId,
+					settings: [],
+					inputs: []
+				};
+
+				var node_name = 'node_' + i;
+				var cons = getConnections(node);
+
+				for (var j = 0; j < cons.length; ++j) {
+					var con = cons[j];
+					sNode.inputs[con.input.input] = {
+						node: con.output.node,
+						output: con.output.output
+					}
+				}
+
+				for (var j in node.settings) {
+					var setting = node.settings[j];
+					sNode.settings[j] = parseSetting(setting);
+				}
+
+				nodes[node_name] = sNode;
+				nodes_dict[node_name] = node;
+			}
+
+			for (var key in nodes) {
+				var node = nodes[key];
+				for (var j = 0; j < node.inputs.length; ++j) {
+					node.inputs[j].node = getNodeId(node.inputs[j].node);
+				}
+			}
+		}
+
+		function buildOutput () {
+			var outputNode = {
+				statId: 0,
+				settings: [],
+				inputs: []
 			};
 
-			var cons = getInputs(node);
-			for (var i = 0; i < cons.length; ++i) {
-				var outputId = findNodeId(cons[i].output.node);
-				var output = cons[i].output.output;
+			for (var i = 0; i < $scope.nodes.length; ++i) {
+				var node = $scope.nodes[i];
+				if (node.statId !== 0) continue;
+				var con = getConnections(node);
+				if (!con.length) continue;
+				con = con[0];
 
-				resNode.inputs[cons[i].input.input] = {
-					node: outputId,
-					output: parseInt(output)
-				};
+				outputNode.settings.push(node.settings[0].val);
+				outputNode.inputs.push({
+					node: getNodeId(con.output.node),
+					output: con.output.output
+				});
 			}
 
-			for (var i in node.settings) {
-				resNode.settings.push(node.settings[i].val);
-			}
-
-			resNodes[key] = resNode;
+			if (!outputNode.inputs) throw 'Outputs are required';
+			nodes['output'] = outputNode;
 		}
 
-		resNodes['output'] = outputNode;
+		getNodes();
+		buildOutput();
 
-		var res = {
-			nodes: resNodes,
-			head: 'output'
-		};
+		return {nodes:nodes, head:'output'};
+	}
 
-		console.log(JSON.stringify(res));
+	$scope.serialize = function () {
+		console.log(JSON.stringify(serialize()));
 	};
 }
 
