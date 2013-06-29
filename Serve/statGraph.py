@@ -107,8 +107,12 @@ class StatGraphProvider:
 	def format(self):
 		pass
 
-if __name__ == '__main__':
+def example():
 	from json import loads
 	request_data = loads(open('example2.json').read())
 	parser = StatGraphSerializer(request_data)
-	print parser.get_bytes(parser.serialize())
+	return parser.serialize()
+
+if __name__ == '__main__':
+	parser.get_bytes(example())
+	

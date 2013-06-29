@@ -5,8 +5,6 @@ import statGraph
 
 app = Flask(__name__)
 
-
-
 @app.route('/api/runGraph', methods=['POST'])
 def run_graph():
 	if len(request.data) > 5000:

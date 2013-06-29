@@ -23,6 +23,7 @@ void sendArray(int sockfd, double* array, int len) {
 }
 
 void netHandler(int sockfd) {
+	printf("%s\n", "New Connection");
 	int requestType;
 	NET_recv(sockfd, &requestType, sizeof(int));
 
@@ -42,6 +43,7 @@ void netHandler(int sockfd) {
 	struct _statGraph_stat output_stat = graph->stats[graph->head];
 
 	int number_of_outputs = output_stat.num_inputs;
+	printf("NUmber of outputs: %i\n", number_of_outputs);
 	NET_send(sockfd, &number_of_outputs, sizeof(int));
 
 	int i;
