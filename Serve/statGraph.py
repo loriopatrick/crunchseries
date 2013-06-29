@@ -29,16 +29,22 @@ class StatGraphSerializer:
 		return node
 
 	def serialize_setting(self, setting):
-		if type(setting) == int:
+		parts = setting.split('-')
+		setting_type = parts[0]
+		setting_value = '-'.join(parts[1:])
+
+		if setting_type == 'int':
+			setting = int(setting_value)
 			value = pack('i', setting)
 			return pack('i', len(value)) + value
 
-		if type(setting) == float:
+		if setting_type == 'float':
+			setting = float(setting_value)
 			value = pack('d', setting)
 			return pack('i', len(value)) + value
 
-		if type(setting) == str or type(setting) == unicode:
-			setting = str(setting)
+		if setting_type == 'str':
+			setting = str(setting_value)
 			value = pack('%is' % len(setting), setting)
 			return pack('i', len(value)) + value
 

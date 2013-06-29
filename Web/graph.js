@@ -416,16 +416,7 @@ function GraphController($scope, $element, $http){
 		}
 
 		function parseSetting (setting) {
-			switch (setting.type) {
-				case 'int':
-					return parseInt(setting.val);
-				case 'float':
-					return parseFloat(setting.val);
-				case 'str':
-					return setting.val.toString();
-				default:
-					return setting.val;
-			}
+			return (setting.type || 'str') + '-' + setting.val;
 		}
 
 		function getNodes () {
@@ -481,7 +472,7 @@ function GraphController($scope, $element, $http){
 				if (!con.length) continue;
 				con = con[0];
 
-				outputNode.settings.push(node.settings[0].val);
+				outputNode.settings.push(parseSetting(node.settings[0]));
 				outputNode.inputs.push({
 					node: getNodeId(con.output.node),
 					output: parseInt(con.output.output)

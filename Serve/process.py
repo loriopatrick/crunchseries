@@ -19,26 +19,31 @@ class Process:
 		data = ''
 		recieved = 0
 		while recieved < size:
-			r = self.sock.recv(size)
+			r = self.sock.recv(size - recieved)
 			recieved += len(r)
 			data += r
 		return data
 
 	def get_int(self):
-		return struct.unpack('i', pro.recv(4))[0]
+		return struct.unpack('i', self.recv(4))[0]
 
 	def get_double_array(self, size):
-		print 'get of size: %s' % size, size * 8
-		return struct.unpack('%sd' % size, pro.recv(8 * size))
+		return struct.unpack('%sd' % size, self.recv(8 * size))
+
+	def run_graph(self, data):
+		self.request(1, data)
+		num_outputs = self.get_int()
+		outputs = []
+		for x in range(num_outputs):
+			output_size = self.get_int()
+			outputs.append(self.get_double_array(output_size))
+		return outputs
+
+	def close(self):
+		self.sock.close()
 
 if __name__ == '__main__':
 	pro = Process(PROCESS_END_POINT)
 	pro.connect()
 	import statGraph
-	pro.request(1, statGraph.example())
-	num_outputs = pro.get_int()
-	outputs = []
-	for x in range(num_outputs):
-		output_size = pro.get_int()
-		outputs.append(pro.get_double_array(output_size))
-	print outputs
+	print pro.run_graph(statGraph.example())
