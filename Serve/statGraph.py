@@ -5,6 +5,13 @@ class StatGraphSerializer:
 	def __init__(self, data):
 		self.data = data
 
+	def validate_nodes(self):
+		'''
+		todo: - check for circle dependencies
+				- invalid settings
+		'''
+		return True
+
 	def get_nodes(self):
 		res = []
 		for node_name in self.data['nodes']:
@@ -100,11 +107,8 @@ class StatGraphProvider:
 	def format(self):
 		pass
 
-
-
-
-from json import loads
-
-request_data = loads(open('example2.json').read())
-parser = StatGraphSerializer(request_data)
-print parser.get_bytes(parser.serialize())
+if __name__ == '__main__':
+	from json import loads
+	request_data = loads(open('example2.json').read())
+	parser = StatGraphSerializer(request_data)
+	print parser.get_bytes(parser.serialize())
