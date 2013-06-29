@@ -181,7 +181,7 @@ function clone(obj) {
 	return copy;
 }
 
-function GraphController($scope, $element){
+function GraphController($scope, $element, $http){
 	$scope.connections = [];
 	$scope.nodes = [];
 	$scope.btnGroups = [
@@ -434,7 +434,7 @@ function GraphController($scope, $element){
 				if (node.statId === 0) continue;
 
 				var sNode = {
-					statId: node.statId,
+					statId: node.statId || -1,
 					settings: [],
 					inputs: []
 				};
@@ -446,7 +446,7 @@ function GraphController($scope, $element){
 					var con = cons[j];
 					sNode.inputs[con.input.input] = {
 						node: con.output.node,
-						output: con.output.output
+						output: parseInt(con.output.output)
 					}
 				}
 
@@ -484,7 +484,7 @@ function GraphController($scope, $element){
 				outputNode.settings.push(node.settings[0].val);
 				outputNode.inputs.push({
 					node: getNodeId(con.output.node),
-					output: con.output.output
+					output: parseInt(con.output.output)
 				});
 			}
 
@@ -499,7 +499,13 @@ function GraphController($scope, $element){
 	}
 
 	$scope.serialize = function () {
-		console.log(JSON.stringify(serialize()));
+		var nodeData = serialize();
+		var requestData = JSON.stringify(nodeData);
+		console.log('request', requestData);
+
+		$http.post('/api/runGraph', requestData).success(function (data) {
+			console.log(data);
+		});
 	};
 }
 
