@@ -26,6 +26,7 @@ struct _statGraph_stat {
 	int num_inputs;
 
 	struct _statGraph_output* outputs;
+	int num_outputs;
 };
 
 struct _statGraph_graph {
@@ -38,5 +39,6 @@ struct _statGraph_graph {
 StatGraph* buildGraph(void* data);
 int runGraph(StatGraph* graph);
 int runStat(struct _statGraph_stat* stat, StatGraph* graph);
+void freeStatGraph(StatGraph* graph);
 
 #endif

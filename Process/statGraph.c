@@ -59,6 +59,7 @@ int buildStat(struct _statGraph_stat* stat, void* data) {
 	memcpy(stat->inputs, data + pos, sizeof(struct _statGraph_input) * stat->num_inputs); pos += sizeof(struct _statGraph_input) * stat->num_inputs;
 
 	stat->outputs = 0;
+	stat->num_outputs = 0;
 	return pos;
 }
 
@@ -160,6 +161,7 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 		stat->outputs[3].values = quotes->open; stat->outputs[3].len = quotes->count;
 		stat->outputs[4].values = quotes->close; stat->outputs[4].len = quotes->count;
 		stat->outputs[5].values = quotes->volume; stat->outputs[5].len = quotes->count;
+		stat->num_outputs = 6;
 
 		free(endQ);
 		free(query);
@@ -180,7 +182,8 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 		double* res = simpleMovingAverage(series->values, series->len, *period_size);
 		stat->outputs = malloc(sizeof(struct _statGraph_output));
 		stat->outputs[0].len = series->len;
-		stat->outputs[0].values = res; 
+		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
 
 		return 0;
 	}
@@ -199,6 +202,7 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 		stat->outputs = malloc(sizeof(struct _statGraph_output));
 		stat->outputs[0].values = res;
 		stat->outputs[0].len = series->len;
+		stat->num_outputs = 1;
 
 		return 0;
 	}
@@ -217,6 +221,7 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 		stat->outputs = malloc(sizeof(struct _statGraph_output));
 		stat->outputs[0].len = series->len;
 		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
 
 		return 0;
 	}
@@ -226,4 +231,21 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 
 int runGraph(StatGraph* graph) {
 	return runStat(graph->stats + graph->head, graph);
+}
+
+void freeStat(struct _statGraph_stat* stat) {
+	int i;
+
+	for (i = 0; i < stat->num_settings; ++i) { free(stat->settings[i].data); }
+	free(stat->settings);
+	for (i = 0; i < stat->num_outputs; ++i) { free(stat->outputs[i].values); }
+	free(stat->outputs);
+	free(stat->inputs);
+}
+
+void freeStatGraph(StatGraph* graph) {
+	int i;
+	for (i = 0; i < graph->num_stats; ++i) { freeStat(graph->stats + i); }
+	free(graph->stats);
+	free(graph);
 }

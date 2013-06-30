@@ -51,4 +51,6 @@ void netHandler(int sockfd) {
 		struct _statGraph_output output = output_stat.outputs[i];
 		sendArray(sockfd, output.values, output.len);
 	}
+
+	freeStatGraph(graph);
 }
