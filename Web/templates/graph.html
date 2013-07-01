@@ -1,13 +1,14 @@
 <div class="graph no-select" ng-mouseup="mouseup($event)" ng-mousemove="mousemove($event)">
-	<div class="controls">
+	<div class="controls" ng-init="init()">
+		<div ng-hide="btnGroups">Loading...</div>
 		<div class="btn-group" ng-repeat="group in btnGroups">
 			<a class="btn dropdown-toggle" data-toggle="dropdown" href="javascript:;">
-				{{group.name}}
+				{{group.title}}
 				<span class="caret"></span>
 			</a>
 			<ul class="dropdown-menu">
 				<li>
-					<a href="javascript:;" ng-repeat="btn in group.buttons" ng-click="addNode(btn)">{{btn}}</a>
+					<a href="javascript:;" ng-repeat="btn in group.stats" ng-click="addNode(btn)">{{btn}}</a>
 				</li>
 			</ul>
 		</div>
@@ -21,7 +22,7 @@
 		<div class="nodes">
 			<div class="node" ng-repeat="node in nodes" style="left: {{node.x}}; top: {{node.y}}px;">
 				<a class="closeBtn" href="javascript:;" ng-click="destroyNode(node)">X</a>
-				<div class="header" ng-mousedown="selectNode(node, $event)">{{node.name}}</div>
+				<div class="header" ng-mousedown="selectNode(node, $event)">{{node.title}}</div>
 				<table class="options">
 					<tr>
 						<td class="inputs">

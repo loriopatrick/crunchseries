@@ -1,170 +1,5 @@
 var App = App || angular.module('App', []);
 
-var NodesInfo = { // todo: put these on the server and make API requests
-	'Standard Deviation': {
-		name: 'Standard Deviation',
-		statId: 4,
-		x: 50,
-		y: 50,
-		inputs: [
-			{name: 'in'}
-		],
-		settings: [
-			{name: 'period', type: 'int', val: 24}
-		],
-		outputs: [
-			{name: 'out'}
-		]
-	},
-	'Simple Moving Average': {
-		name: 'Simple Moving Average',
-		statId: 2,
-		x: 50,
-		y: 50,
-		inputs: [
-			{name: 'in'}
-		],
-		settings: [
-			{name: 'period', type: 'int', val: 24}
-		],
-		outputs: [
-			{name: 'out'}
-		]
-	},
-	'Exponential Moving Average': {
-		name: 'Exponential Moving Average',
-		statId: 3,
-		x: 50,
-		y: 50,
-		inputs: [
-			{name: 'in'}
-		],
-		settings: [
-			{name: 'period', type: 'int', val: 24}
-		],
-		outputs: [
-			{name: 'out'}
-		]
-	},
-	'Slope': {
-		name: 'Slope',
-		statId: 5,
-		x: 50,
-		y: 50,
-		inputs: [
-			{name: 'in'}
-		],
-		settings: [],
-		outputs: [
-			{name: 'out'}
-		]
-	},
-	'Sum': {
-		name: 'Sum',
-		statId: 14,
-		x: 50,
-		y: 50,
-		inputs: [
-			{name: 'a'},
-			{name: 'b'}
-		],
-		settings: [],
-		outputs: [
-			{name: 'a+b'}
-		]
-	},
-	'Difference': {
-		name: 'Difference',
-		statId: 15,
-		x: 50,
-		y: 50,
-		inputs: [
-			{name: 'a'},
-			{name: 'b'}
-		],
-		settings: [],
-		outputs: [
-			{name: 'a-b'}
-		]
-	},
-	'Product': {
-		name: 'Product',
-		statId: 16,
-		x: 50,
-		y: 50,
-		inputs: [
-			{name: 'a'},
-			{name: 'b'}
-		],
-		settings: [],
-		outputs: [
-			{name: 'a*b'}
-		]
-	},
-	'Quotient': {
-		name: 'Quotient',
-		statId: 17,
-		x: 50,
-		y: 50,
-		inputs: [
-			{name: 'a'},
-			{name: 'b'}
-		],
-		settings: [],
-		outputs: [
-			{name: 'a/b'}
-		]
-	},
-	'% Difference': {
-		name: '% Difference',
-		statId: 6,
-		x: 50,
-		y: 50,
-		inputs: [
-			{name: 'a'},
-			{name: 'b'}
-		],
-		settings: [],
-		outputs: [
-			{name: 'out'}
-		]
-	},
-	'Database': {
-		name: 'Database',
-		statId: 1,
-		x: 50,
-		y: 50,
-		inputs: [],
-		settings: [
-			{name: 'Database', type: 'str'},
-			{name: 'Symbol', type: 'str'},
-			{name: 'Begin', type: 'float'},
-			{name: 'End', type: 'float'}
-		],
-		outputs: [
-			{name: 'time'},
-			{name: 'high'},
-			{name: 'low'},
-			{name: 'open'},
-			{name: 'close'},
-			{name: 'volume'}
-		]
-	},
-	'Output': {
-		name: 'Output',
-		statId: 0,
-		x: 50,
-		y: 50,
-		inputs: [
-			{name: 'in'}
-		],
-		settings: [
-			{name: 'name', type: 'str', val:''}
-		],
-		outputs: []
-	}
-};
-
 function clone(obj) {
 	if (null == obj || "object" != typeof obj) return obj;
 	var copy = {};
@@ -177,47 +12,32 @@ function clone(obj) {
 function GraphController($scope, $element, $http){
 	$scope.connections = [];
 	$scope.nodes = [];
-	$scope.btnGroups = [
-		{
-			name: 'Statistics',
-			buttons: [
-				'Standard Deviation',
-				'Simple Moving Average',
-				'Exponential Moving Average',
-				'Slope'
-			]
-		},
-		{
-			name: 'Operators',
-			buttons: [
-				'Sum',
-				'Difference',
-				'Product',
-				'Quotient'
-			]
-		},
-		{
-			name: 'Benchmarks',
-			buttons: [
-				'% Difference'
-			]
-		},
-		{
-			name: 'Other',
-			buttons: [
-				'Database',
-				'Output'
-			]
-		}
-	];
+	$scope.btnGroups = [];
 	$scope.guideLine = null;
+	
+	var nodeInfo = {};
 
 	var selectedOutput, selectedInput, dragging;
 	var scrollBoard = $($element[0]).find('.display').first();
 
+	$scope.init = function () {
+		$http.get('/api/stats').success(function (stats) {
+			nodeInfo = stats;
+
+			$http.get('/api/stats/groups').success(function (groups) {
+				$scope.btnGroups = groups;
+			});
+		});
+	};
+
+	$scope.getNodeInfoTitle = function (id) {
+		return nodeInfo[id].title;
+	};
+
 	$scope.addNode = function (name) {
-		var newNode = clone(NodesInfo[name]);
-		var newPos = normScroll(newNode.x, newNode.y);
+		var newNode = clone(nodeInfo[name]);
+		console.log(name, nodeInfo, nodeInfo[name], newNode);
+		var newPos = normScroll(50, 50);
 		newNode.x = newPos.x;
 		newNode.y = newPos.y;
 		$scope.nodes.push(newNode);

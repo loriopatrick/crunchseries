@@ -6,6 +6,7 @@
 #include "quote.h"
 #include "stats.h"
 #include "arithmetic_stats.h"
+#include "logic_stats.h"
 
 #include "statGraph.h"
 
@@ -357,26 +358,7 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 
 	if (stat->stat == 11) {
 		#ifdef DEBUG
-			printf("\ta stat: 11: Power Number\n");
-		#endif
-
-		int* number = stat->settings[0].data;
-		struct _statGraph_output* series = getInput(stat->inputs[0].stat,
-																stat->inputs[0].output,
-																graph);
-		
-		double* res = powerNumber(series->values, series->len, *number);
-		stat->outputs = malloc(sizeof(struct _statGraph_output));
-		stat->outputs[0].len = series->len;
-		stat->outputs[0].values = res;
-		stat->num_outputs = 1;
-
-		return 0;
-	}
-
-	if (stat->stat == 12) {
-		#ifdef DEBUG
-			printf("\ta stat: 12: Exponentiate Number\n");
+			printf("\ta stat: 11: Exponentiate Number\n");
 		#endif
 
 		int* number = stat->settings[0].data;
@@ -393,9 +375,9 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 		return 0;
 	}
 
-	if (stat->stat == 13) { // todo:: fix
+	if (stat->stat == 12) {
 		#ifdef DEBUG
-			printf("\ta stat: 13: Sum\n");
+			printf("\ta stat: 12: Sum\n");
 		#endif
 
 		struct _statGraph_output* series_a = getInput(stat->inputs[0].stat,
@@ -417,33 +399,9 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 		return 0;
 	}
 
-	if (stat->stat == 14) {
+	if (stat->stat == 13) {
 		#ifdef DEBUG
-			printf("\ta stat: 14: Sum\n");
-		#endif
-
-		struct _statGraph_output* series_a = getInput(stat->inputs[0].stat,
-																stat->inputs[0].output,
-																graph);
-
-		struct _statGraph_output* series_b = getInput(stat->inputs[1].stat,
-																stat->inputs[1].output,
-																graph);
-
-		int len = min(series_a->len, series_b->len);
-		
-		double* res = sum(series_a->values, series_b->values, len);
-		stat->outputs = malloc(sizeof(struct _statGraph_output));
-		stat->outputs[0].len = len;
-		stat->outputs[0].values = res;
-		stat->num_outputs = 1;
-
-		return 0;
-	}
-
-	if (stat->stat == 15) {
-		#ifdef DEBUG
-			printf("\ta stat: 15: Difference\n");
+			printf("\ta stat: 13: Difference\n");
 		#endif
 
 		struct _statGraph_output* series_a = getInput(stat->inputs[0].stat,
@@ -465,9 +423,9 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 		return 0;
 	}
 
-	if (stat->stat == 16) {
+	if (stat->stat == 14) {
 		#ifdef DEBUG
-			printf("\ta stat: 16: Product\n");
+			printf("\ta stat: 14: Product\n");
 		#endif
 
 		struct _statGraph_output* series_a = getInput(stat->inputs[0].stat,
@@ -489,9 +447,9 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 		return 0;
 	}
 
-	if (stat->stat == 17) {
+	if (stat->stat == 15) {
 		#ifdef DEBUG
-			printf("\ta stat: 17: Quotient\n");
+			printf("\ta stat: 15: Quotient\n");
 		#endif
 
 		struct _statGraph_output* series_a = getInput(stat->inputs[0].stat,
@@ -513,33 +471,9 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 		return 0;
 	}
 
-	if (stat->stat == 18) {
+	if (stat->stat == 16) {
 		#ifdef DEBUG
-			printf("\ta stat: 18: Quotient\n");
-		#endif
-
-		struct _statGraph_output* series_a = getInput(stat->inputs[0].stat,
-																stat->inputs[0].output,
-																graph);
-
-		struct _statGraph_output* series_b = getInput(stat->inputs[1].stat,
-																stat->inputs[1].output,
-																graph);
-
-		int len = min(series_a->len, series_b->len);
-		
-		double* res = quotient(series_a->values, series_b->values, len);
-		stat->outputs = malloc(sizeof(struct _statGraph_output));
-		stat->outputs[0].len = len;
-		stat->outputs[0].values = res;
-		stat->num_outputs = 1;
-
-		return 0;
-	}
-
-	if (stat->stat == 19) {
-		#ifdef DEBUG
-			printf("\ta stat: 19: Power\n");
+			printf("\ta stat: 16: Power\n");
 		#endif
 
 		struct _statGraph_output* series_a = getInput(stat->inputs[0].stat,
@@ -553,6 +487,175 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 		int len = min(series_a->len, series_b->len);
 		
 		double* res = power(series_a->values, series_b->values, len);
+		stat->outputs = malloc(sizeof(struct _statGraph_output));
+		stat->outputs[0].len = len;
+		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
+
+		return 0;
+	}
+
+	if (stat->stat == 17) {
+		#ifdef DEBUG
+			printf("\ta stat: 17: Above Threshold\n");
+		#endif
+
+		double* threshold = stat->settings[0].data;
+		struct _statGraph_output* series = getInput(stat->inputs[0].stat,
+																stat->inputs[0].output,
+																graph);
+
+		double* res = aboveThreshold(series->values, series->len, *threshold);
+		stat->outputs = malloc(sizeof(struct _statGraph_output));
+		stat->outputs[0].len = series->len;
+		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
+
+		return 0;
+	}
+
+	if (stat->stat == 18) {
+		#ifdef DEBUG
+			printf("\ta stat: 18: Bellow Threshold\n");
+		#endif
+
+		double* threshold = stat->settings[0].data;
+		struct _statGraph_output* series = getInput(stat->inputs[0].stat,
+																stat->inputs[0].output,
+																graph);
+
+		double* res = bellowThreshold(series->values, series->len, *threshold);
+		stat->outputs = malloc(sizeof(struct _statGraph_output));
+		stat->outputs[0].len = series->len;
+		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
+
+		return 0;
+	}
+
+	if (stat->stat == 19) {
+		#ifdef DEBUG
+			printf("\ta stat: 19: Between Threshold\n");
+		#endif
+
+		double* bottom = stat->settings[0].data;
+		double* top = stat->settings[1].data;
+		struct _statGraph_output* series = getInput(stat->inputs[0].stat,
+																stat->inputs[0].output,
+																graph);
+
+		double* res = betweenThreshold(series->values, series->len, *bottom, *top);
+		stat->outputs = malloc(sizeof(struct _statGraph_output));
+		stat->outputs[0].len = series->len;
+		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
+
+		return 0;
+	}
+
+	if (stat->stat == 20) {
+		#ifdef DEBUG
+			printf("\ta stat: 20: AND Gate\n");
+		#endif
+
+		struct _statGraph_output* series_a = getInput(stat->inputs[0].stat,
+																stat->inputs[0].output,
+																graph);
+
+		struct _statGraph_output* series_b = getInput(stat->inputs[1].stat,
+																stat->inputs[1].output,
+																graph);
+
+		int len = min(series_a->len, series_b->len);
+		double* res = andGate(series_a->values, series_b->values, len);
+		stat->outputs = malloc(sizeof(struct _statGraph_output));
+		stat->outputs[0].len = len;
+		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
+
+		return 0;
+	}
+
+	if (stat->stat == 21) {
+		#ifdef DEBUG
+			printf("\ta stat: 21: OR Gate\n");
+		#endif
+
+		struct _statGraph_output* series_a = getInput(stat->inputs[0].stat,
+																stat->inputs[0].output,
+																graph);
+
+		struct _statGraph_output* series_b = getInput(stat->inputs[1].stat,
+																stat->inputs[1].output,
+																graph);
+
+		int len = min(series_a->len, series_b->len);
+		double* res = orGate(series_a->values, series_b->values, len);
+		stat->outputs = malloc(sizeof(struct _statGraph_output));
+		stat->outputs[0].len = len;
+		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
+
+		return 0;
+	}
+
+	if (stat->stat == 22) {
+		#ifdef DEBUG
+			printf("\ta stat: 22: XOR Gate\n");
+		#endif
+
+		struct _statGraph_output* series_a = getInput(stat->inputs[0].stat,
+																stat->inputs[0].output,
+																graph);
+
+		struct _statGraph_output* series_b = getInput(stat->inputs[1].stat,
+																stat->inputs[1].output,
+																graph);
+
+		int len = min(series_a->len, series_b->len);
+		double* res = xorGate(series_a->values, series_b->values, len);
+		stat->outputs = malloc(sizeof(struct _statGraph_output));
+		stat->outputs[0].len = len;
+		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
+
+		return 0;
+	}
+
+	if (stat->stat == 23) {
+		#ifdef DEBUG
+			printf("\ta stat: 23: Offset Series\n");
+		#endif
+
+		int* steps = stat->settings[0].data;
+		struct _statGraph_output* series = getInput(stat->inputs[0].stat,
+																stat->inputs[0].output,
+																graph);
+
+		double* res = offsetSeries(series->values, series->len, *steps);
+		stat->outputs = malloc(sizeof(struct _statGraph_output));
+		stat->outputs[0].len = series->len + *steps;
+		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
+
+		return 0;
+	}
+
+	if (stat->stat == 24) {
+		#ifdef DEBUG
+			printf("\ta stat: 24: Long Yield\n");
+		#endif
+
+		struct _statGraph_output* series = getInput(stat->inputs[0].stat,
+																stat->inputs[0].output,
+																graph);
+
+		struct _statGraph_output* buy = getInput(stat->inputs[1].stat,
+																stat->inputs[1].output,
+																graph);
+
+		int len = min(series->len, buy->len);
+		double* res = longYield(series->values, buy->values, len);
 		stat->outputs = malloc(sizeof(struct _statGraph_output));
 		stat->outputs[0].len = len;
 		stat->outputs[0].values = res;

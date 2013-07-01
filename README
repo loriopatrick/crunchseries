@@ -1,3 +1,4 @@
 TODO:
 	- add subtract number arith stat to serve
 	- remove redundancy in statGraph.c
+	- store stats in database, move standards

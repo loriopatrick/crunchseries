@@ -2,9 +2,20 @@ from flask import Flask, request
 
 import json
 import statGraph
+import stats
 from process import Process, PROCESS_END_POINT
 
 app = Flask(__name__)
+
+@app.route('/api/stats/groups', methods=['GET'])
+def get_groups():
+	print 'groups'
+	return json.dumps(stats.groups)
+
+@app.route('/api/stats', methods=['GET'])
+def get_stats():
+	print 'stats'
+	return json.dumps(stats.stats)
 
 @app.route('/api/runGraph', methods=['POST'])
 def run_graph():
