@@ -35,6 +35,8 @@ def run_graph():
 			'series': series
 		})
 
+	print response
+
 	return json.dumps(response)
 
 if __name__ == '__main__':

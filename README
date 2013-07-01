@@ -1,1 +1,3 @@
-Got headers how I want them, fix the source to match new refactor
+TODO:
+	- add subtract number arith stat to serve
+	- remove redundancy in statGraph.c

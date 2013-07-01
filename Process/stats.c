@@ -79,3 +79,41 @@ double* standardDeviation(double* values, int len, int period_size) {
 
 	return results;
 }
+
+double* slope(double* values, int len) {
+	double* results = malloc(sizeof(double) * len);
+
+	int i;
+	for (i = 1; i < len; ++i) {
+		results[i] = values[i] - values[i - 1];
+	}
+	results[0] = results[1];
+
+	return results;
+}
+
+double* percentDifference(double* a, double* b, int len) {
+	double* results = malloc(sizeof(double) * len);
+
+	int i;
+	for (i = 0; i < len; ++i) {
+		if (a[i] + b[i] == 0) {
+			results[i] = 0;
+			continue;
+		}
+		results[i] = (a[i] - b[i]) * 200.0 / (a[i] + b[i]);
+	}
+
+	return results;
+}
+
+double* trendLine(double* values, int len, int period_size) {
+	double* results = malloc(sizeof(double) * len);
+
+	int i;
+	for (i = 0; i < len; ++i) {
+		results[i] = values[i];
+	}
+
+	return results;
+}

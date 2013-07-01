@@ -48,6 +48,7 @@ var NodesInfo = { // todo: put these on the server and make API requests
 	},
 	'Slope': {
 		name: 'Slope',
+		statId: 5,
 		x: 50,
 		y: 50,
 		inputs: [
@@ -60,6 +61,7 @@ var NodesInfo = { // todo: put these on the server and make API requests
 	},
 	'Sum': {
 		name: 'Sum',
+		statId: 14,
 		x: 50,
 		y: 50,
 		inputs: [
@@ -73,6 +75,7 @@ var NodesInfo = { // todo: put these on the server and make API requests
 	},
 	'Difference': {
 		name: 'Difference',
+		statId: 15,
 		x: 50,
 		y: 50,
 		inputs: [
@@ -86,6 +89,7 @@ var NodesInfo = { // todo: put these on the server and make API requests
 	},
 	'Product': {
 		name: 'Product',
+		statId: 16,
 		x: 50,
 		y: 50,
 		inputs: [
@@ -99,6 +103,7 @@ var NodesInfo = { // todo: put these on the server and make API requests
 	},
 	'Quotient': {
 		name: 'Quotient',
+		statId: 17,
 		x: 50,
 		y: 50,
 		inputs: [
@@ -110,21 +115,9 @@ var NodesInfo = { // todo: put these on the server and make API requests
 			{name: 'a/b'}
 		]
 	},
-	'Correlation': {
-		name: 'Correlation',
-		x: 50,
-		y: 50,
-		inputs: [
-			{name: 'a'},
-			{name: 'b'}
-		],
-		settings: [],
-		outputs: [
-			{name: 'out'}
-		]
-	},
 	'% Difference': {
 		name: '% Difference',
+		statId: 6,
 		x: 50,
 		y: 50,
 		inputs: [
@@ -150,10 +143,10 @@ var NodesInfo = { // todo: put these on the server and make API requests
 		],
 		outputs: [
 			{name: 'time'},
-			{name: 'start'},
-			{name: 'close'},
 			{name: 'high'},
 			{name: 'low'},
+			{name: 'open'},
+			{name: 'close'},
 			{name: 'volume'}
 		]
 	},
@@ -206,7 +199,6 @@ function GraphController($scope, $element, $http){
 		{
 			name: 'Benchmarks',
 			buttons: [
-				'Correlation',
 				'% Difference'
 			]
 		},
