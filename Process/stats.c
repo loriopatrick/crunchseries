@@ -123,13 +123,13 @@ double* longYield(double* series, double* buy, int len) {
 	double value = 1;
 
 	int i;
-	for (i = 1; i < len; ++i) {
-		if (buy[i - 1] > 0) {
+	for (i = 0; i < len; ++i) {
+		if (i > 0 && buy[i - 1] > 0) {
 			value *= series[i] / series[i - 1];
-			results[i] = value;
 		}
+
+		results[i] = value;
 	}
-	results[0] = 0;
 
 	return results;
 }

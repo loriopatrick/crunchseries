@@ -227,41 +227,41 @@ stats = {
 			{'name': 'a ^ b'}
 		]
 	},
-	'above_threshold': {
-		'title': 'Above Threshold',
+	'above_threshold_number': {
+		'title': 'Above Threshold Number',
 		'statId': 17,
 		'inputs': [
 			{'name': 'in'}
 		],
 		'settings': [
-			{'name': 'threshold', 'type': 'int', 'val': '100'}
+			{'name': 'threshold', 'type': 'float', 'val': '100'}
 		],
 		'outputs': [
 			{'name': 'out'}
 		]
 	},
-	'bellow_threshold': {
-		'title': 'Bellow Threshold',
+	'bellow_threshold_number': {
+		'title': 'Bellow Threshold Number',
 		'statId': 18,
 		'inputs': [
 			{'name': 'in'}
 		],
 		'settings': [
-			{'name': 'threshold', 'type': 'int', 'val': '100'}
+			{'name': 'threshold', 'type': 'float', 'val': '100'}
 		],
 		'outputs': [
 			{'name': 'out'}
 		]
 	},
-	'between_threshold': {
-		'title': 'Between Threshold',
+	'between_threshold_number': {
+		'title': 'Between Threshold Number',
 		'statId': 19,
 		'inputs': [
 			{'name': 'in'}
 		],
 		'settings': [
-			{'name': 'top', 'type': 'int', 'val': '50'},
-			{'name': 'bottom', 'type': 'int', 'val': '100'}
+			{'name': 'top', 'type': 'float', 'val': '50'},
+			{'name': 'bottom', 'type': 'float', 'val': '100'}
 		],
 		'outputs': [
 			{'name': 'out'}
@@ -327,6 +327,43 @@ stats = {
 		'outputs': [
 			{'name': 'yield'}
 		]
+	},
+	'above_threshold': {
+		'title': 'Above Threshold',
+		'statId': 25,
+		'inputs': [
+			{'name': 'in'},
+			{'name': 'threshold'}
+		],
+		'settings': [],
+		'outputs': [
+			{'name': 'out'}
+		]
+	},
+	'bellow_threshold': {
+		'title': 'Bellow Threshold',
+		'statId': 26,
+		'inputs': [
+			{'name': 'in'},
+			{'name': 'threshold'}
+		],
+		'settings': [],
+		'outputs': [
+			{'name': 'out'}
+		]
+	},
+	'between_threshold': {
+		'title': 'Between Threshold',
+		'statId': 27,
+		'inputs': [
+			{'name': 'in'},
+			{'name': 'bottom'},
+			{'name': 'top'}
+		],
+		'settings': [],
+		'outputs': [
+			{'name': 'out'}
+		]
 	}
 }
 
@@ -346,7 +383,10 @@ groups = [
 	{
 		'title': 'Logic',
 		'stats': [
+			'bellow_threshold_number',
 			'bellow_threshold',
+			'above_threshold_number',
+			'between_threshold_number',
 			'above_threshold',
 			'between_threshold',
 			'and_gate',

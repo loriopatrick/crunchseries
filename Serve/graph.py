@@ -1,7 +1,7 @@
 from struct import pack
 import process
 
-class StatGraphSerializer:
+class GraphSerializer:
 	def __init__(self, data):
 		self.data = data
 
@@ -101,24 +101,12 @@ class StatGraphSerializer:
 		return ','.join(res)
 
 
-class StatGraphProvider:
-	def __init__(self, data):
-		self.data = data
-		serializer = StatGraphSerializer(data)
-		self.request_data = serializer.serialize()
-
-	def request(self):
-		pass
-
-	def format(self):
-		pass
-
 def example():
 	from json import loads
 	request_data = loads(open('example2.json').read())
-	parser = StatGraphSerializer(request_data)
+	parser = GraphSerializer(request_data)
 	return parser.serialize()
 
 if __name__ == '__main__':
-	parser.get_bytes(example())
+	print parser.get_bytes(example())
 	

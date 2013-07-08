@@ -1,0 +1,17 @@
+<div class="chart">
+	<table>
+		<tr>
+			<td>
+				<div class="canvas" style="width: {{width}}px; height: {{height}}px;"></div>
+			</td>
+			<td>
+				<div class="series-selector" ng-model="series">
+					<a href="javascript:;" ng-init="chart()">Add Series</a>
+					<div ng-repeat="item in series">
+						{{item.display}} - {{item.name}}
+					</div>
+				</div>
+			</td>
+		</tr>
+	</table>
+</div>

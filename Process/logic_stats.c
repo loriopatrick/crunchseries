@@ -4,7 +4,7 @@
 
 #include "logic_stats.h"
 
-double* aboveThreshold(double* values, int len, double bottom) {
+double* aboveThresholdNumber(double* values, int len, double bottom) {
 	double* results = malloc(sizeof(double) * len);
 
 	int i;
@@ -15,7 +15,7 @@ double* aboveThreshold(double* values, int len, double bottom) {
 	return results;
 }
 
-double* bellowThreshold(double* values, int len, double top) {
+double* bellowThresholdNumber(double* values, int len, double top) {
 	double* results = malloc(sizeof(double) * len);
 
 	int i;
@@ -26,12 +26,45 @@ double* bellowThreshold(double* values, int len, double top) {
 	return results;
 }
 
-double* betweenThreshold(double* values, int len, double bottom, double top) {
+double* betweenThresholdNumber(double* values, int len, double bottom, double top) {
 	double* results = malloc(sizeof(double) * len);
 
 	int i;
 	for (i = 0; i < len; ++i) {
-		results[i] = values[i] < top && values[i] > bottom? 1.0 : 0.0;
+		results[i] = values[i] > bottom && values[i] < top? 1.0 : 0.0;
+	}
+
+	return results;
+}
+
+double* aboveThreshold(double* values, double* threshold, int len) {
+	double* results = malloc(sizeof(double) * len);
+
+	int i;
+	for (i = 0; i < len; ++i) {
+		results[i] = values[i] > threshold[i]? 1.0 : 0.0;
+	}
+
+	return results;
+}
+
+double* bellowThreshold(double* values, double* threshold, int len) {
+	double* results = malloc(sizeof(double) * len);
+
+	int i;
+	for (i = 0; i < len; ++i) {
+		results[i] = values[i] < threshold[i]? 1.0 : 0.0;
+	}
+
+	return results;
+}
+
+double* betweenThreshold(double* values, double* bottom, double* top, int len) {
+	double* results = malloc(sizeof(double) * len);
+
+	int i;
+	for (i = 0; i < len; ++i) {
+		results[i] = values[i] > bottom[i] && values[i] < top[i]? 1.0 : 0.0;
 	}
 
 	return results;

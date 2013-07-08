@@ -1,0 +1,12 @@
+.chart td {
+	vertical-align: top;
+}
+
+.chart .canvas {
+	/*background: blue;*/
+}
+
+.chart .series-selector {
+	padding-top: 5px;
+	font-size: 14px;
+}

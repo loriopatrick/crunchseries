@@ -1,7 +1,7 @@
 from flask import Flask, request
 
 import json
-import statGraph
+import graph
 import stats
 from process import Process, PROCESS_END_POINT
 
@@ -9,15 +9,23 @@ app = Flask(__name__)
 
 @app.route('/api/stats/groups', methods=['GET'])
 def get_groups():
-	print 'groups'
 	return json.dumps(stats.groups)
 
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
-	print 'stats'
 	return json.dumps(stats.stats)
 
-@app.route('/api/runGraph', methods=['POST'])
+@app.route('/api/graph/save/<uid>', methods=['PUT', 'POST'])
+def save_graph(uid):
+	# todo verify graph
+	pass
+
+
+@app.route('/api/graph/get/<uid>', methods=['GET'])
+def get_graph(uid):
+	pass
+
+@app.route('/api/graph/run', methods=['POST'])
 def run_graph():
 	if len(request.data) > 5000:
 		return 'TO BIG'
@@ -29,7 +37,7 @@ def run_graph():
 		output_names.append(setting[len('str-'):])
 	data['nodes'][data['head']]['settings'] = []
 	
-	parser = statGraph.StatGraphSerializer(data)
+	parser = graph.GraphSerializer(data)
 	bytes = parser.serialize()
 
 	pro = Process(PROCESS_END_POINT)

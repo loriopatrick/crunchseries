@@ -497,7 +497,7 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 
 	if (stat->stat == 17) {
 		#ifdef DEBUG
-			printf("\ta stat: 17: Above Threshold\n");
+			printf("\ta stat: 17: Above Threshold Number\n");
 		#endif
 
 		double* threshold = stat->settings[0].data;
@@ -505,7 +505,7 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 																stat->inputs[0].output,
 																graph);
 
-		double* res = aboveThreshold(series->values, series->len, *threshold);
+		double* res = aboveThresholdNumber(series->values, series->len, *threshold);
 		stat->outputs = malloc(sizeof(struct _statGraph_output));
 		stat->outputs[0].len = series->len;
 		stat->outputs[0].values = res;
@@ -516,7 +516,7 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 
 	if (stat->stat == 18) {
 		#ifdef DEBUG
-			printf("\ta stat: 18: Bellow Threshold\n");
+			printf("\ta stat: 18: Bellow Threshold Number\n");
 		#endif
 
 		double* threshold = stat->settings[0].data;
@@ -524,7 +524,7 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 																stat->inputs[0].output,
 																graph);
 
-		double* res = bellowThreshold(series->values, series->len, *threshold);
+		double* res = bellowThresholdNumber(series->values, series->len, *threshold);
 		stat->outputs = malloc(sizeof(struct _statGraph_output));
 		stat->outputs[0].len = series->len;
 		stat->outputs[0].values = res;
@@ -544,7 +544,7 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 																stat->inputs[0].output,
 																graph);
 
-		double* res = betweenThreshold(series->values, series->len, *bottom, *top);
+		double* res = betweenThresholdNumber(series->values, series->len, *bottom, *top);
 		stat->outputs = malloc(sizeof(struct _statGraph_output));
 		stat->outputs[0].len = series->len;
 		stat->outputs[0].values = res;
@@ -656,6 +656,79 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 
 		int len = min(series->len, buy->len);
 		double* res = longYield(series->values, buy->values, len);
+		stat->outputs = malloc(sizeof(struct _statGraph_output));
+		stat->outputs[0].len = len;
+		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
+
+		return 0;
+	}
+
+	if (stat->stat == 25) {
+		#ifdef DEBUG
+			printf("\ta stat: 25: Above Threshold\n");
+		#endif
+
+		struct _statGraph_output* series = getInput(stat->inputs[0].stat,
+																stat->inputs[0].output,
+																graph);
+
+		struct _statGraph_output* threshold = getInput(stat->inputs[1].stat,
+																stat->inputs[1].output,
+																graph);
+
+		int len = min(series->len, threshold->len);
+		double* res = aboveThreshold(series->values, threshold->values, len);
+		stat->outputs = malloc(sizeof(struct _statGraph_output));
+		stat->outputs[0].len = len;
+		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
+
+		return 0;
+	}
+
+	if (stat->stat == 26) {
+		#ifdef DEBUG
+			printf("\ta stat: 26: Bellow Threshold\n");
+		#endif
+
+		struct _statGraph_output* series = getInput(stat->inputs[0].stat,
+																stat->inputs[0].output,
+																graph);
+
+		struct _statGraph_output* threshold = getInput(stat->inputs[1].stat,
+																stat->inputs[1].output,
+																graph);
+
+		int len = min(series->len, threshold->len);
+		double* res = bellowThreshold(series->values, threshold->values, len);
+		stat->outputs = malloc(sizeof(struct _statGraph_output));
+		stat->outputs[0].len = len;
+		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
+
+		return 0;
+	}
+
+	if (stat->stat == 27) {
+		#ifdef DEBUG
+			printf("\ta stat: 27: Between Threshold\n");
+		#endif
+
+		struct _statGraph_output* series = getInput(stat->inputs[0].stat,
+																stat->inputs[0].output,
+																graph);
+
+		struct _statGraph_output* bottom = getInput(stat->inputs[1].stat,
+																stat->inputs[1].output,
+																graph);
+
+		struct _statGraph_output* top = getInput(stat->inputs[2].stat,
+																stat->inputs[2].output,
+																graph);
+
+		int len = min(min(series->len, bottom->len), top->len);
+		double* res = betweenThreshold(series->values, bottom->values, top->values, len);
 		stat->outputs = malloc(sizeof(struct _statGraph_output));
 		stat->outputs[0].len = len;
 		stat->outputs[0].values = res;
