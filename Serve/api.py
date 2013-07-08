@@ -20,7 +20,6 @@ def save_graph(uid):
 	# todo verify graph
 	pass
 
-
 @app.route('/api/graph/get/<uid>', methods=['GET'])
 def get_graph(uid):
 	pass
@@ -30,20 +29,27 @@ def run_graph():
 	if len(request.data) > 5000:
 		return 'TO BIG'
 
+	# get nodes from client
 	data = json.loads(request.data)
+	
+	# get output names
 	output_names = []
-	print data['nodes'], data['head']
 	for setting in data['nodes'][data['head']]['settings']:
 		output_names.append(setting[len('str-'):])
+	
+	# clear the names as process doesn't use them
 	data['nodes'][data['head']]['settings'] = []
 	
+	# serialize the graph
 	parser = graph.GraphSerializer(data)
 	bytes = parser.serialize()
 
+	# get the results
 	pro = Process(PROCESS_END_POINT)
 	pro.connect()
 	results = pro.run_graph(bytes)
 
+	# return the results with the output names
 	response = {
 		'results': []
 	}
