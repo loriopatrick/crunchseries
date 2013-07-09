@@ -209,6 +209,22 @@ function GraphController($scope, $element, $http){
 		var nodes = {};
 		var nodes_dict = {};
 
+		var inputNodes = [];
+		function getInputNodePos (node) {
+			return inputNodes.indexOf(node);
+		}
+
+		var inputsNode = {
+			statId: -1,
+			settings: []
+		};
+
+		var outputNode = {
+			statId: 0,
+			settings: [],
+			inputs: []
+		};
+
 		function getConnections(node) {
 			var cons = [];
 			for (var i = 0; i < $scope.connections.length; ++i) {
@@ -221,84 +237,96 @@ function GraphController($scope, $element, $http){
 		}
 
 		function getNodeId (node) {
+			var index = inputNodes.indexOf(node);
+			if (index > -1) return 'inputs';
+
 			for (var key in nodes_dict) {
 				if (node == nodes_dict[key]) return key;
 			}
 			throw 'WTF! node not found';
 		}
 
-		function parseSetting (setting) {
-			return (setting.type || 'str') + '-' + setting.val;
+		function serializeSetting (setting) {
+			return (setting.type || 'str') + '-' + (setting.editable? 'editable' : 'static') + '-' + setting.val;
 		}
 
-		function getNodes () {
-			for (var i = 0; i < $scope.nodes.length; ++i) {
-				var node = $scope.nodes[i];
-				if (node.statId === 0) continue;
+		function serializeOutput (con) {
+			var node = con.output.node;
+			var pos = con.output.output;
 
-				var sNode = {
-					statId: node.statId || -1,
-					settings: [],
-					inputs: []
-				};
-
-				var node_name = 'node_' + i;
-				var cons = getConnections(node);
-
-				for (var j = 0; j < cons.length; ++j) {
-					var con = cons[j];
-					sNode.inputs[con.input.input] = {
-						node: con.output.node,
-						output: parseInt(con.output.output)
-					}
-				}
-
-				for (var j in node.settings) {
-					var setting = node.settings[j];
-					sNode.settings[j] = parseSetting(setting);
-				}
-
-				nodes[node_name] = sNode;
-				nodes_dict[node_name] = node;
+			if (node.statId === -1) {
+				pos = getInputNodePos(node);
 			}
 
-			for (var key in nodes) {
-				var node = nodes[key];
-				for (var j = 0; j < node.inputs.length; ++j) {
-					node.inputs[j].node = getNodeId(node.inputs[j].node);
-				}
-			}
+			return {node: node, output: pos};
 		}
 
-		function buildOutput () {
-			var outputNode = {
-				statId: 0,
+		// build inputs node
+		for (var i = 0; i < $scope.nodes.length; i++) {
+			var node = $scope.nodes[i];
+			if (node.statId !== -1) continue;
+			
+			inputNodes.push(node);
+			inputsNode.settings.push(serializeSetting(node.settings[0]));
+		}
+
+		if (inputsNode.settings.length) {
+			nodes['inputs'] = inputsNode;
+		}
+
+		// get nodes
+		for (var i = 0; i < $scope.nodes.length; ++i) {
+			var node = $scope.nodes[i];
+			if (node.statId <= 0) continue;
+
+			var sNode = {
+				statId: node.statId || -1,
 				settings: [],
 				inputs: []
 			};
 
-			for (var i = 0; i < $scope.nodes.length; ++i) {
-				var node = $scope.nodes[i];
-				if (node.statId !== 0) continue;
-				var con = getConnections(node);
-				if (!con.length) continue;
-				con = con[0];
+			var node_name = 'node_' + i;
+			var cons = getConnections(node);
 
-				outputNode.settings.push(parseSetting(node.settings[0]));
-				outputNode.inputs.push({
-					node: getNodeId(con.output.node),
-					output: parseInt(con.output.output)
-				});
+			for (var j = 0; j < cons.length; ++j) {
+				var con = cons[j];
+				sNode.inputs[con.input.input] = serializeOutput(con);
 			}
 
-			if (!outputNode.inputs) throw 'Outputs are required';
-			nodes['output'] = outputNode;
+			for (var j in node.settings) {
+				var setting = node.settings[j];
+				sNode.settings[j] = serializeSetting(setting);
+			}
+
+			nodes[node_name] = sNode;
+			nodes_dict[node_name] = node;
 		}
 
-		getNodes();
-		buildOutput();
+		// build outputs node
+		for (var i = 0; i < $scope.nodes.length; ++i) {
+			var node = $scope.nodes[i];
+			if (node.statId !== 0) continue;
+			var con = getConnections(node);
+			if (!con.length) continue;
+			con = con[0];
 
-		return {nodes:nodes, head:'output'};
+			outputNode.settings.push(serializeSetting(node.settings[0]));
+			outputNode.inputs.push(serializeOutput(con));
+		}
+
+		if (!outputNode.inputs) throw 'Outputs are required';
+		nodes['outputs'] = outputNode;
+
+		// replace node object in the inputs section with their ids
+		for (var key in nodes) {
+			var node = nodes[key];
+			if (!node.inputs || !node.inputs.length) continue;
+			for (var j = 0; j < node.inputs.length; ++j) {
+				node.inputs[j].node = getNodeId(node.inputs[j].node);
+			}
+		}
+
+		return {nodes:nodes, head:'outputs'};
 	}
 
 	$scope.serialize = function () {
@@ -306,9 +334,9 @@ function GraphController($scope, $element, $http){
 		var requestData = JSON.stringify(nodeData);
 		console.log('request', requestData);
 
-		$http.post('/api/graph/run', requestData).success(function (data) {
-			console.log(data);
-		});
+		// $http.post('/api/graph/run', requestData).success(function (data) {
+		// 	console.log(data);
+		// });
 	};
 }
 

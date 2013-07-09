@@ -11,7 +11,9 @@
 					<a href="javascript:;" ng-repeat="btn in group.stats" ng-click="addNode(btn)">{{btn}}</a>
 				</li>
 			</ul>
-		</div>
+		</div> -
+		<a href="javascript:;" ng-click="save()">Save</a> - 
+		<a href="javascript:;" ng-click="load()">Load</a> - 
 		<a href="javascript:;" ng-click="serialize()">Serialize</a>
 	</div>
 	<div class="display">
@@ -32,8 +34,10 @@
 							</div>
 						</td>
 						<td class="settings">
-							<div class="setting" ng-repeat="setting in node.settings">
+							<div ng-repeat="setting in node.settings" class="setting {{setting.isdynamic}}">
 								{{setting.name}} <input type="text" ng-model="setting.val" value="{{setting.val}}">
+								
+								<!-- <input type="checkbox" ng-hide="node.title == 'Output' || node.title == 'Input'" ng-model="setting.editable"></input> -->
 							</div>
 						</td>
 						<td class="outputs">

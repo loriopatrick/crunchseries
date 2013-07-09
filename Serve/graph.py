@@ -1,4 +1,6 @@
 from struct import pack
+import json
+import os
 import process
 
 class GraphSerializer:
@@ -30,8 +32,11 @@ class GraphSerializer:
 
 	def serialize_setting(self, setting):
 		parts = setting.split('-')
+
+		# setting format: type-editable-value
 		setting_type = parts[0]
-		setting_value = '-'.join(parts[1:])
+		setting_value = '-'.join(parts[2:])
+		print setting_value
 
 		if setting_type == 'int':
 			setting = int(setting_value)
@@ -99,6 +104,20 @@ class GraphSerializer:
 		for x in data:
 			res.append(str(ord(x)))
 		return ','.join(res)
+
+class GraphStorage:
+	def __init__(self):
+		self.storage_dir = os.getcwd() + '/graphs'
+
+	def save(self, uid, data, raw=False):
+		fp = open('%s/%s.graph' % (self.storage_dir, uid), 'w')
+		if not raw:
+			data = json.dumps(data)
+		fp.write(data)
+
+	def load(self, uid, data):
+		fp = open('%s/%s.graph' % (self.storage_dir, uid), 'r')
+		return json.loads(fp.read())
 
 
 def example():

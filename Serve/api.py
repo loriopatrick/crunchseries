@@ -17,8 +17,9 @@ def get_stats():
 
 @app.route('/api/graph/save/<uid>', methods=['PUT', 'POST'])
 def save_graph(uid):
-	# todo verify graph
-	pass
+	storage = graph.GraphStorage()
+	storage.save(uid, request.data, True)
+	return 'saved %s' % uid
 
 @app.route('/api/graph/get/<uid>', methods=['GET'])
 def get_graph(uid):
@@ -31,11 +32,13 @@ def run_graph():
 
 	# get nodes from client
 	data = json.loads(request.data)
+
+	# todo: verify graph data...
 	
 	# get output names
 	output_names = []
 	for setting in data['nodes'][data['head']]['settings']:
-		output_names.append(setting[len('str-'):])
+		output_names.append('-'.join(setting.split('-')[2:]))
 	
 	# clear the names as process doesn't use them
 	data['nodes'][data['head']]['settings'] = []
