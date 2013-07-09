@@ -167,7 +167,7 @@ function GraphController($scope, $element, $http){
 	function isInputOpen(node, input) {
 		for (var i = 0; i < $scope.connections.length; ++i) {
 			if (node == $scope.connections[i].input.node
-				&& input == $scope.connections[i].input.input) return false;
+				&& input == $scope.connections[i].input.pos) return false;
 		}
 		return true;
 	}
@@ -193,7 +193,7 @@ function GraphController($scope, $element, $http){
 	$scope.removeInputConnection = function (node, input) {
 		for (var i = 0; i < $scope.connections.length; ++i) {
 			var line = $scope.connections[i];
-			if (line.input.node == node && line.input.input == input) {
+			if (line.input.node == node && line.input.pos == input) {
 				$scope.connections.splice(i, 1);
 				console.log('removed item');
 				return;
@@ -252,7 +252,7 @@ function GraphController($scope, $element, $http){
 
 		function serializeOutput (con) {
 			var node = con.output.node;
-			var pos = con.output.output;
+			var pos = con.output.pos;
 
 			if (node.statId === -1) {
 				pos = getInputNodePos(node);
@@ -290,7 +290,7 @@ function GraphController($scope, $element, $http){
 
 			for (var j = 0; j < cons.length; ++j) {
 				var con = cons[j];
-				sNode.inputs[con.input.input] = serializeOutput(con);
+				sNode.inputs[con.input.pos] = serializeOutput(con);
 			}
 
 			for (var j in node.settings) {
