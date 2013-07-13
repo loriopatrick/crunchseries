@@ -4,6 +4,7 @@ import json
 import graph
 import stats
 from process import Process, PROCESS_END_POINT
+from pymongo import MongoClient
 
 app = Flask(__name__)
 
@@ -17,8 +18,13 @@ def get_stats():
 
 @app.route('/api/graph/save/<uid>', methods=['PUT', 'POST'])
 def save_graph(uid):
-	storage = graph.GraphStorage()
-	storage.save(uid, request.data, True)
+	mongo = MongoClient()
+	graphs = mongo.crunchseries.graphs
+	data = json.loads(request.data)
+	# todo: verify data
+
+	data['uid'] = uid
+	graphs.save(data)
 	return 'saved %s' % uid
 
 @app.route('/api/graph/get/<uid>', methods=['GET'])
@@ -34,6 +40,9 @@ def run_graph():
 	data = json.loads(request.data)
 
 	# todo: verify graph data...
+
+	# todo: go through nodes and replace custom nodes with
+	# base nodes
 	
 	# get output names
 	output_names = []

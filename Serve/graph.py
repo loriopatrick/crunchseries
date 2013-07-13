@@ -105,21 +105,6 @@ class GraphSerializer:
 			res.append(str(ord(x)))
 		return ','.join(res)
 
-class GraphStorage:
-	def __init__(self):
-		self.storage_dir = os.getcwd() + '/graphs'
-
-	def save(self, uid, data, raw=False):
-		fp = open('%s/%s.graph' % (self.storage_dir, uid), 'w')
-		if not raw:
-			data = json.dumps(data)
-		fp.write(data)
-
-	def load(self, uid, data):
-		fp = open('%s/%s.graph' % (self.storage_dir, uid), 'r')
-		return json.loads(fp.read())
-
-
 def example():
 	from json import loads
 	request_data = loads(open('example2.json').read())

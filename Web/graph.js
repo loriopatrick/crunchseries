@@ -9,6 +9,15 @@ function clone(obj) {
 	return copy;
 }
 
+function combine(ar, str, start, end) {
+	if (!end) end = ar.length;
+	var res = [];
+	for (var i = start; i < end; ++i) {
+		res.push(ar[i]);
+	}
+	return res.join(str);
+}
+
 function GraphController($scope, $element, $http){
 	$scope.connections = [];
 	$scope.nodes = [];
@@ -33,6 +42,17 @@ function GraphController($scope, $element, $http){
 	$scope.getNodeInfoTitle = function (id) {
 		return nodeInfo[id].title;
 	};
+
+	function getNodeClone (statId) {
+		var node = null;
+		for (var id in nodeInfo) {
+			if (nodeInfo[id].statId == statId) {
+				node = clone(nodeInfo[id]);
+				break;
+			}
+		}
+		return node;
+	}
 
 	$scope.addNode = function (name) {
 		var newNode = clone(nodeInfo[name]);
@@ -148,11 +168,36 @@ function GraphController($scope, $element, $http){
 		return baseConn;
 	}
 
+	function addConnection (inputNode, inputPos, outputNode, outputPos) {
+		var jElement = $($element);
+		var inputEl = jElement.find('.node[node-pos="' + $scope.nodes.indexOf(inputNode) + '"]').first();
+		var outputEl = jElement.find('.node[node-pos="' + $scope.nodes.indexOf(outputNode) + '"]').first();
+
+		var inputHandle = inputEl.find('.input[pos="' + inputPos + '"] > .handle');
+		var outputHandle = outputEl.find('.output[pos="' + outputPos + '"] > .handle');
+
+		var con = {
+			input: {
+				el: inputHandle,
+				node: inputNode,
+				pos: inputPos
+			},
+			output: {
+				el: outputHandle,
+				node: outputNode,
+				pos: outputPos
+			}
+		};
+
+		var con = buildConnection(con);
+		$scope.connections.push(con);
+	}
+
 	$scope.mouseup = function (evt) {
 		dragging = null;
 		if (selectedOutput && selectedInput
 				&& selectedOutput.node != selectedInput.node
-				&& isInputOpen(selectedInput.node, selectedInput.input)) {
+				&& isInputOpen(selectedInput.node, selectedInput.pos)) {
 
 			$scope.connections.push(buildConnection({
 				output: selectedOutput,
@@ -164,28 +209,28 @@ function GraphController($scope, $element, $http){
 		$scope.guideLine = null;
 	};
 
-	function isInputOpen(node, input) {
+	function isInputOpen(node, pos) {
 		for (var i = 0; i < $scope.connections.length; ++i) {
 			if (node == $scope.connections[i].input.node
-				&& input == $scope.connections[i].input.pos) return false;
+				&& pos == $scope.connections[i].input.pos) return false;
 		}
 		return true;
 	}
 
-	$scope.selectInput = function (evt, node, input) {
-		selectedInput = {node: node, input: input, el: evt.target};
+	$scope.selectInput = function (evt, node, pos) {
+		selectedInput = {node: node, pos: pos, el: evt.target};
 
-		var isOpen = isInputOpen(node, input);
+		var isOpen = isInputOpen(node, pos);
 		if (selectedOutput) {
-			node.inputs[input].style = isOpen? 'add':'';
+			node.inputs[pos].style = isOpen? 'add':'';
 		} else if (!isOpen) {
-			node.inputs[input].style = 'remove';
+			node.inputs[pos].style = 'remove';
 		}
 	};
 
 	$scope.clearInput = function () {
 		if (selectedInput) {
-			selectedInput.node.inputs[selectedInput.input].style = '';
+			selectedInput.node.inputs[selectedInput.pos].style = '';
 			selectedInput = null;
 		}
 	};
@@ -201,11 +246,19 @@ function GraphController($scope, $element, $http){
 		}
 	};
 
-	$scope.selectOutput = function (evt, node, output) {
-		selectedOutput = {node: node, output: output, el: evt.target};
+	$scope.toggleEdit = function (setting) {
+		if (!setting.isPublic) {
+			setting.publicName = prompt('Setting\'s public name');
+		}
+
+		setting.isPublic = !setting.isPublic;
 	};
 
-	function serialize () {
+	$scope.selectOutput = function (evt, node, pos) {
+		selectedOutput = {node: node, pos: pos, el: evt.target};
+	};
+
+	function serialize (addPos) {
 		var nodes = {};
 		var nodes_dict = {};
 
@@ -247,7 +300,7 @@ function GraphController($scope, $element, $http){
 		}
 
 		function serializeSetting (setting) {
-			return (setting.type || 'str') + '-' + (setting.editable? 'editable' : 'static') + '-' + setting.val;
+			return (setting.type || 'str') + '-' + (setting.isPublic? setting.publicName : '') + '-' + setting.val;
 		}
 
 		function serializeOutput (con) {
@@ -268,6 +321,14 @@ function GraphController($scope, $element, $http){
 			
 			inputNodes.push(node);
 			inputsNode.settings.push(serializeSetting(node.settings[0]));
+
+			if (addPos) {
+				if (!inputsNode.pos) {
+					inputsNode.pos = [];
+				}
+
+				inputsNode.pos.push({x: node.x, y: node.y});
+			}
 		}
 
 		if (inputsNode.settings.length) {
@@ -300,6 +361,11 @@ function GraphController($scope, $element, $http){
 
 			nodes[node_name] = sNode;
 			nodes_dict[node_name] = node;
+
+			if (addPos) {
+				sNode.x = node.x;
+				sNode.y = node.y;
+			}
 		}
 
 		// build outputs node
@@ -312,6 +378,14 @@ function GraphController($scope, $element, $http){
 
 			outputNode.settings.push(serializeSetting(node.settings[0]));
 			outputNode.inputs.push(serializeOutput(con));
+
+			if (addPos) {
+				if (!outputNode.pos) {
+					outputNode.pos = [];
+				}
+
+				outputNode.pos.push({x: node.x, y: node.y});
+			}
 		}
 
 		if (!outputNode.inputs) throw 'Outputs are required';
@@ -329,10 +403,107 @@ function GraphController($scope, $element, $http){
 		return {nodes:nodes, head:'outputs'};
 	}
 
+	function load (data) {
+		var nodes = data.nodes, head = data.head;
+
+		$scope.nodes.length = 0;
+		$scope.connections.length = 0;
+
+		var nodeIds = [];
+
+		for (var id in nodes) {
+			var node = nodes[id];
+
+			if (id === 'inputs' || id === 'outputs') {
+				for (var i = 0; i < node.settings.length; i++) {
+					var setting = node.settings[i];
+					
+					var newNode = getNodeClone(node.statId);
+					newNode.settings[0].val = combine(setting.split('-'), '-', 2);
+					newNode.inputs = [];
+
+					if (node.inputs) {
+						newNode.inputs.push(node.inputs[i]);
+					}
+
+					newNode.x = node.pos[i].x;
+					newNode.y = node.pos[i].y;
+
+					$scope.nodes.push(newNode);
+					nodeIds.push(id + '-' + i);
+				}
+
+				continue;
+			}
+
+			var newNode = getNodeClone(node.statId);
+			newNode.x = node.x;
+			newNode.y = node.y;
+
+			for (var i = 0; i < node.settings.length; i++) {
+				var setting = node.settings[i];
+				var parts = setting.split('-');
+				newNode.settings[i].isPublic = parts[1].length > 0;
+				newNode.settings[i].publicName = parts[1];
+				newNode.settings[i].val = combine(parts, '-', 2);
+			}
+
+			for (var i = 0; i < node.inputs.length; i++) {
+				var input = node.inputs[i];
+				newNode.inputs[i].node = input.node;
+				newNode.inputs[i].output = input.output;
+			}
+
+			$scope.nodes.push(newNode);
+			nodeIds.push(id);
+		}
+
+		function getIndex(input) {
+			var id = input.node;
+			if (id === 'inputs' || id === 'outputs') {
+				id += '-' + input.output;
+			}
+
+			return nodeIds.indexOf(id);
+		}
+
+		function buildInputConnections(node) {
+			if (!node.inputs) return;
+			for (var i in node.inputs) {
+				var input = node.inputs[i];
+				var nodePos = getIndex(input);
+				if (nodePos == -1) {
+					console.log('Could not find node with input: ', input);
+					continue;
+				}
+				var outputNode = $scope.nodes[nodePos];
+				addConnection(node, i, outputNode, input.output);
+				buildInputConnections(outputNode);
+			}
+		}
+
+		// timeout required for dom to updated by angular
+		setTimeout(function () {
+			if (head === 'outputs') {
+				var pos, i = 0;
+				while ((pos = nodeIds.indexOf(head + '-' + i)) > -1) {
+					buildInputConnections($scope.nodes[pos]);
+					++i;
+				}
+				return;
+			}
+
+			buildInputConnections($scope.nodes[nodeIds.indexOf(head)]);
+		}, 10);
+	}
+
 	$scope.serialize = function () {
-		var nodeData = serialize();
-		var requestData = JSON.stringify(nodeData);
-		console.log('request', requestData);
+		var nodeData = serialize(true);
+		// var requestData = JSON.stringify(nodeData);
+		console.log('node data', nodeData);
+
+		load(nodeData);
+
 
 		// $http.post('/api/graph/run', requestData).success(function (data) {
 		// 	console.log(data);
