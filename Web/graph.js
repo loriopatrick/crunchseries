@@ -509,6 +509,14 @@ function GraphController($scope, $element, $http){
 		// 	console.log(data);
 		// });
 	};
+
+
+	$scope.save = function () {
+		var uid = prompt('uid');
+		$http.put('/api/graph/save/' + uid, JSON.stringify(serialize())).success(function (data) {
+			alert(data);
+		});
+	};
 }
 
 App.directive('graph', function () {

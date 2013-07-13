@@ -1,4 +1,8 @@
 TODO:
-	- create functionality to deserialize nodeData in graph interface
-	- add flag on settings to allow them to be externally editable
-	- save and load stats into client from server via API
+	- save and load stats into client from server via API into mongodb
+	- load stats as nodes
+	- add series node the converts to outputs with special names (ex. #series-x-series_name)
+	- build system so charts accept stats, read special output names and render stuff to chart
+
+NOTE:
+	- remember to commit individual changes, not groups!!!
