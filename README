@@ -1,5 +1,4 @@
 TODO:
-	- load stats as nodes
 	- add series node the converts to outputs with special names (ex. #series-x-series_name)
 	- build system so charts accept stats, read special output names and render stuff to chart
 

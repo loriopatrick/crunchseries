@@ -36,6 +36,52 @@ def get_graph(uid):
 
 	return json.dumps(data)
 
+@app.route('/api/graph/get_node/<uid>', methods=['GET'])
+def get_graph_node(uid):
+	mongo = MongoClient()
+	graphs = mongo.crunchseries.graphs
+	data = graphs.find_one({'uid':uid})
+	data.pop('_id')
+
+	res = {
+		'title': uid,
+		'statId': -132,
+		'inputs': [],
+		'outputs': [],
+		'settings': []
+	}
+
+	def addSettingsToCon(obj, target):
+		for setting in obj['settings']:
+			parts = setting.split('-')
+			target.append({
+				'name': '-'.join(parts[2:])
+			})
+
+	if data['nodes'].get('inputs', None):
+		addSettingsToCon(data['nodes']['inputs'], res['inputs'])
+
+	addSettingsToCon(data['nodes']['outputs'], res['outputs'])
+
+	for node_name in data['nodes']:
+		node = data['nodes'][node_name]
+		for setting in node['settings']:
+			print setting
+			parts = setting.split('-')
+			
+			public_name = parts[1]
+			if not len(public_name):
+				continue
+
+			res['settings'].append({
+				'name': public_name,
+				'type': parts[0],
+				'val': '-'.join(parts[2:])
+			})
+
+	return json.dumps(res)
+
+
 @app.route('/api/graph/run', methods=['POST'])
 def run_graph():
 	if len(request.data) > 5000:

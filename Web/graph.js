@@ -55,13 +55,16 @@ function GraphController($scope, $element, $http){
 	}
 
 	$scope.addNode = function (name) {
-		var newNode = clone(nodeInfo[name]);
-		console.log(name, nodeInfo, nodeInfo[name], newNode);
+		addNodeObject(nodeInfo[name]);
+	};
+
+	function addNodeObject (obj) {
+		var newNode = clone(obj);
 		var newPos = normScroll(50, 50);
 		newNode.x = newPos.x;
 		newNode.y = newPos.y;
 		$scope.nodes.push(newNode);
-	};
+	}
 
 	$scope.destroyNode = function (node) {
 		if (!confirm('Are you sure you want to delete this node? (' + node.title + ')')) return;
@@ -518,9 +521,14 @@ function GraphController($scope, $element, $http){
 	$scope.load = function () {
 		var uid = prompt('uid');
 		$http.get('/api/graph/get/' + uid).success(function (data) {
-			console.log(data);
 			load(data);
-			// alert('loaded');
+		});
+	};
+
+	$scope.loadNode = function () {
+		var uid = prompt('uid');
+		$http.get('/api/graph/get_node/' + uid).success(function (data) {
+			addNodeObject(data);
 		});
 	};
 }
