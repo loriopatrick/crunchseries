@@ -501,10 +501,7 @@ function GraphController($scope, $element, $http){
 		var nodeData = serialize(true);
 		// var requestData = JSON.stringify(nodeData);
 		console.log('node data', nodeData);
-
 		load(nodeData);
-
-
 		// $http.post('/api/graph/run', requestData).success(function (data) {
 		// 	console.log(data);
 		// });
@@ -513,8 +510,17 @@ function GraphController($scope, $element, $http){
 
 	$scope.save = function () {
 		var uid = prompt('uid');
-		$http.put('/api/graph/save/' + uid, JSON.stringify(serialize())).success(function (data) {
+		$http.put('/api/graph/save/' + uid, JSON.stringify(serialize(true))).success(function (data) {
 			alert(data);
+		});
+	};
+
+	$scope.load = function () {
+		var uid = prompt('uid');
+		$http.get('/api/graph/get/' + uid).success(function (data) {
+			console.log(data);
+			load(data);
+			// alert('loaded');
 		});
 	};
 }

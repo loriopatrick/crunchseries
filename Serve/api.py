@@ -29,7 +29,12 @@ def save_graph(uid):
 
 @app.route('/api/graph/get/<uid>', methods=['GET'])
 def get_graph(uid):
-	pass
+	mongo = MongoClient()
+	graphs = mongo.crunchseries.graphs
+	data = graphs.find_one({'uid':uid})
+	data.pop('_id')
+
+	return json.dumps(data)
 
 @app.route('/api/graph/run', methods=['POST'])
 def run_graph():
