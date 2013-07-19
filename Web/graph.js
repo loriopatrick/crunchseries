@@ -314,7 +314,7 @@ function GraphController($scope, $element, $http){
 				pos = getInputNodePos(node);
 			}
 
-			return {node: node, output: pos};
+			return {node: node, output: parseInt(pos)};
 		}
 
 		// build inputs node
@@ -341,13 +341,17 @@ function GraphController($scope, $element, $http){
 		// get nodes
 		for (var i = 0; i < $scope.nodes.length; ++i) {
 			var node = $scope.nodes[i];
-			if (node.statId <= 0) continue;
+			if (!node.statId) continue;
 
 			var sNode = {
 				statId: node.statId || -1,
 				settings: [],
 				inputs: []
 			};
+
+			if (node.uid) {
+				sNode.uid = node.uid;
+			}
 
 			var node_name = 'node_' + i;
 			var cons = getConnections(node);
@@ -443,6 +447,10 @@ function GraphController($scope, $element, $http){
 			newNode.x = node.x;
 			newNode.y = node.y;
 
+			if (node.uid) {
+				newNode.uid = node.uid;
+			}
+
 			for (var i = 0; i < node.settings.length; i++) {
 				var setting = node.settings[i];
 				var parts = setting.split('-');
@@ -502,12 +510,12 @@ function GraphController($scope, $element, $http){
 
 	$scope.serialize = function () {
 		var nodeData = serialize(true);
-		// var requestData = JSON.stringify(nodeData);
+		var requestData = JSON.stringify(nodeData);
 		console.log('node data', nodeData);
-		load(nodeData);
-		// $http.post('/api/graph/run', requestData).success(function (data) {
-		// 	console.log(data);
-		// });
+		// load(nodeData);
+		$http.post('/api/graph/run', requestData).success(function (data) {
+			console.log(data);
+		});
 	};
 
 
