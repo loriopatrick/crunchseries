@@ -162,11 +162,11 @@ def run_graph():
 			# update settings to external settings
 			update_settings(inode['settings'])
 
-			# recurse
-			# inode = expand_node(inode, add_name, output)
-			
 			# put out the node
 			output[add_name] = inode
+			
+			# recurse
+			expand_node(inode, add_name, output)
 
 	to_add = {}
 	for node_name in data['nodes']:
