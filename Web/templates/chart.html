@@ -6,7 +6,8 @@
 			</td>
 			<td>
 				<div class="series-selector" ng-model="series">
-					<a href="javascript:;" ng-init="chart()">Add Series</a>
+					<a href="javascript:;" ng-click="addSeries()">Add Series</a>
+					<a href="javascript:;" ng-click="update()">Update</a>
 					<div ng-repeat="item in series">
 						{{item.display}} - {{item.name}}
 					</div>
