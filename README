@@ -1,6 +1,16 @@
 TODO:
 	- add series node the converts to outputs with special names (ex. #series-x-series_name)
-	- build system so charts accept stats, read special output names and render stuff to chart
+		- build a meta language for outputs
+		- examples:
+			- ##cs:<query string request>
+			- ##cs:series=series1&series-axis=x
+	- build system that accepts the custom output names and renders the data to a chart
 
 NOTE:
 	- remember to commit individual changes, not groups!!!
+
+FEATURES:
+	- double click custom node in edit inners, ability to go between layers
+	- colapse nodes into custom node
+	- have serveral setting have the same public name and they all take the same value
+	- get inputs for settings to fit the value type
