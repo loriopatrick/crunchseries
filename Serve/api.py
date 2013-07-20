@@ -89,13 +89,34 @@ def get_graph_node(uid, obj=False):
 	return json.dumps(res)
 
 
-@app.route('/api/graph/run', methods=['POST'])
+@app.route('/api/graph/run', methods=['POST', 'GET'])
 def run_graph():
 	if len(request.data) > 5000:
 		return 'TO BIG'
 
-	# get nodes from client
-	data = json.loads(request.data)
+	if request.method == 'GET':
+		uid = request.args.get('uid')
+		data = get_graph(uid, True)
+
+		def replace_public_setting(name, value):
+			for node_name in data['nodes']:
+				node = data['nodes'][node_name]
+				pos = -1
+				for setting in node['settings']:
+					pos += 1
+					parts = setting.split('-')
+					if parts[1] != name:
+						continue
+
+					parts[2] = value
+					node['settings'][pos] = '-'.join(parts[:3])
+
+		for arg in request.args:
+			if arg[:8] == 'setting-':
+				replace_public_setting(arg[8:], request.args[arg])
+	else:
+		# get nodes from client
+		data = json.loads(request.data)
 
 	# todo: verify graph data...
 
@@ -164,7 +185,7 @@ def run_graph():
 
 			# put out the node
 			output[add_name] = inode
-			
+
 			# recurse
 			expand_node(inode, add_name, output)
 
