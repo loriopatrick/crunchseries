@@ -13,4 +13,4 @@ FEATURES:
 	- double click custom node in edit inners, ability to go between layers
 	- colapse nodes into custom node
 	- have serveral setting have the same public name and they all take the same value
-	- get inputs for settings to fit the value type
+	- get inputs for settings to fit the value type (ex. date selector)

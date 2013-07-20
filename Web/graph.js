@@ -107,7 +107,7 @@ function GraphController($scope, $element, $http){
 			var offset = getGraphOffset();
 			var mousePos = normScroll(
 				evt.x - offset.left,
-				evt.y - offset.top
+				evt.y - offset.top, true
 			);
 			$scope.guideLine = ['M', pos.x, ',', pos.y, 'L', mousePos.x, ',', mousePos.y, 'z'].join('');
 		}
@@ -126,8 +126,12 @@ function GraphController($scope, $element, $http){
 		};
 	}
 
-	function normScroll (x, y) {
+	function normScroll (x, y, mouse) {
 		var scroll = getScrollOffset();
+		if (mouse) {
+			x += window.scrollX;
+			y += window.scrollY;
+		}
 		return {
 			x: x + scroll.left,
 			y: y + scroll.top
