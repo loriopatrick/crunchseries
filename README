@@ -1,5 +1,5 @@
 TODO:
-	- enchance api for saving and loading stats
+	- enchance api for saving and loading stats [started]
 	- add series node the converts to outputs with special names (ex. #series-x-series_name)
 		- build a meta language for outputs
 		- examples:

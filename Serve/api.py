@@ -21,21 +21,31 @@ def save_graph(uid):
 	mongo = MongoClient()
 	graphs = mongo.crunchseries.graphs
 	data = json.loads(request.data)
+	data['uid'] = uid
 	# todo: verify data
 
-	data['uid'] = uid
-	graphs.save(data)
-	return 'saved %s' % uid
+	if graphs.find_one({'uid':uid}):
+		graphs.update({'uid':uid}, data)
+		return '{"success": true, "message":"Updated: %s"}' % uid
+
+	
+	graphs.insert(data)
+	return '{"success": true, "message":"Saved: %s"}' % uid
 
 @app.route('/api/graph/get/<uid>', methods=['GET'])
 def get_graph(uid, obj=False):
 	mongo = MongoClient()
 	graphs = mongo.crunchseries.graphs
 	data = graphs.find_one({'uid':uid})
-	data.pop('_id')
+	
+	if data:
+		data.pop('_id')
 
 	if obj:
 		return data
+
+	if not data:
+		return '{"success": false, "error":"Graph with UID: %s was not found", "error_code":"1"}' % uid
 
 	return json.dumps(data)
 
