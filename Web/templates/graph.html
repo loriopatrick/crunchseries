@@ -2,13 +2,13 @@
 	<div class="controls" ng-init="init()">
 		<div ng-hide="btnGroups">Loading...</div>
 		<div class="btn-group" ng-repeat="group in btnGroups">
-			<a class="btn dropdown-toggle" data-toggle="dropdown" href="javascript:;">
+			<a class="btn dropdown-toggle" href="javascript:;">
 				{{group.title}}
 				<span class="caret"></span>
 			</a>
 			<ul class="dropdown-menu">
-				<li>
-					<a href="javascript:;" ng-repeat="btn in group.stats" ng-click="addNode(btn)">{{btn}}</a>
+				<li ng-repeat="btn in group.stats">
+					<a href="javascript:;" ng-click="addNode(btn)">{{btn}}</a>
 				</li>
 			</ul>
 		</div> -

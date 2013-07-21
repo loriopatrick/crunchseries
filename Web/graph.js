@@ -1,4 +1,4 @@
-var App = App || angular.module('App', []);
+var App = App || angular.module('App', ['ui.bootstrap']);
 
 function clone(obj) {
 	if (null == obj || "object" != typeof obj) return obj;
