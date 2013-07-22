@@ -18,7 +18,7 @@ function combine(ar, str, start, end) {
 	return res.join(str);
 }
 
-function GraphController($scope, $element, $http){
+function GraphController($scope, $element, $http) {
 	$scope.connections = [];
 	$scope.nodes = [];
 	$scope.btnGroups = [];
@@ -49,7 +49,24 @@ function GraphController($scope, $element, $http){
 		return nodeInfo[id].title;
 	};
 
-	function getNodeClone (statId) {
+	function getNodeClone (statId, node, callback) {
+		if (node && node.statId == -2) {
+			if (!node.uid) return null;
+
+			var parts = node.uid.split('/');
+			var parts2 = parts[1].split(':');
+
+			var user = parts[0];
+			var uid = parts2[0];
+			var rev = parts2[1];
+
+			$http.get('/api/graph/get_node/' + user + '/' + uid + '?revision=' + rev).success(function (data) {
+				callback(data);
+			});
+
+			return null;
+		}
+
 		var node = null;
 		for (var id in nodeInfo) {
 			if (nodeInfo[id].statId == statId) {
@@ -57,6 +74,8 @@ function GraphController($scope, $element, $http){
 				break;
 			}
 		}
+
+		if (callback) callback(node);
 		return node;
 	}
 
@@ -428,6 +447,8 @@ function GraphController($scope, $element, $http){
 
 		var nodeIds = [];
 
+		var loading_clones = 0;
+
 		for (var id in nodes) {
 			var node = nodes[id];
 
@@ -453,29 +474,33 @@ function GraphController($scope, $element, $http){
 				continue;
 			}
 
-			var newNode = getNodeClone(node.statId);
-			newNode.x = node.x;
-			newNode.y = node.y;
+			loading_clones += 1;
+			getNodeClone(node.statId, node, function (newNode) {
+				newNode.x = node.x;
+				newNode.y = node.y;
 
-			if (node.uid) {
-				newNode.uid = node.uid;
-			}
+				if (node.uid) {
+					newNode.uid = node.uid;
+				}
 
-			for (var i = 0; i < node.settings.length; i++) {
-				var setting = node.settings[i];
-				var parts = setting.split('-');
-				newNode.settings[i].isPublic = parts[1].length > 0;
-				newNode.settings[i].publicName = parts[1];
-				newNode.settings[i].val = combine(parts, '-', 2);
-			}
+				for (var i = 0; i < node.settings.length; i++) {
+					var setting = node.settings[i];
+					var parts = setting.split('-');
+					newNode.settings[i].isPublic = parts[1].length > 0;
+					newNode.settings[i].publicName = parts[1];
+					newNode.settings[i].val = combine(parts, '-', 2);
+				}
 
-			for (var i = 0; i < node.inputs.length; i++) {
-				var input = node.inputs[i];
-				newNode.inputs[i].node = input.node;
-				newNode.inputs[i].output = input.output;
-			}
+				for (var i = 0; i < node.inputs.length; i++) {
+					var input = node.inputs[i];
+					newNode.inputs[i].node = input.node;
+					newNode.inputs[i].output = input.output;
+				}
 
-			$scope.nodes.push(newNode);
+				$scope.nodes.push(newNode);
+				loading_clones -= 1;
+			});
+
 			nodeIds.push(id);
 		}
 
@@ -503,8 +528,8 @@ function GraphController($scope, $element, $http){
 			}
 		}
 
-		// timeout required for dom to updated by angular
-		setTimeout(function () {
+		// timeout required for dom to updated by angular & loading custom nodes
+		function doCons () {
 			if (head === 'outputs') {
 				var pos, i = 0;
 				while ((pos = nodeIds.indexOf(head + '-' + i)) > -1) {
@@ -515,7 +540,19 @@ function GraphController($scope, $element, $http){
 			}
 
 			buildInputConnections($scope.nodes[nodeIds.indexOf(head)]);
-		}, 10);
+		}
+		
+		function doTimeout () {
+			setTimeout(function () {
+				if (loading_clones > 0) {
+					doTimeout();
+					return;
+				}
+				doCons();
+			}, 10);
+		}
+
+		doTimeout();
 	}
 
 	$scope.serialize = function () {

@@ -72,10 +72,11 @@ def save_graph(uid):
 	})
 
 @app.route('/api/graph/get/<user>/<uid>', methods=['GET'])
-def get_graph(user, uid, obj=False):
+def get_graph(user, uid, obj=False, revision=None):
 	mongo = MongoClient()
 	graphs = mongo.crunchseries.graphs
-	revision = int(request.args.get('revision', '-1'))
+	if not revision:
+		revision = int(request.args.get('revision', '-1'))
 	search = {
 		'uid': uid, 
 		'creator': user, 
@@ -90,6 +91,7 @@ def get_graph(user, uid, obj=False):
 	graph = None
 	if res.count():
 		graph = res[0]['graph']
+		graph['revision'] = res[0]['revision']
 
 	if obj:
 		return graph
@@ -100,16 +102,16 @@ def get_graph(user, uid, obj=False):
 	return json.dumps(graph)
 
 @app.route('/api/graph/get_node/<user>/<uid>', methods=['GET'])
-def get_graph_node(user, uid, obj=False):
-	graph = get_graph(user, uid, True)
+def get_graph_node(user, uid, obj=False, revision=None):
+	graph = get_graph(user, uid, True, revision)
 
 	if graph is None:
 		raise Exception('Could not load graph with uid: %s' % uid)
 
 	res = {
-		'title': uid,
+		'title': uid + ' : v' + str(graph['revision']),
 		'statId': -2,
-		'uid': user + '/' + uid,
+		'uid': user + '/' + uid + ':' + str(graph['revision']),
 		'inputs': [],
 		'outputs': [],
 		'settings': []
@@ -237,10 +239,13 @@ def run_graph():
 
 		# lets load what we need
 		parts = node['uid'].split('/')
+		parts2 = parts[1].split(':')
 		user = parts[0]
-		uid = '/'.join(parts[1:])
-		insert_data = get_graph(user, uid, True)
-		insert_ref  = get_graph_node(user, uid, True)
+		uid = parts2[0]
+		rev = int(parts2[1])
+
+		insert_data = get_graph(user, uid, True, revision=rev)
+		insert_ref  = get_graph_node(user, uid, True, revision=rev)
 
 		def get_setting_pos(public_name):
 			pos = 0
