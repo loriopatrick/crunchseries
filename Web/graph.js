@@ -32,7 +32,6 @@ function GraphController($scope, $element, $http){
 	var scrollBoard = $($element[0]).find('.display').first();
 
 	$scope.init = function () {
-		$scope.loadSpot = true;
 		$http.get('/api/stats').success(function (stats) {
 			nodeInfo = stats;
 
@@ -352,7 +351,7 @@ function GraphController($scope, $element, $http){
 		// get nodes
 		for (var i = 0; i < $scope.nodes.length; ++i) {
 			var node = $scope.nodes[i];
-			if (!node.statId) continue;
+			if (!node.statId || node.statId === -1) continue;
 
 			var sNode = {
 				statId: node.statId || -1,
@@ -535,6 +534,7 @@ function GraphController($scope, $element, $http){
 		if (!uid.length) return;
 		$http.put('/api/graph/save/' + uid, JSON.stringify(serialize(true))).success(function (data) {
 			console.log('save', data);
+			alert('saved ' + (data['success']? 'successfully' : 'badly :('));
 		});
 	};
 
@@ -543,6 +543,7 @@ function GraphController($scope, $element, $http){
 		if (!rev) rev = -1;
 		$http.get('/api/graph/get/admin/' + uid + '?revision=' + rev).success(function (data) {
 			load(data);
+			$scope.uid = uid;
 		});
 
 		$scope.loadSpot = false;
