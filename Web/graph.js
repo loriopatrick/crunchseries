@@ -566,7 +566,10 @@ function GraphController($scope, $element, $http){
 	$scope.loadSearchRes = [];
 	var lastSearch = '';
 	$scope.loadSearch = function () {
-		if (!$scope.loadSearchInput.length) return;
+		if (!$scope.loadSearchInput.length) {
+			$scope.loadSearchRes = [];
+			return;
+		}
 		if ($scope.loadSearchInput == lastSearch) return;
 		lastSearch = $scope.loadSearchInput;
 		$http.get('/api/graph/get?user=admin&uid_reg=' + $scope.loadSearchInput).success(function (data) {
