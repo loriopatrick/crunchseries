@@ -23,13 +23,16 @@ function GraphController($scope, $element, $http){
 	$scope.nodes = [];
 	$scope.btnGroups = [];
 	$scope.guideLine = null;
-	
+
+	$scope.uid = 'Untitled';
+
 	var nodeInfo = {};
 
 	var selectedOutput, selectedInput, dragging;
 	var scrollBoard = $($element[0]).find('.display').first();
 
 	$scope.init = function () {
+		$scope.loadSpot = true;
 		$http.get('/api/stats').success(function (stats) {
 			nodeInfo = stats;
 
@@ -37,6 +40,10 @@ function GraphController($scope, $element, $http){
 				$scope.btnGroups = groups;
 			});
 		});
+	};
+
+	$scope.rename = function () {
+		$scope.uid = prompt('Graph Name: ') || 'Untitled';
 	};
 
 	$scope.getNodeInfoTitle = function (id) {
@@ -523,24 +530,46 @@ function GraphController($scope, $element, $http){
 	};
 
 
-	$scope.save = function () {
-		var uid = prompt('uid');
+	$scope.save = function (uid) {
+		if (!uid) uid = prompt('uid');
+		if (!uid.length) return;
 		$http.put('/api/graph/save/' + uid, JSON.stringify(serialize(true))).success(function (data) {
-			alert(data);
+			console.log('save', data);
 		});
 	};
 
-	$scope.load = function () {
-		var uid = prompt('uid');
-		$http.get('/api/graph/get/' + uid).success(function (data) {
+	$scope.load = function (uid, rev) {
+		if (!uid) uid = prompt('uid');
+		if (!rev) rev = -1;
+		$http.get('/api/graph/get/admin/' + uid + '?revision=' + rev).success(function (data) {
 			load(data);
 		});
+
+		$scope.loadSpot = false;
 	};
 
-	$scope.loadNode = function () {
-		var uid = prompt('uid');
-		$http.get('/api/graph/get_node/' + uid).success(function (data) {
+	$scope.loadNode = function (uid, rev) {
+		if (!uid) uid = prompt('uid');
+		if (!rev) rev = -1;
+		$http.get('/api/graph/get_node/admin/' + uid + '?revision=' + rev).success(function (data) {
 			addNodeObject(data);
+		});
+		
+		$scope.loadSpot = false;
+	};
+
+
+	// --------- modal stuff ----------
+
+	$scope.loadSearchInput = '';
+	$scope.loadSearchRes = [];
+	var lastSearch = '';
+	$scope.loadSearch = function () {
+		if (!$scope.loadSearchInput.length) return;
+		if ($scope.loadSearchInput == lastSearch) return;
+		lastSearch = $scope.loadSearchInput;
+		$http.get('/api/graph/get?user=admin&uid_reg=' + $scope.loadSearchInput).success(function (data) {
+			$scope.loadSearchRes = data.results;
 		});
 	};
 }

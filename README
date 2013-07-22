@@ -1,5 +1,4 @@
 TODO:
-	- enchance api for saving and loading stats [started]
 	- add series node the converts to outputs with special names (ex. #series-x-series_name)
 		- build a meta language for outputs
 		- examples:
@@ -15,3 +14,13 @@ FEATURES:
 	- colapse nodes into custom node
 	- have serveral setting have the same public name and they all take the same value
 	- get inputs for settings to fit the value type (ex. date selector)
+
+
+Graph document database fields
+==============================
+
+- uid : the file name
+- creator : the id of the creator (uid has to be unique for creator)
+- access : an array of user ids who have access
+- revision : the revision number (starts at 0)
+- timestamp : the time at which the file was saved

@@ -11,11 +11,9 @@
 					<a href="javascript:;" ng-click="addNode(btn)">{{btn}}</a>
 				</li>
 			</ul>
-		</div> -
-		<a href="javascript:;" ng-click="save()">Save</a> - 
-		<a href="javascript:;" ng-click="load()">Load</a> - 
-		<a href="javascript:;" ng-click="loadNode()">Load Node</a> - 
-		<a href="javascript:;" ng-click="serialize()">Serialize</a>
+		</div>
+
+		<a href="javascript:;" class="btn btn-success" ng-click="loadSpot=true">Controls</a>
 	</div>
 	<div class="display">
 		<svg class="canvas">
@@ -47,6 +45,28 @@
 						</td>
 					</tr>
 				</table>
+			</div>
+		</div>
+		<div modal="loadSpot">
+			<div class="modal-header"><h3>Crunch Series : <a href="javascript:;" ng-click="rename()">{{uid}}</a></h3></div>
+			<div class="modal-body" style="font-size: 18px;">
+				<div class="form-inline">
+					<strong>Load: </strong>
+					<input type="text" class="input-small" style="height: auto;" placeholder="Search" onkeyup="{{loadSearch()}}" ng-model="loadSearchInput"/>
+				</div>
+				<ul>
+					<li ng-repeat="file in loadSearchRes">
+						{{file.uid}} :: {{file.revision}} :: <a href="javascript:;" ng-click="load(file.uid, file.revision);">load</a> :: <a href="javascript:;" ng-click="loadNode(file.uid, file.revision);">load node</a>
+					</li>
+				</ul>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-primary" ng-click="rename()">Rename</button>
+				<button class="btn btn-primary" ng-click="save(uid)">Save</button>
+				<button class="btn btn-success" ng-click="rename(); save(uid);">Save As</button>
+				<button class="btn btn-success" ng-click="serialize();">Serialize</button>
+				<button class="btn btn-danger" ng-click="nodes=[]; connections=[];">Clear</button>
+				<button class="btn btn-warning" ng-click="loadSpot=false">Cancel</button>
 			</div>
 		</div>
 	</div>
