@@ -61,7 +61,7 @@ function GraphController($scope, $element, $http) {
 			var rev = parts2[1];
 
 			$http.get('/api/graph/get_node/' + user + '/' + uid + '?revision=' + rev).success(function (data) {
-				callback(data);
+				callback(clone(data));
 			});
 
 			return null;
@@ -475,33 +475,38 @@ function GraphController($scope, $element, $http) {
 			}
 
 			loading_clones += 1;
-			getNodeClone(node.statId, node, function (newNode) {
-				newNode.x = node.x;
-				newNode.y = node.y;
 
-				if (node.uid) {
-					newNode.uid = node.uid;
-				}
+			function loadNode (node, id) {
+				getNodeClone(node.statId, node, function (newNode) {
+					newNode.x = node.x;
+					newNode.y = node.y;
 
-				for (var i = 0; i < node.settings.length; i++) {
-					var setting = node.settings[i];
-					var parts = setting.split('-');
-					newNode.settings[i].isPublic = parts[1].length > 0;
-					newNode.settings[i].publicName = parts[1];
-					newNode.settings[i].val = combine(parts, '-', 2);
-				}
+					if (node.uid) {
+						newNode.uid = node.uid;
+					}
 
-				for (var i = 0; i < node.inputs.length; i++) {
-					var input = node.inputs[i];
-					newNode.inputs[i].node = input.node;
-					newNode.inputs[i].output = input.output;
-				}
+					for (var i = 0; i < node.settings.length; i++) {
+						var setting = node.settings[i];
+						var parts = setting.split('-');
+						newNode.settings[i].isPublic = parts[1].length > 0;
+						newNode.settings[i].publicName = parts[1];
+						newNode.settings[i].val = combine(parts, '-', 2);
+					}
 
-				$scope.nodes.push(newNode);
-				loading_clones -= 1;
-			});
+					for (var i = 0; i < node.inputs.length; i++) {
+						var input = node.inputs[i];
+						newNode.inputs[i].node = input.node;
+						newNode.inputs[i].output = input.output;
+					}
 
-			nodeIds.push(id);
+					$scope.nodes.push(newNode);
+					nodeIds.push(id);
+
+					loading_clones -= 1;
+				});
+			}
+
+			loadNode(node, id);
 		}
 
 		function getIndex(input) {
@@ -530,6 +535,7 @@ function GraphController($scope, $element, $http) {
 
 		// timeout required for dom to updated by angular & loading custom nodes
 		function doCons () {
+			console.log('do cons');
 			if (head === 'outputs') {
 				var pos, i = 0;
 				while ((pos = nodeIds.indexOf(head + '-' + i)) > -1) {
@@ -541,7 +547,7 @@ function GraphController($scope, $element, $http) {
 
 			buildInputConnections($scope.nodes[nodeIds.indexOf(head)]);
 		}
-		
+
 		function doTimeout () {
 			setTimeout(function () {
 				if (loading_clones > 0) {
@@ -549,7 +555,7 @@ function GraphController($scope, $element, $http) {
 					return;
 				}
 				doCons();
-			}, 10);
+			}, 100);
 		}
 
 		doTimeout();
