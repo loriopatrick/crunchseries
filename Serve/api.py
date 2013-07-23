@@ -101,6 +101,11 @@ def get_graph(user, uid, obj=False, revision=None):
 
 	return json.dumps(graph)
 
+@app.route('/api/graph/get/<user>/<uid>/revision', methods=['GET'])
+def get_graph_revision(user, uid):
+	graph = get_graph(user, uid, True)
+	return str(graph['revision'])
+
 @app.route('/api/graph/get_node/<user>/<uid>', methods=['GET'])
 def get_graph_node(user, uid, obj=False, revision=None):
 	graph = get_graph(user, uid, True, revision)

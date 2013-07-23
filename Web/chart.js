@@ -6,8 +6,8 @@ function ChartController ($scope, $element, $http) {
 	$scope.nodes = [];
 	$scope.output = [];
 
-	$scope.width = 600;
-	$scope.height = 300;
+	$scope.width = 800;
+	$scope.height = 600;
 
 	var seriesData = {};
 
@@ -48,7 +48,34 @@ function ChartController ($scope, $element, $http) {
 				});
 			};
 
-			$.plot(chart, flotData);
+			$.plot(chart, flotData, {
+				xaxis: {
+					mode: 'time'
+				},
+				grid: {
+					borderWidth: 1,
+					borderColor: 'rgb(243, 243, 243)',
+					tickColor: 'rgb(243, 243, 243)'
+				},
+				series: {
+					shadowSize: 1,
+					lines: {
+						lineWidth: 1
+					}
+				},
+				crosshair: {
+					mode: 'xy',
+					color: 'grey'
+				},
+				zoom: {
+					interactive: true,
+					amount: 1.1
+				},
+				pan: {
+					interactive: true,
+					frameRate: 60
+				}
+			});
 		});
 	};
 

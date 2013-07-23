@@ -10,3 +10,8 @@
 	padding-top: 5px;
 	font-size: 14px;
 }
+
+.chart {
+	float: left;
+	overflow: hidden;
+}

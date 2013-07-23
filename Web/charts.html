@@ -8,6 +8,9 @@
 	<script src="lib/jquery-2.0.2.min.js"></script>
 	<script src="lib/ui-bootstrap-tpls.min.js"></script>
 	<script src="lib/jquery.flot.min.js"></script>
+	<script src="lib/jquery.flot.time.js"></script>
+	<script src="lib/jquery.flot.crosshair.js"></script>
+	<script src="lib/jquery.flot.navigate.js"></script>
 </head>
 <body ng-app="App">
 <div style="width: 800px; margin: 20px auto;">
@@ -15,7 +18,7 @@
 		<a href="javascript:;" class="btn btn-success" ng-click="addChart()">Add Chart</a>
 		<div ng-repeat="chart in charts">
 			<h4>{{chart.title}}</h4>
-			<chart style="width: 600px; height: 300px;"></chart>
+			<chart></chart>
 		</div>
 	</div>
 </div>
