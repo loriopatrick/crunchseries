@@ -1,4 +1,4 @@
-<div class="chart">
+<div class="chart" ng-init="chartInitModal=true">
 	<table>
 		<tr>
 			<td>
@@ -15,4 +15,20 @@
 			</td>
 		</tr>
 	</table>
+
+	<div modal="chartInitModal">
+		<div class="modal-header"><h3>Crunch Series : Chart</h3></div>
+		<div class="modal-body">
+			<tabset vertical="false">
+				<tab heading="Line">
+					
+				</tab>
+				<tab heading="Scatter">FireFly</tab>
+				<tab heading="Symbols">FireFly</tab>
+			</tabset>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-warning" ng-click="chartInitModal=false">Cancel</button>
+		</div>
+	</div>
 </div>

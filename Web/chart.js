@@ -1,4 +1,4 @@
-var App = App || angular.module('App', []);
+var App = App || angular.module('App', ['ui.bootstrap']);
 
 function ChartController ($scope, $element, $http) {
 	$scope.series = [];
