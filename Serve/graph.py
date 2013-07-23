@@ -36,7 +36,6 @@ class GraphSerializer:
 		# setting format: type-editable-value
 		setting_type = parts[0]
 		setting_value = '-'.join(parts[2:])
-		print setting_value
 
 		if setting_type == 'int':
 			setting = int(setting_value)

@@ -86,8 +86,6 @@ def get_graph(user, uid, obj=False, revision=None):
 	if revision > -1:
 		search['revision'] = revision
 
-	print search
-
 	res = graphs.find(search).sort('revision', -1).limit(1)
 
 	graph = None
@@ -134,7 +132,6 @@ def get_graph_node(user, uid, obj=False, revision=None):
 	for node_name in graph['nodes']:
 		node = graph['nodes'][node_name]
 		for setting in node['settings']:
-			print setting
 			parts = setting.split('-')
 			
 			public_name = parts[1]
@@ -220,8 +217,6 @@ def run_graph():
 			revision = int(revision)
 		graph = get_graph(creator, uid, True, revision)
 
-		print graph
-
 		def replace_public_setting(name, value):
 			for node_name in graph['nodes']:
 				node = graph['nodes'][node_name]
@@ -258,8 +253,6 @@ def run_graph():
 		uid = parts2[0]
 		rev = int(parts2[1])
 
-		print user, uid, rev
-
 		insert_data = get_graph(user, uid, True, revision=rev)
 		insert_ref  = get_graph_node(user, uid, True, revision=rev)
 
@@ -279,12 +272,11 @@ def run_graph():
 
 		def update_settings(settings):
 			for x in range(0, len(settings)):
-				print 'SETTINGS:::', settings[x]
 				setting = settings[x]
 				parts = setting.split('-')
 				public_name = parts[1]
 				if not len(public_name):
-					return
+					continue
 
 				# if setting is public, grab setting value from node
 				setting_pos = get_setting_pos(public_name)
@@ -318,14 +310,13 @@ def run_graph():
 			output[add_name] = inode
 
 			# recurse
-			# expand_node(inode, add_name, output)
+			expand_node(inode, add_name, output)
 
 	to_add = {}
 	for node_name in graph['nodes']:
 		expand_node(graph['nodes'][node_name], node_name, to_add)
 
 	for item_name in to_add:
-		print item_name, to_add[item_name]
 		graph['nodes'][item_name] = to_add[item_name]
 	
 	# get output names
@@ -355,8 +346,6 @@ def run_graph():
 			'name': output_names[x],
 			'series': series
 		})
-
-	print response
 
 	return json.dumps(response)
 
