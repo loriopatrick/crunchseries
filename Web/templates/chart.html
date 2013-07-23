@@ -1,4 +1,7 @@
 <div class="chart" ng-init="chartInitModal=true">
+	<h4>{{graphInfo.creator}} :: {{graphInfo.uid}}</h4>
+	<input type="text" ng-model="graphInfo.revision" />
+	<a href="javascript:;" class="btn btn-success" ng-click="build(xaxis)">Update</a>
 	<div class="canvas" style="width: {{width}}px; height: {{height}}px;"></div>
 
 	<div modal="chartInitModal">

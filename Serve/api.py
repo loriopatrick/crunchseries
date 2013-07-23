@@ -75,7 +75,7 @@ def save_graph(uid):
 def get_graph(user, uid, obj=False, revision=None):
 	mongo = MongoClient()
 	graphs = mongo.crunchseries.graphs
-	if not revision:
+	if revision is None:
 		revision = int(request.args.get('revision', '-1'))
 	search = {
 		'uid': uid, 
@@ -257,6 +257,8 @@ def run_graph():
 		user = parts[0]
 		uid = parts2[0]
 		rev = int(parts2[1])
+
+		print user, uid, rev
 
 		insert_data = get_graph(user, uid, True, revision=rev)
 		insert_ref  = get_graph_node(user, uid, True, revision=rev)

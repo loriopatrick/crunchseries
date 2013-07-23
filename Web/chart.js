@@ -21,7 +21,12 @@ function ChartController ($scope, $element, $http) {
 
 	$scope.build = function (xaxisName) {
 		if (xaxisName == null) throw 'Xaxis must be defined';
-		$http.get('/api/graph/run?creator=' + $scope.graphInfo.creator + '&uid=' + $scope.graphInfo.uid + '&revision=' + $scope.graphInfo.revision).success(function (data) {
+		var url = '/api/graph/run?creator=' + $scope.graphInfo.creator + '&uid=' + $scope.graphInfo.uid;
+		if ($scope.graphInfo.revision > -1) {
+			url += '&revision=' + $scope.graphInfo.revision;
+		}
+
+		$http.get(url).success(function (data) {
 			var xaxis = null;
 			var series = [];
 			for (var i = 0; i < data.results.length; i++) {
