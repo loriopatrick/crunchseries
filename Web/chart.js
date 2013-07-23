@@ -11,90 +11,84 @@ function ChartController ($scope, $element, $http) {
 
 	var seriesData = {};
 
-	$scope.chart = function () {
-		var chart = $($element).find('.canvas');
-		setTimeout(function () {
-			$.plot(chart, buildFlotData());
-		}, 0);
+	var chart = $($element).find('.canvas');
+
+	$scope.graphInfo = null;
+	$scope.graph = null;
+	$scope.xaxis = null;
+
+	$scope.series = [];
+
+	$scope.build = function (xaxisName) {
+		if (xaxisName == null) throw 'Xaxis must be defined';
+		$http.get('/api/graph/run?creator=' + $scope.graphInfo.creator + '&uid=' + $scope.graphInfo.uid + '&revision=' + $scope.graphInfo.revision).success(function (data) {
+			var xaxis = null;
+			var series = [];
+			for (var i = 0; i < data.results.length; i++) {
+				var res = data.results[i];
+				if (res.name === xaxisName) {
+					xaxis = res.series;
+					continue;
+				}
+				series.push(res);
+			};
+
+			var flotData = [];
+
+			for (var i = 0; i < series.length; i++) {
+				var s = series[i];
+				flotData.push({
+					label: s.name,
+					data: combine(xaxis, s.series)
+				});
+			};
+
+			$.plot(chart, flotData);
+		});
 	};
 
-	function buildFlotData () {
-		function combine (x, y) {
-			var len = Math.min(x.length, y.length);
-			var res = [];
-			for (var i = 0; i < len; i++) {
-				res.push([x[i], y[i]]);
-			};
-			return res;
-		}
-
-		function getResult (uid, name) {
-			var results = seriesData[uid].results;
-			for (var i = 0; i < results.length; i++) {
-				var res = results[i];
-				if (res.name == name) {
-					return res.series;
-				}
-			};
-			return null;
-		}
-
+	function combine (x, y) {
+		var len = Math.min(x.length, y.length);
 		var res = [];
-
-		for (var i = 0; i < $scope.series.length; i++) {
-			var series = $scope.series[i];
-			res.push({
-				label: series.name,
-				data: combine(
-					getResult(series.x.graph_uid, series.x.output),
-					getResult(series.y.graph_uid, series.y.output)
-				)
-			});
+		for (var i = 0; i < len; i++) {
+			res.push([x[i], y[i]]);
 		};
-
 		return res;
 	}
 
-	$scope.addSeries = function () {
-		$scope.series.push({
-			name: prompt('series name'),
-			display: '**',
-			x: {
-				graph_uid: prompt('X axis graph uid'),
-				output: prompt('X axis output')
-			},
-			y: {
-				graph_uid: prompt('Y axis graph uid'),
-				output: prompt('Y axis output')
+	// ============ modal =============
+
+	$scope.chartInitModalSearchInput = '';
+	$scope.chartInitModalSearchRes = [];
+	var lastSearch = '';
+	$scope.chartInitModalSearch = function () {
+		if (!$scope.chartInitModalSearchInput.length) {
+			$scope.chartInitModalSearchRes = [];
+			return;
+		}
+		if ($scope.chartInitModalSearchInput == lastSearch) return;
+		lastSearch = $scope.chartInitModalSearchInput;
+		$http.get('/api/graph/get?user=admin&uid_reg=' + $scope.chartInitModalSearchInput).success(function (data) {
+			$scope.chartInitModalSearchRes.length = 0;
+			for (var i = 0; i < data.results.length; ++i) {
+				var res = data.results[i];
+				if (res.inputs) continue;
+				$scope.chartInitModalSearchRes.push(res);
 			}
 		});
 	};
 
-	$scope.update = function () {
-		var uids = [];
-		for (var i = 0; i < $scope.series.length; i++) {
-			var series = $scope.series[i];
-			if (uids.indexOf(series.x.graph_uid) == -1 && !(series.x.graph_uid in seriesData)) {
-				uids.push(series.x.graph_uid);
-			}
-			if (uids.indexOf(series.y.graph_uid) == -1 && !(series.y.graph_uid in seriesData)) {
-				uids.push(series.y.graph_uid);
-			}
-		};
+	$scope.selectGraph = function (graphInfo) {
+		$scope.graphInfo = graphInfo;
+		$http.get('/api/graph/get_node/' + graphInfo.creator + '/' + graphInfo.uid + '?revision=' + graphInfo.revision).success(function (data) {
+			$scope.graph = data;
+		});
+	}
 
-		seriesData = {};
-		var requestCompleted = 0;
-		for (var i = 0; i < uids.length; i++) {
-			var uid = uids[i];
-			$http.get('/api/graph/run?uid=' + uid).success(function (data) {
-				seriesData[uid] = data;
-				
-				if (++requestCompleted == uids.length) {
-					$scope.chart();
-				}
-			});
-		};
+	$scope.setAxis = function (axis) {
+		$scope.xaxis = axis;
 	};
+
 }
 
 App.directive('chart', function () {

@@ -86,6 +86,8 @@ def get_graph(user, uid, obj=False, revision=None):
 	if revision > -1:
 		search['revision'] = revision
 
+	print search
+
 	res = graphs.find(search).sort('revision', -1).limit(1)
 
 	graph = None
@@ -194,6 +196,12 @@ def search_graphs():
 
 	for doc in res:
 		doc.pop('_id')
+		if 'inputs' not in doc['graph']['nodes']:
+			doc['inputs'] = 0
+		else:
+			doc['inputs'] = len(doc['graph']['nodes']['inputs']['settings'])
+
+		doc['outputs'] = len(doc['graph']['nodes']['outputs']['settings'])
 		doc.pop('graph')
 		data_res['results'].append(doc)
 
@@ -205,8 +213,14 @@ def run_graph():
 		return 'TO BIG'
 
 	if request.method == 'GET':
+		creator = request.args.get('creator')
 		uid = request.args.get('uid')
-		graph = get_graph(uid, True)
+		revision = request.args.get('revision', None)
+		if revision:
+			revision = int(revision)
+		graph = get_graph(creator, uid, True, revision)
+
+		print graph
 
 		def replace_public_setting(name, value):
 			for node_name in graph['nodes']:
@@ -302,7 +316,7 @@ def run_graph():
 			output[add_name] = inode
 
 			# recurse
-			expand_node(inode, add_name, output)
+			# expand_node(inode, add_name, output)
 
 	to_add = {}
 	for node_name in graph['nodes']:

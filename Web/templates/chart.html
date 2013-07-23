@@ -1,33 +1,33 @@
 <div class="chart" ng-init="chartInitModal=true">
-	<table>
-		<tr>
-			<td>
-				<div class="canvas" style="width: {{width}}px; height: {{height}}px;"></div>
-			</td>
-			<td>
-				<div class="series-selector" ng-model="series">
-					<a href="javascript:;" ng-click="addSeries()">Add Series</a>
-					<a href="javascript:;" ng-click="update()">Update</a>
-					<div ng-repeat="item in series">
-						{{item.display}} - {{item.name}}
-					</div>
-				</div>
-			</td>
-		</tr>
-	</table>
+	<div class="canvas" style="width: {{width}}px; height: {{height}}px;"></div>
 
 	<div modal="chartInitModal">
 		<div class="modal-header"><h3>Crunch Series : Chart</h3></div>
 		<div class="modal-body">
+			<div class="form-inline">
+				<strong>Select graph to chart</strong>
+				<input type="text" style="width: 100px; height: auto;" ng-model="chartInitModalSearchInput" onkeyup="{{chartInitModalSearch()}}" placeholder="search" />
+			</div>
+			<ul>
+				<li ng-repeat="item in chartInitModalSearchRes">
+					<a href="javascript:;" ng-click="selectGraph(item)">{{item.uid}} :: {{item.revision}} :: {{item.outputs}}</a>
+				</li>
+			</ul>
+			<br/>
+			<strong ng-show="graphInfo">{{graphInfo.creator}} / {{graphInfo.uid}} : {{graphInfo.revision}}</strong>
 			<tabset vertical="false">
 				<tab heading="Line">
-					
+					<strong>X Axis: </strong> {{xaxis}} ::
+					<div class="btn-group">
+						<button ng-repeat="output in graph.outputs" class="btn btn-primary" ng-click="setAxis(output.name)">{{output.name}}</button>
+					</div>
 				</tab>
 				<tab heading="Scatter">FireFly</tab>
 				<tab heading="Symbols">FireFly</tab>
 			</tabset>
 		</div>
 		<div class="modal-footer">
+			<button class="btn btn-primary" ng-click="build(xaxis); chartInitModal=false;">Build :: {{xaxis}}</button>
 			<button class="btn btn-warning" ng-click="chartInitModal=false">Cancel</button>
 		</div>
 	</div>
