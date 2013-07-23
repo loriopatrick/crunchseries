@@ -1,12 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
 
-#include <mysql.h>
-
+#include "network.h"
+#include "netHandler.h"
+#include "database.h"
 #include "quote.h"
 
 int main (int args, char** argv) {
-	char* test = getQuoteQuery("eom", "WHERE epoch>12");
-	printf("%s\n", test);
+	DB_connect();
+	NET_startServer(5032, 20, netHandler);
+	DB_close();
 	return 0;
 }

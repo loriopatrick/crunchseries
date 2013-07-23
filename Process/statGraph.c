@@ -113,10 +113,6 @@ struct _statGraph_output* getInput(int stat, int output, StatGraph* graph) {
 	return graph->stats[stat].outputs + output;
 }
 
-// void runSingleStat(struct _statGraph_stat* stat, StatGraph* graph, double* (*stat)(double*, int, int)) {
-
-// }
-
 int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 	if (stat->outputs) return 0;
 
@@ -731,6 +727,44 @@ int runStat(struct _statGraph_stat* stat, StatGraph* graph) {
 		double* res = betweenThreshold(series->values, bottom->values, top->values, len);
 		stat->outputs = malloc(sizeof(struct _statGraph_output));
 		stat->outputs[0].len = len;
+		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
+
+		return 0;
+	}
+
+	if (stat->stat == 28) {
+		#ifdef DEBUG
+			printf("\ta stat: 28: Since High in Period\n");
+		#endif
+
+		int* period_size = stat->settings[0].data;
+		struct _statGraph_output* series = getInput(stat->inputs[0].stat,
+																stat->inputs[0].output,
+																graph);
+
+		double* res = sinceHighInPeriod(series->values, series->len, *period_size);
+		stat->outputs = malloc(sizeof(struct _statGraph_output));
+		stat->outputs[0].len = series->len;
+		stat->outputs[0].values = res;
+		stat->num_outputs = 1;
+
+		return 0;
+	}
+
+	if (stat->stat == 29) {
+		#ifdef DEBUG
+			printf("\ta stat: 29: Since Low in Period\n");
+		#endif
+
+		int* period_size = stat->settings[0].data;
+		struct _statGraph_output* series = getInput(stat->inputs[0].stat,
+																stat->inputs[0].output,
+																graph);
+
+		double* res = sinceLowInPeriod(series->values, series->len, *period_size);
+		stat->outputs = malloc(sizeof(struct _statGraph_output));
+		stat->outputs[0].len = series->len;
 		stat->outputs[0].values = res;
 		stat->num_outputs = 1;
 

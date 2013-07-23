@@ -83,7 +83,7 @@ function ChartController ($scope, $element, $http) {
 		var len = Math.min(x.length, y.length);
 		var res = [];
 		for (var i = 0; i < len; i++) {
-			res.push([x[i], y[i]]);
+			res.push([x[i] * 1000, y[i]]);
 		};
 		return res;
 	}

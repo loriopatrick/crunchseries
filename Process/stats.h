@@ -12,5 +12,7 @@ double* slope(double* values, int len);
 double* percentDifference(double* a, double* b, int len);
 double* trendLine(double* values, int len, int period_size);
 double* longYield(double* series, double* buy, int len);
+double* sinceHighInPeriod(double* values, int len, int period_size);
+double* sinceLowInPeriod(double* values, int len, int period_size);
 
 #endif

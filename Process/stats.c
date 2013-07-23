@@ -133,3 +133,73 @@ double* longYield(double* series, double* buy, int len) {
 
 	return results;
 }
+
+double* sinceHighInPeriod(double* values, int len, int period_size) {
+	double* results = malloc(sizeof(double) * len);
+	if (!len) {
+		return results;
+	}
+	
+	int periods_since = 0;
+	results[0] = 0;
+	double high = values[0];
+
+	int i, j;
+	for (i = 1; i < len; ++i) {
+		++periods_since;
+		if (values[i] >= high) {
+			high = values[i];
+			periods_since = 0;
+		}
+
+		if (periods_since >= period_size) {
+			high = values[i - period_size + 1];
+			periods_since = period_size - 1;
+
+			for (j = i - period_size + 2; j <= i; ++j) {
+				if (values[j] >= high) {
+					high = values[j];
+					periods_since = i - j;
+				}
+			}
+		}
+
+		results[i] = (double)periods_since;
+	}
+
+	return results;
+}
+
+double* sinceLowInPeriod(double* values, int len, int period_size) {
+	double* results = malloc(sizeof(double) * len);
+	if (!len) return results;
+	
+	int periods_since = 0;
+	results[0] = 0;
+	double low = values[0];
+
+	int i, j;
+	for (i = 1; i < len; ++i) {
+		++periods_since;
+		if (values[i] <= low) {
+			periods_since = 0;
+			low = values[i];
+		}
+
+		if (periods_since >= period_size) {
+			low = values[i - period_size + 1];
+			periods_since = period_size - 1;
+
+			for (j = i - period_size + 2; j <= i; ++j) {
+				if (values[j] <= low) {
+					low = values[j];
+					periods_since = i - j;
+				}
+			}
+		}
+
+		results[i] = (double)periods_since;
+	}
+
+	return results;
+}

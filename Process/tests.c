@@ -56,8 +56,28 @@ void testStatGraph() {
 
 }
 
+void testPeriodSearchStats() {
+	///////////////////0  0  0  0  1  2  2  0  0  0  1  2
+	double values[] = {1, 2, 3, 4, 3, 2, 1, 4, 5, 6, 2, 1};
+	int len = 12;
+	int period_size = 3;
+	double target_res[] = {0, 0, 0, 0, 1, 2, 2, 0, 0, 0, 1, 2};
+
+	double* res = sinceHighInPeriod(values, len, period_size);
+	printArray(values, len);
+	printArray(res, len);
+
+	int i;
+	for (i = 0; i < len; ++i) {
+		if (target_res[i] != res[i]) {
+			printf("ERROR: not equal [%i]: %f, %f\n", i, target_res[i], res[i]);
+		}
+	}
+}
+
 int main(int args, char** argv) {
-	DB_connect();
-	NET_startServer(5032, 20, netHandler);
-	DB_close();
+	testPeriodSearchStats();
+	// DB_connect();
+	// NET_startServer(5032, 20, netHandler);
+	// DB_close();
 }

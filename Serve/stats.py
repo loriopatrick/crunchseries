@@ -364,6 +364,32 @@ stats = {
 		'outputs': [
 			{'name': 'out'}
 		]
+	},
+	'since_high_in_period': {
+		'title': 'Count Since High in Period',
+		'statId': 28,
+		'inputs': [
+			{'name': 'in'}
+		],
+		'settings': [
+			{'name': 'period', 'type': 'int', 'val': 24}
+		],
+		'outputs': [
+			{'name': 'out'}
+		]
+	},
+	'since_low_in_period': {
+		'title': 'Count Since Low in Period',
+		'statId': 29,
+		'inputs': [
+			{'name': 'in'}
+		],
+		'settings': [
+			{'name': 'period', 'type': 'int', 'val': 24}
+		],
+		'outputs': [
+			{'name': 'out'}
+		]
 	}
 }
 
@@ -377,7 +403,9 @@ groups = [
 			'slope',
 			'long_yield',
 			'percent_difference',
-			'trend_line'
+			'trend_line',
+			'since_high_in_period',
+			'since_low_in_period'
 		]
 	},
 	{
