@@ -17,8 +17,8 @@
 	</div>
 	<div class="display">
 		<svg class="canvas">
-			<path stroke="black" stroke-dasharray="24,5" stroke-width="5" fill="transparent" ng-repeat="conn in connections" ng-model="conn" d="{{conn.d}}"></path>
-			<path stroke="pink" stroke-dasharray="12,5" stroke-width="2" ng-model="guideLine" ng-show="guideLine" d="{{guideLine}}"></path>
+			<path stroke="black" stroke-width="5" fill="transparent" ng-repeat="conn in connections" ng-model="conn" d="{{conn.d}}"></path>
+			<path stroke="cornflowerblue" stroke-dasharray="5" stroke-width="2" ng-model="guideLine" ng-show="guideLine" d="{{guideLine}}"></path>
 		</svg>
 		<div class="nodes">
 			<div class="node" ng-repeat="(node_pos, node) in nodes" node-pos="{{node_pos}}" style="left: {{node.x}}; top: {{node.y}}px;">
@@ -27,10 +27,12 @@
 				<table class="options">
 					<tr>
 						<td class="inputs">
-							<div class="input" ng-repeat="(i, input) in node.inputs" pos="{{i}}">
-								<div ng-model="input" class="handle {{input.style}}" ng-mouseover="selectInput($event, node, i)" ng-mouseout="clearInput()" ng-mousedown="removeInputConnection(node, i)"></div>
-								<div class="handleMsg">{{input.name}}</div>
-							</div>
+							<table>
+								<tr ng-repeat="(i, input) in node.inputs" pos="{{i}}">
+									<td><div ng-model="input" class="handle {{input.style}}" ng-mouseover="selectInput($event, node, i)" ng-mouseout="clearInput()" ng-mousedown="removeInputConnection(node, i)"></div></td>
+									<td>{{input.name}}</td>
+								</tr>
+							</table>
 						</td>
 						<td class="settings">
 							<table>
@@ -40,9 +42,6 @@
 									<td><input type="text" style="float: left;" ng-model="setting.val" value="{{setting.val}}"></td>
 								</tr>
 							</table>
-							<!-- <div ng-repeat="setting in node.settings" class="setting">
-								<div ng-click="toggleEdit(setting)" style="float: left;">{{setting.name}}<font color="blue" ng-show="setting.isPublic"> : {{setting.publicName}}</font> </div> <input type="text" style="float: left;" ng-model="setting.val" value="{{setting.val}}">
-							</div> -->
 						</td>
 						<td class="outputs">
 							<table>
@@ -51,9 +50,6 @@
 									<td><div class="handle" style="float: right;" ng-mousedown="selectOutput($event, node, i)"></div></td>
 								</tr>
 							</table>
-							<!-- <div class="output" ng-repeat="(i, output) in node.outputs" pos="{{i}}">
-								<div class="handleMsg"></div>
-							</div> -->
 						</td>
 					</tr>
 				</table>

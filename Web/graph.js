@@ -205,8 +205,8 @@ function GraphController($scope, $element, $http) {
 		var inputEl = jElement.find('.node[node-pos="' + $scope.nodes.indexOf(inputNode) + '"]').first();
 		var outputEl = jElement.find('.node[node-pos="' + $scope.nodes.indexOf(outputNode) + '"]').first();
 
-		var inputHandle = inputEl.find('.input[pos="' + inputPos + '"] > .handle');
-		var outputHandle = outputEl.find('.output[pos="' + outputPos + '"] > .handle');
+		var inputHandle = inputEl.find('.inputs [pos="' + inputPos + '"] .handle');
+		var outputHandle = outputEl.find('.outputs [pos="' + outputPos + '"] .handle');
 
 		var con = {
 			input: {
