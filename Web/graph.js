@@ -238,9 +238,7 @@ function GraphController($scope, $element, $http) {
 				output: selectedOutput,
 				input: selectedInput
 			}));
-		}
-
-		if (selectedOutput) {
+		} else if (selectedOutput) {
 			console.log(evt);
 			var input = $scope.addNode('output', evt.x - 10, evt.y - 80);
 			var node = selectedOutput.node, pos = selectedOutput.pos;
