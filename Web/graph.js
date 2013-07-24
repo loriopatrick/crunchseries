@@ -187,6 +187,8 @@ function GraphController($scope, $element, $http) {
 		var output = getHandlePos(baseConn.output);
 		var input = getHandlePos(baseConn.input);
 
+		baseConn.input.node.inputs[baseConn.input.pos].style = 'filled';
+
 		var xDist = output.x - input.x;
 		var curveDist = Math.abs(xDist / 2);
 		if (xDist > -20) curveDist += 100;
@@ -239,10 +241,10 @@ function GraphController($scope, $element, $http) {
 				input: selectedInput
 			}));
 		} else if (selectedOutput) {
-			console.log(evt);
 			var input = $scope.addNode('output', evt.x - 10, evt.y - 80);
 			var node = selectedOutput.node, pos = selectedOutput.pos;
 			input.settings[0].val = node.outputs[pos].name;
+
 			setTimeout(function () {
 				addConnection(input, 0, node, pos);
 			}, 0);
@@ -266,7 +268,7 @@ function GraphController($scope, $element, $http) {
 
 		var isOpen = isInputOpen(node, pos);
 		if (selectedOutput) {
-			node.inputs[pos].style = isOpen? 'add':'';
+			node.inputs[pos].style = isOpen? 'add' : 'filled';
 		} else if (!isOpen) {
 			node.inputs[pos].style = 'remove';
 		}
@@ -274,7 +276,9 @@ function GraphController($scope, $element, $http) {
 
 	$scope.clearInput = function () {
 		if (selectedInput) {
-			selectedInput.node.inputs[selectedInput.pos].style = '';
+			var style = selectedInput.node.inputs[selectedInput.pos].style;
+
+			selectedInput.node.inputs[selectedInput.pos].style = (style === 'remove' || style === 'filled')? 'filled' : '';
 			selectedInput = null;
 		}
 	};
@@ -284,6 +288,7 @@ function GraphController($scope, $element, $http) {
 			var line = $scope.connections[i];
 			if (line.input.node == node && line.input.pos == input) {
 				$scope.connections.splice(i, 1);
+				node.inputs[input].style = '';
 				console.log('removed item');
 				return;
 			}

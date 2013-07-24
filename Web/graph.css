@@ -95,6 +95,10 @@
 	background: red;
 }
 
+.graph .node .handle.filled {
+	background: black;
+}
+
 .graph .node .handleMsg {
 	float: left;
 	padding: 0 5px;

@@ -29,7 +29,7 @@
 						<td class="inputs">
 							<table>
 								<tr ng-repeat="(i, input) in node.inputs" pos="{{i}}">
-									<td><div ng-model="input" class="handle {{input.style}}" ng-mouseover="selectInput($event, node, i)" ng-mouseout="clearInput()" ng-mousedown="removeInputConnection(node, i)"></div></td>
+									<td><div ng-model="input" class="handle" ng-class="input.style" ng-mouseover="selectInput($event, node, i)" ng-mouseout="clearInput()" ng-mousedown="removeInputConnection(node, i)"></div></td>
 									<td>{{input.name}}</td>
 								</tr>
 							</table>
