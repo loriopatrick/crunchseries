@@ -79,16 +79,17 @@ function GraphController($scope, $element, $http) {
 		return node;
 	}
 
-	$scope.addNode = function (name) {
-		addNodeObject(nodeInfo[name]);
+	$scope.addNode = function (name, x, y) {
+		return addNodeObject(nodeInfo[name], x, y);
 	};
 
-	function addNodeObject (obj) {
+	function addNodeObject (obj, x, y) {
 		var newNode = clone(obj);
-		var newPos = normScroll(50, 50);
+		var newPos = normScroll(!x && x !== 0 ? 50 : x,  !y && y !== 0 ? 50 : y);
 		newNode.x = newPos.x;
 		newNode.y = newPos.y;
 		$scope.nodes.push(newNode);
+		return newNode;
 	}
 
 	$scope.destroyNode = function (node) {
@@ -223,10 +224,12 @@ function GraphController($scope, $element, $http) {
 
 		var con = buildConnection(con);
 		$scope.connections.push(con);
+		setTimeout(updateConnections, 0);
 	}
 
 	$scope.mouseup = function (evt) {
 		dragging = null;
+
 		if (selectedOutput && selectedInput
 				&& selectedOutput.node != selectedInput.node
 				&& isInputOpen(selectedInput.node, selectedInput.pos)) {
@@ -236,6 +239,17 @@ function GraphController($scope, $element, $http) {
 				input: selectedInput
 			}));
 		}
+
+		if (selectedOutput) {
+			console.log(evt);
+			var input = $scope.addNode('output', evt.x - 10, evt.y - 80);
+			var node = selectedOutput.node, pos = selectedOutput.pos;
+			input.settings[0].val = node.outputs[pos].name;
+			setTimeout(function () {
+				addConnection(input, 0, node, pos);
+			}, 0);
+		}
+
 		selectedOutput = null;
 		$scope.clearInput();
 		$scope.guideLine = null;
