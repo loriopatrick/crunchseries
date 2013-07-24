@@ -1,37 +1,11 @@
-<div class="chart" ng-init="chartInitModal=true">
-	<h4>{{graphInfo.creator}} :: {{graphInfo.uid}}</h4>
-	<input type="text" ng-model="graphInfo.revision" />
-	<a href="javascript:;" class="btn btn-success" ng-click="build(xaxis)">Update</a>
-	<div class="canvas" style="width: {{width}}px; height: {{height}}px;"></div>
-
-	<div modal="chartInitModal">
-		<div class="modal-header"><h3>Crunch Series : Chart</h3></div>
-		<div class="modal-body">
-			<div class="form-inline">
-				<strong>Select graph to chart</strong>
-				<input type="text" style="width: 100px; height: auto;" ng-model="chartInitModalSearchInput" onkeyup="{{chartInitModalSearch()}}" placeholder="search" />
-			</div>
-			<ul>
-				<li ng-repeat="item in chartInitModalSearchRes">
-					<a href="javascript:;" ng-click="selectGraph(item)">{{item.uid}} :: {{item.revision}} :: {{item.outputs}}</a>
-				</li>
-			</ul>
-			<br/>
-			<strong ng-show="graphInfo">{{graphInfo.creator}} / {{graphInfo.uid}} : {{graphInfo.revision}}</strong>
-			<tabset vertical="false">
-				<tab heading="Line">
-					<strong>X Axis: </strong> {{xaxis}} ::
-					<div class="btn-group">
-						<button ng-repeat="output in graph.outputs" class="btn btn-primary" ng-click="setAxis(output.name)">{{output.name}}</button>
-					</div>
-				</tab>
-				<tab heading="Scatter">FireFly</tab>
-				<tab heading="Symbols">FireFly</tab>
-			</tabset>
+<div class="chart">
+	<div class="header">
+		<h3>Crunch Series</h3> <a href="javascript:;" ng-click="toggleAxis('xaxis')">test</a>
+		<div class="form-inline" style="margin-top: 5px;">
+			<input type="text" placeholder="creator" ng-model="creator" /> / <input type="text" placeholder="uid" ng-model="uid" /> : <input type="text" placeholder="rev" style="width: 50px;" ng-model="rev" /> <a href="javascript:;" class="btn btn-success" ng-click="buildSeries(creator, uid, rev, 'time')">Build</a>
 		</div>
-		<div class="modal-footer">
-			<button class="btn btn-primary" ng-click="build(xaxis); chartInitModal=false;">Build :: {{xaxis}}</button>
-			<button class="btn btn-warning" ng-click="chartInitModal=false">Cancel</button>
-		</div>
+	</div>
+	<div ng-init="init()" class="container">
+		<div class="canvas"></div>
 	</div>
 </div>

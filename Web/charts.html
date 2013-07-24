@@ -1,6 +1,6 @@
 <html>
 <head>
-	<title>Graph Builder</title>
+	<title>Chart Viewer</title>
 	<script src="lib/angular.min.js"></script>
 	<link href="lib/bootstrap-combined.min.css" rel="stylesheet" />
 	<link href="graph.css" rel="stylesheet">
@@ -11,26 +11,10 @@
 	<script src="lib/jquery.flot.time.js"></script>
 	<script src="lib/jquery.flot.crosshair.js"></script>
 	<script src="lib/jquery.flot.navigate.js"></script>
+	<script src="lib/jquery.flot.resize.js"></script>
 </head>
 <body ng-app="App">
-<div style="width: 800px; margin: 20px auto;">
-	<div ng-controller="ChartsCtrl">
-		<a href="javascript:;" class="btn btn-success" ng-click="addChart()">Add Chart</a>
-		<div ng-repeat="chart in charts">
-			<h4>{{chart.title}}</h4>
-			<chart></chart>
-		</div>
-	</div>
-</div>
+<chart style="width: 100%; height: 100%;"></chart>
 <script src="chart.js"></script>
-<script type="text/javascript">
-	function ChartsCtrl ($scope) {
-		$scope.charts = [{title: 'Apple Pie'}];
-
-		$scope.addChart = function () {
-			$scope.charts.push({title: prompt('Chart Name')});
-		};
-	}
-</script>
 </body>
 </html>

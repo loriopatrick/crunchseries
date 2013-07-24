@@ -13,12 +13,12 @@
 			</ul>
 		</div>
 
-		<a href="javascript:;" class="btn btn-success" ng-click="loadSpot=true">Controls</a>
+		<a href="javascript:;" class="btn btn-primary" ng-click="loadSpot=true">Controls</a>
 	</div>
 	<div class="display">
 		<svg class="canvas">
-			<path stroke="black" stroke-width="5" fill="transparent" ng-repeat="conn in connections" ng-model="conn" d="{{conn.d}}"></path>
-			<path stroke="black" stroke-width="2" ng-model="guideLine" ng-show="guideLine" d="{{guideLine}}"></path>
+			<path stroke="black" stroke-dasharray="24,5" stroke-width="5" fill="transparent" ng-repeat="conn in connections" ng-model="conn" d="{{conn.d}}"></path>
+			<path stroke="pink" stroke-dasharray="12,5" stroke-width="2" ng-model="guideLine" ng-show="guideLine" d="{{guideLine}}"></path>
 		</svg>
 		<div class="nodes">
 			<div class="node" ng-repeat="(node_pos, node) in nodes" node-pos="{{node_pos}}" style="left: {{node.x}}; top: {{node.y}}px;">
@@ -33,15 +33,27 @@
 							</div>
 						</td>
 						<td class="settings">
-							<div ng-repeat="setting in node.settings" class="setting {{setting.isdynamic}}">
+							<table>
+								<tr ng-repeat="setting in node.settings">
+									<td ng-click="toggleEdit(setting)">{{setting.name}}</td>
+									<td><font color="blue" ng-show="setting.isPublic">{{setting.publicName}}</font></td>
+									<td><input type="text" style="float: left;" ng-model="setting.val" value="{{setting.val}}"></td>
+								</tr>
+							</table>
+							<!-- <div ng-repeat="setting in node.settings" class="setting">
 								<div ng-click="toggleEdit(setting)" style="float: left;">{{setting.name}}<font color="blue" ng-show="setting.isPublic"> : {{setting.publicName}}</font> </div> <input type="text" style="float: left;" ng-model="setting.val" value="{{setting.val}}">
-							</div>
+							</div> -->
 						</td>
 						<td class="outputs">
-							<div class="output" ng-repeat="(i, output) in node.outputs" pos="{{i}}">
-								<div class="handleMsg">{{output.name}}</div>
-								<div class="handle" style="float: right;" ng-mousedown="selectOutput($event, node, i)"></div>
-							</div>
+							<table>
+								<tr ng-repeat="(i, output) in node.outputs" pos="{{i}}">
+									<td>{{output.name}}</td>
+									<td><div class="handle" style="float: right;" ng-mousedown="selectOutput($event, node, i)"></div></td>
+								</tr>
+							</table>
+							<!-- <div class="output" ng-repeat="(i, output) in node.outputs" pos="{{i}}">
+								<div class="handleMsg"></div>
+							</div> -->
 						</td>
 					</tr>
 				</table>
@@ -62,11 +74,11 @@
 			</div>
 			<div class="modal-footer">
 				<button class="btn btn-primary" ng-click="clear(); rename(); loadSpot=false;">New</button>
-				<button class="btn btn-success" ng-click="save(uid)">Save</button>
-				<button class="btn btn-success" ng-click="rename(); save(uid);">Save As</button>
-				<button class="btn btn-info" ng-click="serialize();">Serialize</button>
-				<button class="btn btn-danger" ng-click="nodes=[]; connections=[];">Clear</button>
-				<button class="btn btn-warning" ng-click="loadSpot=false">Cancel</button>
+				<button class="btn btn-primary" ng-click="save(uid)">Save</button>
+				<button class="btn btn-primary" ng-click="rename(); save(uid);">Save As</button>
+				<button class="btn btn-primary" ng-click="serialize();">Serialize</button>
+				<button class="btn btn-primary" ng-click="nodes=[]; connections=[];">Clear</button>
+				<button class="btn btn-primary" ng-click="loadSpot=false">Cancel</button>
 			</div>
 		</div>
 	</div>

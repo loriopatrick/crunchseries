@@ -39,7 +39,7 @@
 	position: absolute;
 	background: rgb(241, 241, 241);
 	overflow: hidden;
-	border: dashed 1px rgb(54, 54, 54);
+	border: solid 1px rgb(54, 54, 54);
 }
 .graph .node .closeBtn {
 	position: absolute;
@@ -52,11 +52,15 @@
 	clear: both;
 	padding: 2px;
 	text-align: center;
-	background: rgb(206, 206, 206);
+	font-weight: bold;
 }
 .graph .node .options {
 	overflow: hidden;
 	padding: 10px 0;
+}
+
+.graph .node .outputs, .graph .node .inputs {
+	padding-top: 5px;
 }
 .graph .node table {
 	font-size: 14px;
@@ -71,13 +75,16 @@
 	padding: 5px 10px;
 }
 .graph .node .settings input {
-	max-width: 100px;
+	max-width: 50px;
+	border-radius: 0px;
+	margin: 0 5px 0 0;
 }
 .graph .node .handle {
-	width: 15px;
-	height: 15px;
-	background: black;
+	width: 10px;
+	height: 10px;
 	float: left;
+	border: solid black 2px;
+	margin: 1px;
 }
 
 .graph .node .handle.add {
@@ -91,4 +98,9 @@
 .graph .node .handleMsg {
 	float: left;
 	padding: 0 5px;
+}
+
+.graph table tr {
+	vertical-align: top;
+	height: 15px;
 }
