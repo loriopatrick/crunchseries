@@ -176,8 +176,7 @@ def search_graphs():
 		search['creator'] = user
 
 	if uid_reg:
-		# todo: find way to query
-		search['uid'] = uid_reg
+		search['uid'] = {'$regex': uid_reg}
 
 	res = graphs.find(search)
 	
