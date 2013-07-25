@@ -26,14 +26,14 @@ function GraphController($scope, $element, $http) {
 
 	$scope.uid = 'Untitled';
 
-	var nodeInfo = {};
+	$scope.nodeInfo = {};
 
 	var selectedOutput, selectedInput, dragging;
 	var scrollBoard = $($element[0]).find('.display').first();
 
 	$scope.init = function () {
 		$http.get('/api/stats').success(function (stats) {
-			nodeInfo = stats;
+			$scope.nodeInfo = stats;
 
 			$http.get('/api/stats/groups').success(function (groups) {
 				$scope.btnGroups = groups;
@@ -46,7 +46,7 @@ function GraphController($scope, $element, $http) {
 	};
 
 	$scope.getNodeInfoTitle = function (id) {
-		return nodeInfo[id].title;
+		return $scope.nodeInfo[id].title;
 	};
 
 	function getNodeClone (statId, node, callback) {
@@ -68,9 +68,9 @@ function GraphController($scope, $element, $http) {
 		}
 
 		var node = null;
-		for (var id in nodeInfo) {
-			if (nodeInfo[id].statId == statId) {
-				node = clone(nodeInfo[id]);
+		for (var id in $scope.nodeInfo) {
+			if ($scope.nodeInfo[id].statId == statId) {
+				node = clone($scope.nodeInfo[id]);
 				break;
 			}
 		}
@@ -80,7 +80,7 @@ function GraphController($scope, $element, $http) {
 	}
 
 	$scope.addNode = function (name, x, y) {
-		return addNodeObject(nodeInfo[name], x, y);
+		return addNodeObject($scope.nodeInfo[name], x, y);
 	};
 
 	function addNodeObject (obj, x, y) {
