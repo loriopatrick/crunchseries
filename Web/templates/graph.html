@@ -1,10 +1,14 @@
 <div class="graph no-select" ng-mouseup="mouseup($event)" ng-mousemove="mousemove($event)">
 	<div class="controls" ng-init="init()">
+		<strong style="font-size: 22px; float: left; padding: 4px 12px;">Crunch Series</strong>
+		<a href="javascript:;" class="btn btn-info" ng-click="save()">Save <span ng-show="uid">"{{uid}}"</span></a>
+		<a href="javascript:;" class="btn btn-info" ng-click="newGraph()">New</a>
+		<a href="javascript:;" class="btn btn-info" ng-click="openModal=true">Open</a>
+		
 		<div ng-hide="btnGroups">Loading...</div>
 		<div class="btn-group" ng-repeat="group in btnGroups">
 			<a class="btn dropdown-toggle" href="javascript:;">
-				{{group.title}}
-				<span class="caret"></span>
+				{{group.title}} <span class="caret"></span>
 			</a>
 			<ul class="dropdown-menu">
 				<li ng-repeat="btn in group.stats">
@@ -12,8 +16,6 @@
 				</li>
 			</ul>
 		</div>
-
-		<a href="javascript:;" class="btn btn-primary" ng-click="loadSpot=true">Controls</a>
 	</div>
 	<div class="display">
 		<svg class="canvas">
@@ -55,7 +57,101 @@
 				</table>
 			</div>
 		</div>
-		<div modal="loadSpot">
+
+		<div class="alerts">
+			<alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
+		</div>
+
+		<div modal="saveModalSpecifyName">
+			<div class="modal-header"><h3>Specify Name for Graph</h3></div>
+			<div class="modal-body">
+				<div class="form-inline">
+					Name: <input type="text" ng-model="newUid" style="height: auto;" />
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-info" ng-click="checkNewUid();">Save</button>
+				<button class="btn btn-info" ng-click="saveModalSpecifyName=false">Cancel</button>
+			</div>
+		</div>
+
+		<div modal="saveModalOverride">
+			<div class="modal-header"><h3>Overriding Graph</h3></div>
+			<div class="modal-body">
+				A graph with that name already exists, are you sure you want to override it?
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-info" ng-click="save(true);">Yes</button>
+				<button class="btn btn-info" ng-click="saveModalOverride=false; saveModalSpecifyName=true;">No</button>
+			</div>
+		</div>
+
+		<div modal="newModalWarning">
+			<div class="modal-header"><h3>Possible loss of unsaved work</h3></div>
+			<div class="modal-body">All unsaved changes will be discarded</div>
+			<div class="modal-footer">
+				<button class="btn btn-info" ng-click="newGraph(true)">New</button>
+				<button class="btn btn-info" ng-click="newModalWarning=false">Cancel</button>
+			</div>
+		</div>
+
+		<div modal="openModalWarning">
+			<div class="modal-header"><h3>Possible loss of unsaved work</h3></div>
+			<div class="modal-body">All unsaved changes will be discarded</div>
+			<div class="modal-footer">
+				<button class="btn btn-info" ng-click="load(openInfo.uid, openInfo.revision)">Open</button>
+				<button class="btn btn-info" ng-click="openModalWarning=false">Cancel</button>
+			</div>
+		</div>
+
+		<div modal="openModal">
+			<div class="modal-header"><h3>Open</h3></div>
+			<div class="modal-body">
+				<div class="form-inline">
+					<input type="text" style="height: auto;" placeholder="Search" ng-model="openModalSearch" onkeyup="{{search()}}" />
+				</div>
+				<div style="max-height: 300px; overflow: auto; padding-top: 10px;">
+					<table class="table table-hover" ng-show="openModalSearchRes.length">
+						<thead>
+							<tr>
+								<th>Creator</th>
+								<th>Name</th>
+								<th>Graph</th>
+								<th>Node</th>
+								<th># of Nodes</th>
+								<th>Revision</th>
+							</tr>
+						</thead>
+						
+						<tbody>
+							<tr ng-repeat="res in openModalSearchRes">
+								<td>{{res.creator}}</td>
+								<td>{{res.uid}}</td>
+								<td>
+									<a href="javascript:;" ng-click="loadConfirm(res)">open</a>
+								</td>
+								<td>
+									<a href="javascript:;" ng-click="loadNode(res.uid, res.revision)">add</a>
+								</td>
+								<td>{{res.revisions[res.revision].node_count}}</td>
+								<td>
+									<select ng-model="res.revision" ng-options="rev.revision as (rev.revision + ' :: ' + (rev.timestamp*1000 | date)) for rev in res.revisions" style="width: 150px;">
+										<!-- <option ng-repeat="rev in res.revisions" value="{{$index}}">{{rev.revision}} :: {{rev.timestamp*1000|date}}</option> -->
+									</select>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-info" ng-click="openModal=false">Cancel</button>
+			</div>
+		</div>
+
+
+		<!-- <div modal="loadModal">
 			<div class="modal-header"><h3>Crunch Series : <a href="javascript:;" ng-click="rename()">{{uid}}</a></h3></div>
 			<div class="modal-body">
 				<div class="form-inline">
@@ -69,13 +165,8 @@
 				</ul>
 			</div>
 			<div class="modal-footer">
-				<button class="btn btn-primary" ng-click="clear(); rename(); loadSpot=false;">New</button>
-				<button class="btn btn-primary" ng-click="save(uid)">Save</button>
-				<button class="btn btn-primary" ng-click="rename(); save(uid);">Save As</button>
-				<button class="btn btn-primary" ng-click="serialize();">Serialize</button>
-				<button class="btn btn-primary" ng-click="nodes=[]; connections=[];">Clear</button>
-				<button class="btn btn-primary" ng-click="loadSpot=false">Cancel</button>
+				<button class="btn btn-primary" ng-click="loadModal=false">Cancel</button>
 			</div>
-		</div>
+		</div> -->
 	</div>
 </div>

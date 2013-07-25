@@ -101,9 +101,11 @@ def get_graph(user, uid, obj=False, revision=None):
 
 	return json.dumps(graph)
 
-@app.route('/api/graph/get/<user>/<uid>/revision', methods=['GET'])
+@app.route('/api/graph/get/<user>/<uid>/rev', methods=['GET'])
 def get_graph_revision(user, uid):
 	graph = get_graph(user, uid, True)
+	if graph is None:
+		return '-1'
 	return str(graph['revision'])
 
 @app.route('/api/graph/get_node/<user>/<uid>', methods=['GET'])
@@ -192,20 +194,51 @@ def search_graphs():
 		limit = int(limit)
 		res = res.limit(limit)
 
+	graphs = {}
+
+	for doc in res:
+		doc.pop('_id')
+		graph = doc.pop('graph')
+
+		if 'inputs' not in graph['nodes']:
+			doc['inputs'] = 0
+		else:
+			doc['inputs'] = len(graph['nodes']['inputs']['settings'])
+
+		doc['outputs'] = len(graph['nodes']['outputs']['settings'])
+
+		id_name = doc['creator'] + '/' + doc['uid']
+		if id_name not in graphs:
+			graphs[id_name] = []
+
+		graphs[id_name].append(doc)
+
 	data_res = {
 		'results': []
 	}
 
-	for doc in res:
-		doc.pop('_id')
-		if 'inputs' not in doc['graph']['nodes']:
-			doc['inputs'] = 0
-		else:
-			doc['inputs'] = len(doc['graph']['nodes']['inputs']['settings'])
+	for graph_array_name in graphs:
+		graph_array = graphs[graph_array_name]
 
-		doc['outputs'] = len(doc['graph']['nodes']['outputs']['settings'])
-		doc.pop('graph')
-		data_res['results'].append(doc)
+		sort_key = lambda x: x['revision']
+		print graph_array
+		graph_array.sort(key=sort_key)
+		graph_array.reverse()
+
+		revisions = []
+
+		for x in range(0, len(graph_array)):
+			pos = len(graph_array) - x - 1
+			revisions.append({
+				'timestamp': graph_array[x]['timestamp'],
+				'revision': graph_array[x]['revision'],
+				'node_count': graph_array[x]['node_count']
+			})
+
+		latest = graph_array[0]
+		latest['revisions'] = revisions
+
+		data_res['results'].append(latest)
 
 	return json.dumps(data_res)
 

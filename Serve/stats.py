@@ -438,7 +438,7 @@ groups = [
 		]
 	},
 	{
-		'title': 'Nodes',
+		'title': 'Other',
 		'stats': [
 			'input',
 			'output',

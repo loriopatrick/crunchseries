@@ -24,7 +24,7 @@ function GraphController($scope, $element, $http) {
 	$scope.btnGroups = [];
 	$scope.guideLine = null;
 
-	$scope.uid = 'Untitled';
+	$scope.uid = '';
 
 	$scope.nodeInfo = {};
 
@@ -42,7 +42,7 @@ function GraphController($scope, $element, $http) {
 	};
 
 	$scope.rename = function () {
-		$scope.uid = prompt('Graph Name: ') || 'Untitled';
+		$scope.uid = prompt('Graph Name: ') || '';
 	};
 
 	$scope.getNodeInfoTitle = function (id) {
@@ -588,39 +588,120 @@ function GraphController($scope, $element, $http) {
 		});
 	};
 
+	// --------- modals ----------
 
-	$scope.save = function (uid) {
-		if (!uid) uid = prompt('uid');
-		if (!uid.length) return;
-		$http.put('/api/graph/save/' + uid, JSON.stringify(serialize(true))).success(function (data) {
-			console.log('save', data);
-			alert('saved ' + (data['success']? 'successfully' : 'badly :('));
+	$scope.newUid = '';
+	$scope.checkNewUid = function () {
+		$.blockUI({ message: 'Checking ...' });
+		$http.get('/api/graph/get/admin/' + $scope.newUid + '/rev').success(function (data) {
+			$.unblockUI();
+
+			if (data == -1) { // new name
+				$scope.save();
+			} else {
+				$scope.addAlert('warning', 'Name conflict with ' + $scope.newUid, 1000);
+				$scope.saveModalOverride = true;
+			}
 		});
+
+		$scope.saveModalSpecifyName = false;
+	};
+
+	$scope.saveModalSpecifyName = false;
+	$scope.save = function (updateUid) {
+		if (updateUid) {
+			$scope.uid = $scope.newUid;
+		}
+
+		if (!$scope.uid.length) {
+			$scope.saveModalSpecifyName = true;
+			return;
+		}
+
+		$scope.saveModalSpecifyName = false;
+		$scope.saveModalOverride = false;
+
+		var data = serialize(true);
+		var json = JSON.stringify(data);
+
+		// todo encode or restrict charaters in uid
+
+		$.blockUI({ message: 'Saving ...' });
+		$http.put('/api/graph/save/' + $scope.uid, json).success(function (data) {
+			$.unblockUI();
+			var doc = data['result'];
+			$scope.addAlert(data['success']? 'success' : 'error', 'Saved graph: "' + doc.uid + '" (Revision: ' + doc.revision + ')', 1500);
+		});
+	};
+
+	$scope.newGraph = function (discard) {
+		if ($scope.nodes.length && !discard) {
+			$scope.newModalWarning = true;
+			return;
+		}
+
+		$scope.uid = '';
+		$scope.nodes.length = 0;
+		$scope.connections.length = 0;
+		$scope.newModalWarning = false;
+
+		$scope.addAlert('success', 'Started new graph.', 500);
+	};
+
+	$scope.openModalSearch = '';
+	var lastSearch = '';
+	$scope.search = function () {
+		if (!$scope.openModalSearch.length) return;
+		if (lastSearch == $scope.openModalSearch) return;
+
+		lastSearch = $scope.openModalSearch;
+		$http.get('/api/graph/get?user=admin&uid_reg=' + $scope.openModalSearch).success(function (data) {
+			$scope.openModalSearchRes = data.results;
+		});
+	};
+
+	$scope.loadConfirm = function (res) {
+		$scope.openInfo = res;
+		$scope.openModalWarning=true;
 	};
 
 	$scope.load = function (uid, rev) {
-		if (!uid) uid = prompt('uid');
-		if (!rev) rev = -1;
+		if (!uid) {
+			$scope.addAlert('error', 'Cannot load: UID not specified');
+			return;
+		}
+
+		if (!rev && rev !== 0) rev = -1;
+
+		$.blockUI({ message: 'Loading Graph ...' });
 		$http.get('/api/graph/get/admin/' + uid + '?revision=' + rev).success(function (data) {
+			$.unblockUI();
 			load(data);
 			$scope.uid = uid;
+
+			$scope.addAlert('success', 'Successfully loaded graph "' + uid + '"' + (rev === -1? '' : ' (Revision: ' + rev + ')'));
+			$scope.openModal = false;
 		});
 
-		$scope.loadSpot = false;
+		$scope.openModalWarning = false;
 	};
 
 	$scope.loadNode = function (uid, rev) {
-		if (!uid) uid = prompt('uid');
+		if (!uid) {
+			$scope.addAlert('error', 'Cannot load: UID not specified');
+			return;
+		}
 		if (!rev) rev = -1;
+
+		$.blockUI({ message: 'Loading Node ...' });
 		$http.get('/api/graph/get_node/admin/' + uid + '?revision=' + rev).success(function (data) {
+			$.unblockUI();
 			addNodeObject(data);
+
+			$scope.addAlert('success', 'Successfully added node "' + uid + '"' + (rev === -1? '' : ' (Revision: ' + rev + ')'));
+			$scope.openModal = false;
 		});
-		
-		$scope.loadSpot = false;
 	};
-
-
-	// --------- modal stuff ----------
 
 	$scope.loadSearchInput = '';
 	$scope.loadSearchRes = [];
@@ -635,6 +716,29 @@ function GraphController($scope, $element, $http) {
 		$http.get('/api/graph/get?user=admin&uid_reg=' + $scope.loadSearchInput).success(function (data) {
 			$scope.loadSearchRes = data.results;
 		});
+	};
+
+	// --------- alerts --------
+
+	$scope.alerts = [];
+	var alertCount = 0;
+	$scope.addAlert = function (type, msg, time) {
+		var id = ++alertCount;
+		$scope.alerts.push({
+			type: type,
+			msg: msg,
+			id: id
+		});
+
+		setTimeout(function () {
+			for (var i = 0; i < $scope.alerts.length; i++) {
+				var alert = $scope.alerts[i];
+				if (alert.id === id) {
+					$scope.alerts.splice(i, 1);
+					return;
+				}
+			};
+		}, time || 2000);
 	};
 }
 
