@@ -19,7 +19,7 @@
 	</div>
 	<div class="display">
 		<svg class="canvas">
-			<path stroke="black" stroke-width="5" fill="transparent" ng-repeat="conn in connections" ng-model="conn" d="{{conn.d}}"></path>
+			<path class="connection" ng-repeat="conn in connections" ng-model="conn" d="{{conn.d}}"></path>
 			<path stroke="cornflowerblue" stroke-dasharray="5" stroke-width="2" ng-model="guideLine" ng-show="guideLine" d="{{guideLine}}"></path>
 		</svg>
 		<div class="nodes">
@@ -61,8 +61,9 @@
 		<div class="alerts">
 			<alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
 		</div>
+	</div>
 
-		<div modal="saveModalSpecifyName">
+	<div modal="saveModalSpecifyName">
 			<div class="modal-header"><h3>Specify Name for Graph</h3></div>
 			<div class="modal-body">
 				<div class="form-inline">
@@ -136,7 +137,6 @@
 								<td>{{res.revisions[res.revision].node_count}}</td>
 								<td>
 									<select ng-model="res.revision" ng-options="rev.revision as (rev.revision + ' :: ' + (rev.timestamp*1000 | date)) for rev in res.revisions" style="width: 150px;">
-										<!-- <option ng-repeat="rev in res.revisions" value="{{$index}}">{{rev.revision}} :: {{rev.timestamp*1000|date}}</option> -->
 									</select>
 								</td>
 							</tr>
@@ -149,24 +149,4 @@
 				<button class="btn btn-info" ng-click="openModal=false">Cancel</button>
 			</div>
 		</div>
-
-
-		<!-- <div modal="loadModal">
-			<div class="modal-header"><h3>Crunch Series : <a href="javascript:;" ng-click="rename()">{{uid}}</a></h3></div>
-			<div class="modal-body">
-				<div class="form-inline">
-					<strong>Load: </strong>
-					<input type="text" class="input-small" style="height: auto;" placeholder="Search" onkeyup="{{loadSearch()}}" ng-model="loadSearchInput"/>
-				</div>
-				<ul>
-					<li ng-repeat="file in loadSearchRes">
-						{{file.uid}} :: {{file.revision}} :: <a href="javascript:;" ng-click="load(file.uid, file.revision);">load</a> :: <a href="javascript:;" ng-click="loadNode(file.uid, file.revision);">load node</a>
-					</li>
-				</ul>
-			</div>
-			<div class="modal-footer">
-				<button class="btn btn-primary" ng-click="loadModal=false">Cancel</button>
-			</div>
-		</div> -->
-	</div>
 </div>
