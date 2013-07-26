@@ -597,7 +597,7 @@ function GraphController($scope, $element, $http) {
 			$.unblockUI();
 
 			if (data == -1) { // new name
-				$scope.save();
+				$scope.save(true);
 			} else {
 				$scope.addAlert('warning', 'Name conflict with ' + $scope.newUid, 1000);
 				$scope.saveModalOverride = true;
