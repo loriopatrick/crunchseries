@@ -111,16 +111,16 @@ function GraphController($scope, $element, $http) {
 	$scope.selectNode = function (node, evt) {
 		dragging = node;
 		dragging.dragOffest = normScroll(
-			evt.x - node.x,
-			evt.y - node.y
+			evt.clientX - node.x,
+			evt.clientY - node.y
 		);
 	};
 
 	$scope.mousemove = function (evt) {
 		if (dragging) {
 			var mousePos = normScroll(
-				evt.x - dragging.dragOffest.x,
-				evt.y - dragging.dragOffest.y
+				evt.clientX - dragging.dragOffest.x,
+				evt.clientY - dragging.dragOffest.y
 			);
 			dragging.x = Math.max(mousePos.x, 0);
 			dragging.y = Math.max(mousePos.y, 2);
@@ -132,8 +132,8 @@ function GraphController($scope, $element, $http) {
 			var pos = getHandlePos(selectedOutput);
 			var offset = getGraphOffset();
 			var mousePos = normScroll(
-				evt.x - offset.left,
-				evt.y - offset.top, true
+				evt.clientX - offset.left,
+				evt.clientY - offset.top, true
 			);
 			$scope.guideLine = ['M', pos.x, ',', pos.y, 'L', mousePos.x, ',', mousePos.y, 'z'].join('');
 		}
@@ -241,7 +241,7 @@ function GraphController($scope, $element, $http) {
 				input: selectedInput
 			}));
 		} else if (selectedOutput) {
-			var input = $scope.addNode('output', evt.x - 10, evt.y - 80);
+			var input = $scope.addNode('output', evt.clientX - 10, evt.clientY - 80);
 			var node = selectedOutput.node, pos = selectedOutput.pos;
 			input.settings[0].val = node.outputs[pos].name;
 
@@ -741,12 +741,3 @@ function GraphController($scope, $element, $http) {
 		}, time || 2000);
 	};
 }
-
-App.directive('graph', function () {
-	return {
-		restrict: 'E',
-		replace: true,
-		templateUrl: 'templates/graph.html',
-		controller: GraphController
-	}
-});

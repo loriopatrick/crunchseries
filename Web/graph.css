@@ -11,10 +11,10 @@ body {
 	margin: none !important;
 }
 .graph {
-	position: relative;
 	overflow: hidden;
 	min-width: 800px;
 	min-height: 400px;
+	height: 100%;
 }
 .graph .display {
 	position: absolute;
@@ -57,6 +57,7 @@ body {
 
 .graph .node .outputs, .graph .node .inputs {
 	padding-top: 5px;
+	line-height: 12px;
 }
 .graph .node table {
 	font-size: 14px;
@@ -74,6 +75,7 @@ body {
 	max-width: 50px;
 	border-radius: 0px;
 	margin: 0 5px 0 0;
+	padding: 0px 5px;
 }
 .graph .node .handle {
 	width: 10px;
@@ -98,11 +100,6 @@ body {
 .graph .node .handleMsg {
 	float: left;
 	padding: 0 5px;
-}
-
-.graph table tr {
-	vertical-align: top;
-	height: 15px;
 }
 
 .graph .alerts {
