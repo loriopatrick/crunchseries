@@ -225,6 +225,14 @@ function GraphController($scope, $element, $http) {
 		};
 
 		var con = buildConnection(con);
+		for (var i = 0; i < $scope.connections.length; i++) {
+			var scon = $scope.connections[i];
+			if (scon.input.node == con.input.node && scon.input.pos == con.input.pos && 
+				scon.output.node == con.output.node && scon.output.pos == scon.output.pos) {
+				return;
+			}
+		};
+		
 		$scope.connections.push(con);
 		setTimeout(updateConnections, 0);
 	}
