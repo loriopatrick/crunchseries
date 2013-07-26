@@ -16,16 +16,6 @@ body {
 	min-width: 800px;
 	min-height: 400px;
 }
-.graph .controls {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	padding: 5px;
-	background: rgb(241, 241, 241);
-	height: 30px;
-	border-bottom: solid 1px black;
-}
 .graph .display {
 	position: absolute;
 	top: 41px;
