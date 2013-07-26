@@ -18,7 +18,7 @@ function combine(ar, str, start, end) {
 	return res.join(str);
 }
 
-function GraphController($scope, $element, $http) {
+function GraphController($scope, $element, $http, $location) {
 	$scope.connections = [];
 	$scope.nodes = [];
 	$scope.btnGroups = [];
@@ -232,7 +232,7 @@ function GraphController($scope, $element, $http) {
 				return;
 			}
 		};
-		
+
 		$scope.connections.push(con);
 		setTimeout(updateConnections, 0);
 	}

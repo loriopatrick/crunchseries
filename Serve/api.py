@@ -359,7 +359,14 @@ def run_graph():
 	# get output names
 	output_names = []
 	for setting in graph['nodes'][graph['head']]['settings']:
-		output_names.append('-'.join(setting.split('-')[2:]))
+		name = '-'.join(setting.split('-')[2:])
+		if name in output_names:
+			count = 2
+			while '%s%s' % (name, count) in output_names:
+				count += 1
+			name += str(count)
+
+		output_names.append(name)
 	
 	# clear the names as process doesn't use them
 	graph['nodes'][graph['head']]['settings'] = []
@@ -375,14 +382,13 @@ def run_graph():
 
 	# return the results with the output names
 	response = {
-		'results': []
+		'results': {}
 	}
 	for x in range(len(results)):
 		series = results[x]
-		response['results'].append({
-			'name': output_names[x],
+		response['results'][output_names[x]] = {
 			'series': series
-		})
+		}
 
 	return json.dumps(response)
 
