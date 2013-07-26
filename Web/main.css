@@ -1,0 +1,17 @@
+.controls {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	padding: 5px;
+	background: rgb(241, 241, 241);
+	height: 30px;
+	border-bottom: solid 1px black;
+}
+
+.controls .title {
+	font-weight: bold;
+	font-size: 22px;
+	float: left;
+	padding: 4px 12px;
+}
