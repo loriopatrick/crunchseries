@@ -25,6 +25,7 @@ The plugin supports these options:
 	xaxis, yaxis, x2axis, y2axis: {
 		zoomRange: null  // or [ number, number ] (min range, max range) or false
 		panRange: null   // or [ number, number ] (min, max) or false
+        panScale: null   // scales axis to data
 	}
 
 "interactive" enables the built-in drag/click behaviour. If you enable
@@ -110,6 +111,9 @@ Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-L
         xaxis: {
             zoomRange: null, // or [number, number] (min range, max range)
             panRange: null // or [number, number] (min, max)
+        },
+        yaxis: {
+            panScale: false
         },
         zoom: {
             interactive: false,
@@ -267,6 +271,8 @@ Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-L
                 opts.min = min;
                 opts.max = max;
             });
+
+            scaleYAxis();
             
             plot.setupGrid();
             plot.draw();
@@ -274,6 +280,34 @@ Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-L
             if (!args.preventEvent)
                 plot.getPlaceholder().trigger("plotzoom", [ plot, args ]);
         };
+
+        function scaleYAxis () {
+            var series = plot.getData();
+            if (!series.length) return;
+
+            var xaxis = plot.getAxes()['xaxis'];
+            var start = xaxis.options.min, end = xaxis.options.max;
+
+            var heigh = null, low = null;
+            for (var i = 0; i < series.length; i++) {
+                var data = series[i].data;
+
+                for (var j = 0; j < data.length; j++) {
+                    var point = data[j];
+                    if (point[0] < start) continue;
+                    if (point[0] > end) break;
+                    if (heigh == null || point[1] > heigh) heigh = point[1];
+                    if (low == null || point[1] < low) low = point[1];
+                };
+            };
+
+            var yaxis = plot.getAxes()['yaxis'];
+            if (yaxis.options.panScale === true) {
+                var diff = heigh - low;
+                yaxis.options.min = low - diff / 10;
+                yaxis.options.max = heigh + diff / 10;
+            }
+        }
 
         plot.pan = function (args) {
             var delta = {
@@ -315,6 +349,8 @@ Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-L
                 opts.min = min;
                 opts.max = max;
             });
+
+            scaleYAxis();
             
             plot.setupGrid();
             plot.draw();

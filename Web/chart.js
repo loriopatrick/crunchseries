@@ -47,47 +47,19 @@ function ChartController ($scope, $element, $http) {
 
 			var series = [];
 			series.push({
-				data: combine(results.time.series, results.close.series),
-				name: 'test',
-				dataGrouping : {
-					units : [
-						['week', [1]],
-						['month', [1, 2, 3, 4, 6]]
-					]
-				}
+				data: combine(results.time.series, results.close.series)
 			});
 
 			series.push({
-				data: combine(results.time.series, results.sma.series),
-				name: 'test 2',
-				dataGrouping : {
-					units : [
-						['week', [1]],
-						['month', [1, 2, 3, 4, 6]]
-					]
-				}
+				data: combine(results.time.series, results.sma.series)
 			});
 
 			series.push({
-				data: combine(results.time.series, results['high band'].series),
-				name: 'test 2',
-				dataGrouping : {
-					units : [
-						['week', [1]],
-						['month', [1, 2, 3, 4, 6]]
-					]
-				}
+				data: combine(results.time.series, results['high band'].series)
 			});
 
 			series.push({
-				data: combine(results.time.series, results['low band'].series),
-				name: 'test 2',
-				dataGrouping : {
-					units : [
-						['week', [1]],
-						['month', [1, 2, 3, 4, 6]]
-					]
-				}
+				data: combine(results.time.series, results['low band'].series)
 			});
 
 			$scope.chartTest(series);
@@ -95,16 +67,41 @@ function ChartController ($scope, $element, $http) {
 	};
 
 	$scope.chartTest = function (series) {
-		$(canvas).highcharts('StockChart', {
-			rangeSelector : {
-				selected : 1
+		$.plot(canvas, series, {
+			xaxis: {
+				mode: 'time'
 			},
-
-			title : {
-				text : 'Test'
+			yaxis: {
+				panRange: false,
+				zoomRange: false,
+				panScale: true
 			},
-
-			series: series
+			grid: {
+				borderWidth: 1,
+				borderColor: 'rgb(230, 230, 230)',
+				color: 'rgb(200, 200, 200)'
+			},
+			zoom: {
+				interactive: true,
+				trigger: "dblclick",
+				amount: 1.1
+			},
+			pan: {
+				interactive: true,
+				cursor: "move",
+				frameRate: 60
+			},
+			series: {
+				shadowSize: 0,
+				lines: {
+					show: true,
+					lineWidth: 2
+				}
+			},
+			crosshair: {
+				mode: 'xy',
+				color: 'rgba(73, 175, 205, 0.89)'
+			}
 		});
 	};
 }

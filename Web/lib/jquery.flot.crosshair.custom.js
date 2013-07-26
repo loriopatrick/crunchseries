@@ -63,7 +63,9 @@ The plugin also adds four public methods:
         crosshair: {
             mode: null, // one of null, "x", "y" or "xy",
             color: "rgba(170, 0, 0, 0.80)",
-            lineWidth: 1
+            lineWidth: 1,
+            dateSnap: true,
+            labels: true
         }
     };
     
@@ -145,16 +147,40 @@ The plugin also adds four public methods:
                 ctx.lineWidth = c.lineWidth;
                 ctx.lineJoin = "round";
 
+                var drawX = Math.round(crosshair.x) + adj;
+                var drawY = Math.round(crosshair.y) + adj;
+
+                var pos = plot.c2p({top: drawY, left: drawX});
+                var date = $.plot.formatDate(new Date(pos.x), '%Y/%m/%d');
+
+
                 ctx.beginPath();
                 if (c.mode.indexOf("x") != -1) {
-                    var drawX = Math.round(crosshair.x) + adj;
                     ctx.moveTo(drawX, 0);
                     ctx.lineTo(drawX, plot.height());
                 }
                 if (c.mode.indexOf("y") != -1) {
-                    var drawY = Math.round(crosshair.y) + adj;
                     ctx.moveTo(0, drawY);
                     ctx.lineTo(plot.width(), drawY);
+                }
+                if (c.labels) {
+                    var oldFillStyle = ctx.fillStyle;
+                    var oldStrokeStyle = ctx.strokeStyle;
+
+                    ctx.fillStyle = 'rgba(73, 175, 205, 0.89)';
+                    ctx.strokeStyle = 'black';
+
+                    if (c.mode.indexOf("x") != -1) {    
+                        ctx.fillRect(drawX - 30, plot.height() + 1, 65, 15);
+                        ctx.strokeText(date, drawX - 25, plot.height() + 12);
+                    }
+                    if (c.mode.indexOf("y") != -1) {
+                        ctx.fillRect(-25, drawY - 7, 24, 15);
+                        ctx.strokeText(Math.round(pos.y), -20, drawY + 3);
+                    }
+
+                    ctx.fillStyle = oldFillStyle;
+                    ctx.strokeStyle = oldStrokeStyle;
                 }
                 ctx.stroke();
             }
