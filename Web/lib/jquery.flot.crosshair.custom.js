@@ -64,8 +64,7 @@ The plugin also adds four public methods:
             mode: null, // one of null, "x", "y" or "xy",
             color: "rgba(170, 0, 0, 0.80)",
             lineWidth: 1,
-            dateSnap: true,
-            labels: true
+            labels: false
         }
     };
     

@@ -19,10 +19,80 @@
 <body ng-app="App">
 <div class="chart" ng-controller="ChartController">
 	<div class="controls">
-		<span class="title">Crunch Series :: {{foo}}</span>
+		<span class="title">Crunch Series</span>
+		<a href="javascript:;" class="btn btn-info" ng-click="editChartModal=true;">Edit Chart</a>
 	</div>
 	<div class="container" ng-init="init()">
 		<div class="canvas"></div>
+	</div>
+
+	<div ng-init="editChartModal=true" modal="editChartModal">
+		<div class="modal-header"><h3>Edit Time Series Chart</h3></div>
+		<div class="modal-body">
+			<div>
+				<strong>Graphs</strong>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Id</th>
+							<th>Creator</th>
+							<th>Name</th>
+							<th>Outputs</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="graph in graphs">
+							<td>{{$index}}</td>
+							<td>{{graph.creator}}</td>
+							<td>{{graph.uid}}</td>
+							<td>{{graph.num_outputs}}</td>
+						</tr>
+						<tr>
+							<td>-</td>
+							<td><input type="text"/></td>
+							<td><input type="text"/></td>
+							<td>-</td>
+						</tr>
+					</tbody>
+				</table>
+				<a href="javascript:;" class="btn btn-info">Add Graph</a>
+			</div>
+			<br/>
+			<div>
+				<strong>Series</strong>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Label</th>
+							<th>X Axis</th>
+							<th>X Def</th>
+							<th>Y Axis</th>
+							<th>Y Def</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="info in series">
+							<td>{{info.label}}</td>
+							<td>{{info.xAxis}}</td>
+							<td>{{info.xDef}}</td>
+							<td>{{info.yAxis}}</td>
+							<td>{{info.yDef}}</td>
+						</tr>
+						<tr>
+							<td><input type="text" /></td>
+							<td><input type="text" /></td>
+							<td><input type="text" /></td>
+							<td><input type="text" /></td>
+							<td><input type="text" /></td>
+						</tr>
+					</tbody>
+				</table>
+				<a href="javascript:;" class="btn btn-info">Add Series</a>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-info" ng-click="editChartModal=false">Close</button>
+		</div>
 	</div>
 </div>
 </body>

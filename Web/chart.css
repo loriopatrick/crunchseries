@@ -42,3 +42,8 @@
 .chart .canvas .legend {
 	cursor: default !important;
 }
+
+input {
+	height: auto;
+	width: 60px;
+}

@@ -3,7 +3,46 @@ var App = App || angular.module('App', ['ui.bootstrap']);
 function ChartController ($scope, $element, $http) {
 	var canvas = $element.find('div.canvas').first();
 
-	$scope.foo = 'test';
+	$scope.flotSettings = {
+		xaxis: {
+			mode: 'time',
+			panRange: true,
+			zoomRange: true,
+		},
+		yaxis: {
+			panRange: false,
+			zoomRange: false,
+			panScale: true
+		},
+		xaxes: [{}],
+		yaxes: [{}, {}],
+		grid: {
+			borderWidth: 1,
+			borderColor: 'rgb(230, 230, 230)',
+			color: 'rgb(200, 200, 200)'
+		},
+		zoom: {
+			interactive: true,
+			trigger: "dblclick",
+			amount: 1.1
+		},
+		pan: {
+			interactive: true,
+			cursor: "move",
+			frameRate: 60
+		},
+		series: {
+			shadowSize: 0,
+			lines: {
+				show: true,
+				lineWidth: 2
+			}
+		},
+		crosshair: {
+			mode: 'xy',
+			color: 'rgba(73, 175, 205, 0.89)'
+		}
+	};
 
 	$scope.runGraph = function (creator, uid, revision, callback) {
 		var url = '/api/graph/run?creator=' + creator + '&uid=' + uid;
@@ -55,11 +94,13 @@ function ChartController ($scope, $element, $http) {
 			});
 
 			series.push({
-				data: combine(results.time.series, results['high band'].series)
+				data: combine(results.time.series, results['high band'].series),
+				yaxis: 2
 			});
 
 			series.push({
-				data: combine(results.time.series, results['low band'].series)
+				data: combine(results.time.series, results['low band'].series),
+				yaxis: 2
 			});
 
 			$scope.chartTest(series);
@@ -67,41 +108,12 @@ function ChartController ($scope, $element, $http) {
 	};
 
 	$scope.chartTest = function (series) {
-		$.plot(canvas, series, {
-			xaxis: {
-				mode: 'time'
-			},
-			yaxis: {
-				panRange: false,
-				zoomRange: false,
-				panScale: true
-			},
-			grid: {
-				borderWidth: 1,
-				borderColor: 'rgb(230, 230, 230)',
-				color: 'rgb(200, 200, 200)'
-			},
-			zoom: {
-				interactive: true,
-				trigger: "dblclick",
-				amount: 1.1
-			},
-			pan: {
-				interactive: true,
-				cursor: "move",
-				frameRate: 60
-			},
-			series: {
-				shadowSize: 0,
-				lines: {
-					show: true,
-					lineWidth: 2
-				}
-			},
-			crosshair: {
-				mode: 'xy',
-				color: 'rgba(73, 175, 205, 0.89)'
-			}
-		});
+		$.plot(canvas, series, $scope.flotSettings);
+	};
+
+
+
+	// ============= modal stuff ===============
+	$scope.addXAxis = function () {
 	};
 }

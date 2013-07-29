@@ -112,9 +112,6 @@ Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-L
             zoomRange: null, // or [number, number] (min range, max range)
             panRange: null // or [number, number] (min, max)
         },
-        yaxis: {
-            panScale: false
-        },
         zoom: {
             interactive: false,
             trigger: "dblclick", // or "click" for single click
@@ -124,6 +121,9 @@ Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-L
             interactive: false,
             cursor: "move",
             frameRate: 20
+        },
+        series: {
+            scaleYAxis: true
         }
     };
 
@@ -285,28 +285,60 @@ Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-L
             var series = plot.getData();
             if (!series.length) return;
 
-            var xaxis = plot.getAxes()['xaxis'];
-            var start = xaxis.options.min, end = xaxis.options.max;
+            var xaxes = [];
 
-            var heigh = null, low = null;
             for (var i = 0; i < series.length; i++) {
-                var data = series[i].data;
-
-                for (var j = 0; j < data.length; j++) {
-                    var point = data[j];
-                    if (point[0] < start) continue;
-                    if (point[0] > end) break;
-                    if (heigh == null || point[1] > heigh) heigh = point[1];
-                    if (low == null || point[1] < low) low = point[1];
-                };
+                var s = series[i];
+                if (!s.scaleYAxis) continue;
+                s.xaxis = s.xaxis || 0;
+                if (!xaxes[s.xaxis.n]) xaxes[s.xaxis.n] = [];
+                if (!xaxes[s.xaxis.n][s.yaxis.n]) xaxes[s.xaxis.n][s.yaxis.n] = [];
+                xaxes[s.xaxis.n][s.yaxis.n].push(s);
             };
 
-            var yaxis = plot.getAxes()['yaxis'];
-            if (yaxis.options.panScale === true) {
-                var diff = heigh - low;
-                yaxis.options.min = low - diff / 10;
-                yaxis.options.max = heigh + diff / 10;
-            }
+            if (!xaxes.length) return;
+
+            var axes = plot.getAxes();
+
+            for (var i = 1; i < xaxes.length; i++) {
+                var yaxes = xaxes[i];
+                if (!yaxes) continue;
+                var xaxis_name = 'x' + (i == 1? '' : i) + 'axis';
+
+                for (var j = 1; j < yaxes.length; j++) {
+                    var series = yaxes[j];
+                    if (!series) continue;
+                    var yaxis_name = 'y' + (j == 1? '' : j) + 'axis';
+
+                    var xaxis = axes[xaxis_name];
+                    var yaxis = axes[yaxis_name];
+
+                    var xstart = xaxis.options.min;
+                    var xend = xaxis.options.max;
+
+                    var min = null, max = null;
+
+                    for (var k = 0; k < series.length; k++) {
+                        var data = series[k].datapoints.points;
+
+                        for (var p = 0; p < data.length; p += 2) {
+                            var xpoint = data[p];
+
+                            if (xpoint < xstart) continue;
+                            if (xpoint > xend) break;
+
+                            var ypoint = data[p + 1];
+
+                            if (min == null || ypoint < min) min = ypoint;
+                            if (max == null || ypoint > max) max = ypoint;
+                        };
+                    };
+
+                    if (min == null || max == null) continue;
+                    yaxis.options.min = min;
+                    yaxis.options.max = max;
+                };
+            };
         }
 
         plot.pan = function (args) {
