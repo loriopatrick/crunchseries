@@ -37,11 +37,16 @@ body {
 	overflow: hidden;
 	border: solid 1px rgb(54, 54, 54);
 }
-.graph .node .closeBtn {
+.graph .node a.closeBtn {
 	position: absolute;
-	top: 2;
-	left: 2;
 	font-size: 8px;
+	padding: 0 5px;
+	height: 20px;
+	color: black;
+}
+.graph .node a.closeBtn:hover {
+	background: rgb(126, 126, 126);
+	text-decoration: none;
 }
 .graph .node .header {
 	font-size: 14px;
