@@ -53,8 +53,8 @@
 						<td class="settings">
 							<table>
 								<tr ng-repeat="setting in node.settings">
-									<td ng-click="toggleEdit(setting)">{{setting.name}}</td>
-									<td><font color="blue" ng-show="setting.isPublic">{{setting.publicName}}</font></td>
+									<td ng-click="togglePublic(setting)">{{setting.name}}</td>
+									<td><font color="blue" ng-show="setting.isPublic" ng-click="togglePublic(setting)">{{setting.publicName}}</font></td>
 									<td><input type="text" style="float: left;" ng-model="setting.val" value="{{setting.val}}"></td>
 								</tr>
 							</table>

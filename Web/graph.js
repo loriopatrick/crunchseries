@@ -41,14 +41,6 @@ function GraphController($scope, $element, $http, $location, $dialog) {
 		});
 	};
 
-	$scope.rename = function () {
-		$scope.uid = prompt('Graph Name: ') || '';
-	};
-
-	$scope.getNodeInfoTitle = function (id) {
-		return $scope.nodeInfo[id].title;
-	};
-
 	function getNodeClone (statId, node, callback) {
 		if (node && node.statId == -2) {
 			if (!node.uid) return null;
@@ -91,22 +83,6 @@ function GraphController($scope, $element, $http, $location, $dialog) {
 		$scope.nodes.push(newNode);
 		return newNode;
 	}
-
-	$scope.destroyNode = function (node) {
-		if (!confirm('Are you sure you want to delete this node? (' + node.title + ')')) return;
-		for (var i = 0; i < $scope.connections.length;) {
-			var con = $scope.connections[i];
-			if (con.input.node == node || con.output.node == node) {
-				$scope.connections.splice(i, 1);
-				continue;
-			}
-
-			++i;
-		}
-
-		var nodePos = $scope.nodes.indexOf(node);
-		$scope.nodes.splice(nodePos, 1);
-	};
 
 	$scope.selectNode = function (node, evt) {
 		dragging = node;
@@ -301,14 +277,6 @@ function GraphController($scope, $element, $http, $location, $dialog) {
 				return;
 			}
 		}
-	};
-
-	$scope.toggleEdit = function (setting) {
-		if (!setting.isPublic) {
-			setting.publicName = prompt('Setting\'s public name');
-		}
-
-		setting.isPublic = !setting.isPublic;
 	};
 
 	$scope.selectOutput = function (evt, node, pos) {
@@ -593,6 +561,34 @@ function GraphController($scope, $element, $http, $location, $dialog) {
 		// load(nodeData);
 		$http.post('/api/graph/run', requestData).success(function (data) {
 			console.log(data);
+		});
+	};
+
+	$scope.togglePublic = function (setting) {
+		if (!setting.isPublic) {
+			requsetInput('Setting\'s Public Name', '', '', 'name', 'Cancle', 'Continue', function (value) {
+				setting.publicName = value;
+				setting.isPublic = true;
+			});
+		} else {
+			setting.isPublic = false;
+		}
+	};
+
+	$scope.destroyNode = function (node) {
+		askContinue('Delete Node', 'Are you sure you want to delete this node? (' + node.title + ')', 'Cancle', 'Continue', function () {
+			for (var i = 0; i < $scope.connections.length;) {
+				var con = $scope.connections[i];
+				if (con.input.node == node || con.output.node == node) {
+					$scope.connections.splice(i, 1);
+					continue;
+				}
+
+				++i;
+			}
+
+			var nodePos = $scope.nodes.indexOf(node);
+			$scope.nodes.splice(nodePos, 1);
 		});
 	};
 
