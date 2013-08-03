@@ -77,45 +77,17 @@
 		</div>
 	</div>
 
-	<div modal="saveModalSpecifyName">
-		<div class="modal-header"><h3>Specify Name for Graph</h3></div>
+	<div modal="inputModal.open">
+		<div class="modal-header"><h3>{{inputModal.title}}</h3></div>
 		<div class="modal-body">
+			{{inputModal.message}}<br/><br/>
 			<div class="form-inline">
-				Name: <input type="text" ng-model="newUid" style="height: auto;" />
+				<label>{{inputModal.inputLabel}} <input type="text" ng-model="inputModal.val" placeholder="{{inputModal.inputPlaceholder}}" /></label>
 			</div>
 		</div>
 		<div class="modal-footer">
-			<button class="btn btn-info" ng-click="checkNewUid();">Save</button>
-			<button class="btn btn-info" ng-click="saveModalSpecifyName=false">Cancel</button>
-		</div>
-	</div>
-
-	<div modal="saveModalOverride">
-		<div class="modal-header"><h3>Overriding Graph</h3></div>
-		<div class="modal-body">
-			A graph with that name already exists, are you sure you want to override it?
-		</div>
-		<div class="modal-footer">
-			<button class="btn btn-info" ng-click="save(true);">Yes</button>
-			<button class="btn btn-info" ng-click="saveModalOverride=false; saveModalSpecifyName=true;">No</button>
-		</div>
-	</div>
-
-	<div modal="newModalWarning">
-		<div class="modal-header"><h3>Possible loss of unsaved work</h3></div>
-		<div class="modal-body">All unsaved changes will be discarded</div>
-		<div class="modal-footer">
-			<button class="btn btn-info" ng-click="newGraph(true)">New</button>
-			<button class="btn btn-info" ng-click="newModalWarning=false">Cancel</button>
-		</div>
-	</div>
-
-	<div modal="openModalWarning">
-		<div class="modal-header"><h3>Possible loss of unsaved work</h3></div>
-		<div class="modal-body">All unsaved changes will be discarded</div>
-		<div class="modal-footer">
-			<button class="btn btn-info" ng-click="load(openInfo.uid, openInfo.revision)">Open</button>
-			<button class="btn btn-info" ng-click="openModalWarning=false">Cancel</button>
+			<button class="btn btn-info" ng-click="inputModal=false">{{inputModal.noLabel}}</button>
+			<button class="btn btn-info" ng-click="inputModalContinue()">{{inputModal.yesLabel}}</button>
 		</div>
 	</div>
 
@@ -143,7 +115,7 @@
 							<td>{{res.creator}}</td>
 							<td>{{res.uid}}</td>
 							<td>
-								<a href="javascript:;" ng-click="loadConfirm(res)">open</a>
+								<a href="javascript:;" ng-click="load(res.uid, res.revision)">open</a>
 							</td>
 							<td>
 								<a href="javascript:;" ng-click="loadNode(res.uid, res.revision)">add</a>

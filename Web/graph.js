@@ -18,7 +18,7 @@ function combine(ar, str, start, end) {
 	return res.join(str);
 }
 
-function GraphController($scope, $element, $http, $location) {
+function GraphController($scope, $element, $http, $location, $dialog) {
 	$scope.connections = [];
 	$scope.nodes = [];
 	$scope.btnGroups = [];
@@ -598,31 +598,81 @@ function GraphController($scope, $element, $http, $location) {
 
 	// --------- modals ----------
 
-	$scope.newUid = '';
-	$scope.checkNewUid = function () {
+	function askContinue (title, message, noLabel, yesLabel, ifContinue) {
+		$dialog.messageBox(title, message, [
+			{result: false, label: noLabel},
+			{result: true, label: yesLabel, cssClass: 'btn-info'}
+		]).open().then(function (res) {
+			if (!res) return;
+			ifContinue();
+		});
+	}
+
+	$scope.inputModal = {
+		open: false,
+		title: '',
+		message: '',
+		val: '',
+		inputLabel: '',
+		inputPlacehoder: '',
+		noLabel: '',
+		yesLabel: '',
+		callback: null
+	};
+
+	function requsetInput (title, message, inputLabel, inputPlaceholder, noLabel, yesLabel, ifContinue) {
+		$scope.inputModal.title = title;
+		$scope.inputModal.message = message;
+		$scope.inputModal.inputLabel = inputLabel;
+		$scope.inputModal.inputPlaceholder = inputPlaceholder;
+		$scope.inputModal.noLabel = noLabel;
+		$scope.inputModal.yesLabel = yesLabel;
+		$scope.inputModal.val = '';
+
+		$scope.inputModal.open = true;
+		$scope.inputModal.callback = ifContinue;
+	}
+
+	$scope.inputModalContinue = function () {
+		if (!$scope.inputModal.callback) return;
+		$scope.inputModal.open = false;
+		$scope.inputModal.callback($scope.inputModal.val);
+	};
+
+	function checkUid (uid, callback) {
 		$.blockUI({ message: 'Checking ...' });
-		$http.get('/api/graph/get/admin/' + $scope.newUid + '/rev').success(function (data) {
+		$http.get('/api/graph/get/admin/' + uid + '/rev').success(function (data) {
 			$.unblockUI();
 
 			if (data == -1) { // new name
-				$scope.save(true);
+				callback(true);
 			} else {
-				$scope.addAlert('warning', 'Name conflict with ' + $scope.newUid, 1000);
-				$scope.saveModalOverride = true;
+				callback(false);
 			}
 		});
-
-		$scope.saveModalSpecifyName = false;
 	};
 
 	$scope.saveModalSpecifyName = false;
-	$scope.save = function (updateUid) {
-		if (updateUid) {
-			$scope.uid = $scope.newUid;
-		}
-
+	$scope.save = function () {
 		if (!$scope.uid.length) {
-			$scope.saveModalSpecifyName = true;
+
+			requsetInput('Specify graph name.', 'Please pick a name for the graph', '', 'Graph Name', 'Cancle', 'Continue', function (value) {
+
+				checkUid(value, function (ok) {
+					if (!ok) {
+						$scope.addAlert('warning', 'Name conflict with ' + value, 1000);
+
+						askContinue('Override', 'There already exists a graph with the name "' + value + '", are you sure you want to override it?', 'Cancle', 'Continue', function () {
+							$scope.uid = value;
+							$scope.save();
+						});
+					} else {
+						$scope.uid = value;
+						$scope.save();
+					}
+				});
+			});
+
 			return;
 		}
 
@@ -644,7 +694,11 @@ function GraphController($scope, $element, $http, $location) {
 
 	$scope.newGraph = function (discard) {
 		if ($scope.nodes.length && !discard) {
-			$scope.newModalWarning = true;
+
+			askContinue('Warning', 'Unsaved changes will be lost', 'Cancle', 'Continue', function () {
+				$scope.newGraph(true);
+			});
+
 			return;
 		}
 
@@ -668,12 +722,17 @@ function GraphController($scope, $element, $http, $location) {
 		});
 	};
 
-	$scope.loadConfirm = function (res) {
-		$scope.openInfo = res;
-		$scope.openModalWarning=true;
-	};
+	$scope.load = function (uid, rev, override) {
 
-	$scope.load = function (uid, rev) {
+		// todo check if there is unsaved content
+		if (true && !override) {
+			askContinue('Warning', 'Unsaved changes will be lost', 'Cancle', 'Continue', function () {
+				$scope.load(uid, rev, true);
+			});
+			return;
+		}
+		
+
 		if (!uid) {
 			$scope.addAlert('error', 'Cannot load: UID not specified');
 			return;
