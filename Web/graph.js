@@ -21,16 +21,16 @@ function combine(ar, str, start, end) {
 function GraphController($scope, $element, $http, $location, $dialog) {
 	$scope.connections = [];
 	$scope.nodes = [];
+	$scope.nodeInfo = {};
 	$scope.btnGroups = [];
 	$scope.guideLine = null;
 
 	$scope.uid = '';
 
-	$scope.nodeInfo = {};
-
 	var selectedOutput, selectedInput, dragging;
 	var scrollBoard = $($element[0]).find('.display').first();
 
+	/* Load stat defs and group info from server */
 	$scope.init = function () {
 		$http.get('/api/stats').success(function (stats) {
 			$scope.nodeInfo = stats;
@@ -40,6 +40,103 @@ function GraphController($scope, $element, $http, $location, $dialog) {
 			});
 		});
 	};
+
+	/*
+		Event Handlers
+		In charge of:
+			- dragging nodes around
+			- drawing connections
+	*/
+
+	$scope.mousemove = function (evt) {
+		if (dragging) {
+
+			// get the normalized position for grag pos
+			var dragPos = normScroll(
+				evt.clientX - dragging.dragOffest.x,
+				evt.clientY - dragging.dragOffest.y
+			);
+
+			// restrict dragging movement to page
+			dragging.x = Math.max(dragPos.x, 0);
+			dragging.y = Math.max(dragPos.y, 2);
+
+			// update the position of the connections
+			updateConnections();
+		}
+
+		// are we creating a connection?
+		if (selectedOutput) {
+			var outPos = getHandlePos(selectedOutput);
+			var offset = getGraphOffset();
+			var mousePos = normScroll(
+				evt.clientX - offset.left,
+				evt.clientY - offset.top, true
+			);
+
+			// draw guide line from output to mouse location on graph
+			$scope.guideLine = ['M', outPos.x, ',', pos.y, 'L', mousePos.x, ',', mousePos.y, 'z'].join('');
+		}
+	};
+
+	$scope.mouseup = function (evt) {
+		
+		// do we have the requirements to build a connection?
+		if (selectedOutput && selectedInput
+				&& selectedOutput.node != selectedInput.node
+				&& isInputOpen(selectedInput.node, selectedInput.pos)) {
+
+			// add the connection
+			$scope.connections.push(buildConnection({
+				output: selectedOutput,
+				input: selectedInput
+			}));
+		} else if (selectedOutput) {
+			// add an output node to the empty connection
+			var input = $scope.addNode('output', evt.clientX - 10, evt.clientY - 80);
+			var node = selectedOutput.node, pos = selectedOutput.pos;
+			input.settings[0].val = node.outputs[pos].name;
+
+			setTimeout(function () { addConnection(input, 0, node, pos); }, 0);
+		}
+
+		dragging = null; // disable dragging
+		selectedOutput = null; // remove connection building
+		$scope.clearInput(); // update the input handel color
+		$scope.guideLine = null; // remove the guide line
+	};
+
+	/*
+		Methods to normalize coordinates to graph
+	*/
+
+	/* Gets the dom offset of the outer graph container */
+	function getGraphOffset(obj) {
+		var x = 0, y = 0;
+		obj = obj || scrollBoard;
+		return $(obj).offset();
+	}
+
+	/* Gets the internal scroll offset */
+	function getScrollOffset() {
+		return {
+			left: scrollBoard[0].scrollLeft,
+			top: scrollBoard[0].scrollTop
+		};
+	}
+
+	/* pixel location to graph coordinate */
+	function normScroll (x, y, mouse) {
+		var scroll = getScrollOffset();
+		if (mouse) {
+			x += window.scrollX;
+			y += window.scrollY;
+		}
+		return {
+			x: x + scroll.left,
+			y: y + scroll.top
+		};
+	}
 
 	function getNodeClone (statId, node, callback) {
 		if (node && node.statId == -2) {
@@ -92,53 +189,9 @@ function GraphController($scope, $element, $http, $location, $dialog) {
 		);
 	};
 
-	$scope.mousemove = function (evt) {
-		if (dragging) {
-			var mousePos = normScroll(
-				evt.clientX - dragging.dragOffest.x,
-				evt.clientY - dragging.dragOffest.y
-			);
-			dragging.x = Math.max(mousePos.x, 0);
-			dragging.y = Math.max(mousePos.y, 2);
+	
 
-			updateConnections();
-		}
-
-		if (selectedOutput) {
-			var pos = getHandlePos(selectedOutput);
-			var offset = getGraphOffset();
-			var mousePos = normScroll(
-				evt.clientX - offset.left,
-				evt.clientY - offset.top, true
-			);
-			$scope.guideLine = ['M', pos.x, ',', pos.y, 'L', mousePos.x, ',', mousePos.y, 'z'].join('');
-		}
-	};
-
-	function getGraphOffset(obj) {
-		var x = 0, y = 0;
-		obj = obj || scrollBoard;
-		return $(obj).offset();
-	}
-
-	function getScrollOffset() {
-		return {
-			left: scrollBoard[0].scrollLeft,
-			top: scrollBoard[0].scrollTop
-		};
-	}
-
-	function normScroll (x, y, mouse) {
-		var scroll = getScrollOffset();
-		if (mouse) {
-			x += window.scrollX;
-			y += window.scrollY;
-		}
-		return {
-			x: x + scroll.left,
-			y: y + scroll.top
-		};
-	}
+	
 
 	function updateConnections () {
 		for (var i = 0; i < $scope.connections.length; ++i) {
@@ -212,32 +265,6 @@ function GraphController($scope, $element, $http, $location, $dialog) {
 		$scope.connections.push(con);
 		setTimeout(updateConnections, 0);
 	}
-
-	$scope.mouseup = function (evt) {
-		dragging = null;
-
-		if (selectedOutput && selectedInput
-				&& selectedOutput.node != selectedInput.node
-				&& isInputOpen(selectedInput.node, selectedInput.pos)) {
-
-			$scope.connections.push(buildConnection({
-				output: selectedOutput,
-				input: selectedInput
-			}));
-		} else if (selectedOutput) {
-			var input = $scope.addNode('output', evt.clientX - 10, evt.clientY - 80);
-			var node = selectedOutput.node, pos = selectedOutput.pos;
-			input.settings[0].val = node.outputs[pos].name;
-
-			setTimeout(function () {
-				addConnection(input, 0, node, pos);
-			}, 0);
-		}
-
-		selectedOutput = null;
-		$scope.clearInput();
-		$scope.guideLine = null;
-	};
 
 	function isInputOpen(node, pos) {
 		for (var i = 0; i < $scope.connections.length; ++i) {
