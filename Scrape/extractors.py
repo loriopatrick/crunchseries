@@ -19,6 +19,22 @@ class Series:
 		self._symbol = symbol
 		self._search_symbol = search_symbol
 
+	def save(self, cursor, extraction):
+		self.clear_symbol(cursor)
+		for item in extraction:
+			try:
+				self.insert(item, cursor)
+				print 'inserted: %s' % item
+			except Exception as e:
+				if e[0] == 1146:
+					print 'Table doesn\'t exist'
+					break
+				if e[0] == 1062:
+					continue
+				print 'Error: %s' % e
+				break
+		cursor.connection.commit()
+
 	def insert(self, data, cursor):
 		required = ['epoch', 'high', 'low', 'open', 'close', 'volume']
 		for item in required:
@@ -32,6 +48,10 @@ class Series:
 			')VALUES(', 
 			'%(symbol)s, %(epoch)s, %(high)s, %(low)s, %(open)s, %(close)s, %(volume)s)'
 		]), data)
+
+	def clear_symbol(self, cursor):
+		cursor.execute('DELETE FROM series_%s WHERE symbol=\'%s\'' % (self.period[0], symbol))
+		cursor.connection.commit()
 
 	@property
 	def symbol(self):
@@ -98,35 +118,17 @@ class GoogleFinace():
 				'volume':int(parts[5])
 			}
 
-	def save(self, cursor, extraction=None):
-		if extraction is None:
-			extraction = self.extract()
-		
-		for item in extraction:
-			try:
-				series.insert(item, cursor)
-				print 'inserted: %s' % item
-			except Exception as e:
-				if e[0] == 1146:
-					print 'Table doesn\'t exist'
-					break
-				if e[0] == 1062:
-					continue
-				print 'Error: %s' % e
-				break
-
 
 if __name__ == '__main__':
 	import sys
 
-	symbol = 'GOOG'
+	symbols = ['GOOG']
 	if len(sys.argv) > 1:
-		symbol = sys.argv[1]
+		symbols = sys.argv[1].split(',')
 
-	series = Series(symbol, Periods.EOD)
-	extractor = GoogleFinace(series)
+	for symbol in symbols:
+		series = Series(symbol, Periods.EOD)
+		extractor = GoogleFinace(series)
+		series.save(database.cursor(), extractor.extract())
 
-	cursor = database.cursor()
-	extractor.save(cursor)
-	database.commit()
 	database.close()
